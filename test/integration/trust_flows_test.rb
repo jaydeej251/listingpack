@@ -32,7 +32,7 @@ class TrustFlowsTest < ActionDispatch::IntegrationTest
     assert_equal "draft", listing.reload.status
   end
 
-  test "generate again resets price_confirmed" do
+  test "generate again sets the listing back to generating" do
     user = users(:two)
     sign_in user
     listing = user.listings.new(
@@ -42,8 +42,7 @@ class TrustFlowsTest < ActionDispatch::IntegrationTest
       stage: "listed",
       listing_type: "for_sale",
       financing: "negotiable",
-      status: "ready",
-      price_confirmed: true
+      status: "ready"
     )
     listing.photos.attach(io: File.open(Rails.root.join("public/icon.png")), filename: "x.png", content_type: "image/png")
     listing.save!
@@ -52,8 +51,7 @@ class TrustFlowsTest < ActionDispatch::IntegrationTest
       post listing_content_packs_path(listing)
     end
 
-    assert_not listing.reload.price_confirmed?
-    assert_equal "generating", listing.status
+    assert_equal "generating", listing.reload.status
   end
 
   test "billing unlock is blocked outside local environments" do

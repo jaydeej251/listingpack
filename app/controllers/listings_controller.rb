@@ -1,5 +1,5 @@
 class ListingsController < ApplicationController
-  before_action :set_listing, only: %i[ show edit update destroy confirm_price seller_report ]
+  before_action :set_listing, only: %i[ show edit update destroy seller_report ]
 
   def index
     @listings = Current.user.listings.with_attached_photos.includes(:content_packs).order(created_at: :desc)
@@ -39,11 +39,6 @@ class ListingsController < ApplicationController
     redirect_to listings_path, notice: "Listing removed."
   end
 
-  def confirm_price
-    @listing.update!(price_confirmed: true)
-    redirect_to @listing, notice: "Price confirmed. You can download posters now."
-  end
-
   def seller_report
     @pack = @listing.latest_pack
     if @pack.blank? || @pack.seller_report.blank?
@@ -78,7 +73,7 @@ class ListingsController < ApplicationController
         return
       end
 
-      listing.update!(status: "generating", price_confirmed: false)
+      listing.update!(status: "generating")
       GeneratePackJob.perform_later(listing.id)
       redirect_to listing, notice: "Generating captions, seller report, and branded posters…"
     end

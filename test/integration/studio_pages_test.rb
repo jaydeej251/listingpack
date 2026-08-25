@@ -76,10 +76,20 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select "li", /Writing captions/
   end
 
-  test "ready pack uses copy tabs and says png is optional" do
+  test "status json reports pack status for polling" do
     sign_in users(:one)
     listing = listings(:bgc_condo)
-    listing.update!(status: "ready", price_confirmed: false)
+    listing.update!(status: "generating")
+
+    get status_listing_content_packs_path(listing, format: :json)
+    assert_response :success
+    assert_equal "generating", JSON.parse(response.body)["status"]
+  end
+
+  test "ready pack uses copy tabs and download without a confirm step" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
     pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
     GeneratedAsset::TEMPLATE_KEYS.each { |key| pack.generated_assets.create!(template_key: key) }
 
@@ -89,7 +99,42 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select "button", "Post"
     assert_select "button", "Marketplace"
     assert_match "PNG not ready", response.body
-    assert_match "Confirm the asking price", response.body
+    assert_no_match(/Confirm the asking price/, response.body)
+    assert_match "text only", response.body
+  end
+
+  test "ready pack with a png offers enlarge and download" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
+    asset = pack.generated_assets.create!(template_key: "just_listed")
+    asset.image.attach(io: File.open(Rails.root.join("public/icon.png")), filename: "poster.png", content_type: "image/png")
+    GeneratedAsset::TEMPLATE_KEYS.reject { |key| key == "just_listed" }.each { |key| pack.generated_assets.create!(template_key: key) }
+
+    get status_listing_content_packs_path(listing)
+    assert_response :success
+    assert_select "[data-controller=poster]"
+    assert_select "button.poster-hit"
+    assert_select "a", text: "Download PNG"
+    assert_select "dialog"
+  end
+
+  test "ready listing show renders the pack inline, not a loading placeholder" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
+    asset = pack.generated_assets.create!(template_key: "just_listed")
+    asset.image.attach(io: File.open(Rails.root.join("public/icon.png")), filename: "poster.png", content_type: "image/png")
+    GeneratedAsset::TEMPLATE_KEYS.reject { |key| key == "just_listed" }.each { |key| pack.generated_assets.create!(template_key: key) }
+
+    get listing_path(listing)
+    assert_response :success
+    assert_no_match(/Loading pack/, response.body)
+    assert_select "h2", "Posters"
+    assert_select "a", text: "Download PNG"
+    assert_select "[data-controller=poster]"
   end
 
   test "this week empty state includes a sample monday post" do
@@ -98,6 +143,28 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h2", "No week generated yet"
     assert_select "p", /Monday/
+  end
+
+  test "this week confirm shows remaining packs instead of 1 of 3 cap" do
+    user = users(:one)
+    user.update!(quota_period_start: Time.zone.today.beginning_of_month, packs_count_in_period: 2)
+    sign_in user
+
+    get weekly_calendars_path
+    assert_response :success
+    assert_match(/You have 1 of 3 left this month/, response.body)
+    assert_no_match(/This uses 1 of #{User::FREE_PACKS_PER_MONTH} free packs this month/, response.body)
+  end
+
+  test "this week with no credits links to plan instead of generate" do
+    user = users(:one)
+    user.update!(quota_period_start: Time.zone.today.beginning_of_month, packs_count_in_period: 3)
+    sign_in user
+
+    get weekly_calendars_path
+    assert_response :success
+    assert_select "a[href=?]", billing_path, text: /No packs left/
+    assert_select "input[type=submit]", false
   end
 
   test "this week show lists generated posts" do

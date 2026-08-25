@@ -13,7 +13,12 @@
     <p style="margin:0 0 10px;font-size:42px;font-family:Arial,sans-serif;font-weight:700;"><%= @listing.peso_label %></p>
     <p style="margin:0 0 12px;font-size:24px;font-family:Arial,sans-serif;opacity:.9;"><%= @listing.facts_line %></p>
     <p style="margin:0 0 28px;font-size:20px;font-family:Arial,sans-serif;opacity:.9;"><%= @listing.ph_badges.join(" · ") %></p>
-    <p style="margin:0;font-family:Arial,sans-serif;font-size:22px;"><%= @brand.name %><% if @brand.phone.present? %> · <%= @brand.phone %><% end %></p>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <% if @logo_uri.present? %>
+        <img src="<%= @logo_uri %>" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:12px;background:#fff;">
+      <% end %>
+      <p style="margin:0;font-family:Arial,sans-serif;font-size:22px;"><%= @brand.name %><% if @brand.phone.present? %> · <%= @brand.phone %><% end %></p>
+    </div>
   </div>
   <% if @watermark %>
     <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-18deg);font-family:Arial,sans-serif;font-size:64px;opacity:.28;letter-spacing:.2em;">LISTINGPACK FREE</div>

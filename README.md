@@ -22,7 +22,7 @@ Demo users after `bin/rails db:seed`:
 
 Poster PNGs need Google Chrome or Chromium installed locally (Ferrum). Without it, copy still generates and packs can be ready with “PNG not ready” + Redraw.
 
-Optional: set `OPENAI_API_KEY` for live copy/vision. Without it, packs use a Taglish template writer.
+Optional: set `OPENROUTER_API_KEY` or `OPENAI_API_KEY` for live copy/vision. OpenRouter keys (`sk-or-…`) are auto-detected even if you paste them into `OPENAI_API_KEY`. Without a key, packs use a Taglish template writer.
 
 ## Plans (honest)
 
@@ -78,7 +78,9 @@ Already at `https://github.com/jaydeej251/listingpack` if you pushed earlier.
 | `RAILS_MAX_THREADS` | `2` |
 | `CHROME_PATH` | `/usr/bin/chromium` |
 | `APP_HOST` | Leave blank first deploy, then set to `YOUR-SERVICE.onrender.com` (no `https://`) |
-| `OPENAI_API_KEY` | Optional. Blank → Taglish templates |
+| `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | Optional. OpenRouter `sk-or-…` keys auto-route to OpenRouter. Blank → Taglish templates |
+| `OPENAI_MODEL` | Optional. Default `gpt-4o-mini` (OpenAI) or `openai/gpt-4o-mini` (OpenRouter) |
+| `OPENAI_API_URL` | Optional override. Leave blank unless you must pin a custom endpoint |
 | `SEED_ON_BOOT` | `true` for **one** deploy only (Free has no Shell) |
 
 7. Create Web Service and wait for the build.

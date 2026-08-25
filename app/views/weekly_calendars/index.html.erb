@@ -3,16 +3,23 @@
 <%= render "shared/page_header",
       kicker: "No listing required",
       title: "This week's posts",
-      description: "Five Facebook posts so you stay visible between listings. Uses one pack credit on free plans." %>
+      description: "Five Facebook posts so you stay visible between listings. Listing packs and This week share the same #{User::FREE_PACKS_PER_MONTH} free credits per month." %>
 
 <div class="mt-4"><%= render "shared/quota", user: current_user %></div>
 
-<%= form_with model: WeeklyCalendar.new, url: weekly_calendars_path, class: "mt-8 flex flex-wrap items-end gap-3", data: { turbo_confirm: (current_user.free? ? "This uses 1 of #{User::FREE_PACKS_PER_MONTH} free packs this month. Continue?" : nil) }.compact do |form| %>
+<% costs_credit = current_user.free? && (@calendar.blank? || @calendar.ready?) %>
+<% out_of_packs = costs_credit && !current_user.can_generate_pack? %>
+
+<%= form_with model: WeeklyCalendar.new, url: weekly_calendars_path, class: "mt-8 flex flex-wrap items-end gap-3", data: { turbo_confirm: (costs_credit ? pack_credit_confirm(current_user) : nil) }.compact do |form| %>
   <div>
     <%= form.label :focus_area, "Area to talk about", class: "label" %>
     <%= form.text_field :focus_area, value: current_user.listings.order(created_at: :desc).first&.location || "Metro Manila", class: "field w-72" %>
   </div>
-  <%= form.submit @calendar&.ready? ? "Regenerate this week" : "Generate this week", class: "btn btn-primary" %>
+  <% if out_of_packs %>
+    <%= link_to "No packs left — upgrade on Plan", billing_path, class: "btn btn-primary" %>
+  <% else %>
+    <%= form.submit @calendar&.ready? ? "Regenerate this week" : "Generate this week", class: "btn btn-primary" %>
+  <% end %>
 <% end %>
 
 <% if @calendars.any? %>

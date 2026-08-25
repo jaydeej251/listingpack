@@ -13,7 +13,7 @@ class ContentPacksController < ApplicationController
     end
 
     pack = @listing.content_packs.create!(language: @listing.language, status: "generating", stage: @listing.stage)
-    @listing.update!(status: "generating", price_confirmed: false)
+    @listing.update!(status: "generating")
     GeneratePackJob.perform_later(@listing.id, pack.id, true)
     redirect_to @listing, notice: "Generating a new pack…"
   end
@@ -31,15 +31,20 @@ class ContentPacksController < ApplicationController
       pack.update!(status: "generating", error_message: nil, stage: @listing.stage)
     end
 
-    @listing.update!(status: "generating", price_confirmed: false)
+    @listing.update!(status: "generating")
     GeneratePackJob.perform_later(@listing.id, pack.id, false)
     redirect_to @listing, notice: "Retrying generation…"
   end
 
   def status
     @pack = @listing.latest_pack
-    assign_poster_vars
-    render :status, layout: false
+    respond_to do |format|
+      format.html do
+        assign_poster_vars
+        render :status, layout: false
+      end
+      format.json { render json: { status: @listing.pack_status } }
+    end
   end
 
   private

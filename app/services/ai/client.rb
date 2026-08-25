@@ -7,12 +7,17 @@ module Ai
   class Client
     class Error < StandardError; end
 
+    OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
+    OPENROUTER_CHAT_URL = "https://openrouter.ai/api/v1/chat/completions"
+    OPENAI_MODEL = "gpt-4o-mini"
+    OPENROUTER_MODEL = "openai/gpt-4o-mini"
+
     def configured?
       api_key.present?
     end
 
     def chat(messages:, image_urls: [])
-      raise Error, "OPENAI_API_KEY is not set" unless configured?
+      raise Error, "Set OPENROUTER_API_KEY or OPENAI_API_KEY" unless configured?
 
       content = messages
       if image_urls.any?
@@ -41,6 +46,10 @@ module Ai
       request = Net::HTTP::Post.new(uri)
       request["Authorization"] = "Bearer #{api_key}"
       request["Content-Type"] = "application/json"
+      if using_openrouter?
+        request["HTTP-Referer"] = app_referer
+        request["X-Title"] = "ListingPack"
+      end
       request.body = JSON.generate(body)
 
       response = http.request(request)
@@ -67,15 +76,42 @@ module Ai
 
     private
       def api_key
-        ENV["OPENAI_API_KEY"].presence
+        ENV["OPENROUTER_API_KEY"].presence || ENV["OPENAI_API_KEY"].presence
       end
 
-      def model
-        ENV.fetch("OPENAI_MODEL", "gpt-4o-mini")
+      def openrouter_credentials?
+        ENV["OPENROUTER_API_KEY"].present? || api_key.to_s.start_with?("sk-or-")
+      end
+
+      def using_openrouter?
+        openrouter_credentials? || chat_url.include?("openrouter.ai")
       end
 
       def chat_url
-        ENV.fetch("OPENAI_API_URL", "https://api.openai.com/v1/chat/completions")
+        return ENV["OPENAI_API_URL"] if ENV["OPENAI_API_URL"].present?
+
+        openrouter_credentials? ? OPENROUTER_CHAT_URL : OPENAI_CHAT_URL
+      end
+
+      def model
+        explicit = ENV["OPENAI_MODEL"].presence
+        if explicit
+          return normalize_openrouter_model(explicit) if using_openrouter?
+          return explicit
+        end
+
+        using_openrouter? ? OPENROUTER_MODEL : OPENAI_MODEL
+      end
+
+      def normalize_openrouter_model(name)
+        name.include?("/") ? name : "openai/#{name}"
+      end
+
+      def app_referer
+        host = ENV["APP_HOST"].presence || "localhost:3000"
+        return host if host.match?(/\Ahttps?:\/\//i)
+
+        host.include?("localhost") ? "http://#{host}" : "https://#{host}"
       end
   end
 end
