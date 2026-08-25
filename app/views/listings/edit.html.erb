@@ -1,0 +1,10 @@
+<% content_for :title, "Edit listing — ListingPack" %>
+
+<%= render "shared/page_header",
+      kicker: "Update",
+      title: "Edit listing",
+      description: "Changing facts does not rewrite the pack until you generate again." %>
+
+<div class="mt-8">
+  <%= render "form", listing: @listing %>
+</div>

@@ -1,0 +1,124 @@
+<% confirm = listing.new_record? && current_user.free? && current_user.can_generate_pack? ? "This uses 1 of #{User::FREE_PACKS_PER_MONTH} free packs this month. Continue?" : nil %>
+
+<%= form_with model: listing, class: "max-w-3xl space-y-8", data: { turbo_confirm: confirm }.compact do |form| %>
+  <% if listing.errors.any? %>
+    <div class="flash flash-alert">
+      <p class="font-medium">Fix the highlighted fields.</p>
+      <ul class="mt-2 list-disc pl-5 text-sm">
+        <% listing.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <section class="card p-6" data-controller="photos-preview">
+    <p class="kicker">01</p>
+    <h2 class="mt-1 font-serif text-2xl text-navy">Photos</h2>
+    <p class="mt-1 text-sm text-navy/60">The first photo becomes the poster hero.</p>
+    <%= form.label :photos, "Listing photos", class: "label mt-4" %>
+    <%= form.file_field :photos, multiple: true, accept: "image/*", class: "field", data: { action: "photos-preview#preview" } %>
+    <%= field_error listing, :photos %>
+    <div class="mt-3 flex flex-wrap gap-2" data-photos-preview-target="preview">
+      <% listing.photos.each do |photo| %>
+        <%= image_tag photo, class: "h-24 w-24 rounded-xl object-cover", alt: "" %>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="card p-6">
+    <p class="kicker">02</p>
+    <h2 class="mt-1 font-serif text-2xl text-navy">The deal</h2>
+    <div class="mt-5 grid gap-4 sm:grid-cols-3">
+      <div>
+        <%= form.label :stage, "Lifecycle", class: "label" %>
+        <%= form.select :stage, Listing::STAGES.map { |k, v| [ v, k ] }, {}, class: field_classes(listing, :stage) %>
+      </div>
+      <div>
+        <%= form.label :listing_type, "Type", class: "label" %>
+        <%= form.select :listing_type, Listing::LISTING_TYPES.map { |k, v| [ v, k ] }, {}, class: field_classes(listing, :listing_type) %>
+      </div>
+      <div>
+        <%= form.label :financing, class: "label" %>
+        <%= form.select :financing, Listing::FINANCING_OPTIONS.map { |k, v| [ v, k ] }, {}, class: field_classes(listing, :financing) %>
+      </div>
+    </div>
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <div>
+        <%= form.label :price_amount, "Price (PHP)", class: "label" %>
+        <%= form.number_field :price_amount, step: 1, class: field_classes(listing, :price_amount) %>
+      </div>
+      <div>
+        <%= form.label :previous_price_amount, "Previous price (if reduced)", class: "label" %>
+        <%= form.number_field :previous_price_amount, step: 1, class: field_classes(listing, :previous_price_amount) %>
+      </div>
+    </div>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      <div>
+        <%= form.label :bedrooms, class: "label" %>
+        <%= form.number_field :bedrooms, class: "field" %>
+      </div>
+      <div>
+        <%= form.label :bathrooms, class: "label" %>
+        <%= form.number_field :bathrooms, step: 0.5, class: "field" %>
+      </div>
+      <div>
+        <%= form.label :floor_area, "Floor area (sqm)", class: "label" %>
+        <%= form.number_field :floor_area, step: 0.1, class: "field" %>
+      </div>
+    </div>
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <div>
+        <%= form.label :association_dues, "Assoc dues", class: "label" %>
+        <%= form.text_field :association_dues, placeholder: "₱8,500 / mo", class: "field" %>
+      </div>
+      <div>
+        <%= form.label :near_transit, "Near transit", class: "label" %>
+        <%= form.text_field :near_transit, placeholder: "BGC Bus / MRT-3", class: "field" %>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center gap-2">
+      <%= form.check_box :parking, class: "rounded border-navy/30" %>
+      <%= form.label :parking, "Parking included", class: "label mb-0" %>
+    </div>
+  </section>
+
+  <section class="card p-6">
+    <p class="kicker">03</p>
+    <h2 class="mt-1 font-serif text-2xl text-navy">The story</h2>
+    <div class="mt-5">
+      <%= form.label :title, "Headline", class: "label" %>
+      <%= form.text_field :title, required: true, placeholder: "2BR at The Fort Residences", class: field_classes(listing, :title) %>
+      <%= field_error listing, :title %>
+    </div>
+    <div class="mt-4">
+      <%= form.label :location, class: "label" %>
+      <%= form.text_field :location, required: true, placeholder: "BGC, Taguig", class: field_classes(listing, :location) %>
+      <%= field_error listing, :location %>
+    </div>
+    <div class="mt-4">
+      <%= form.label :language, class: "label" %>
+      <%= form.select :language, Listing::LANGUAGES.map { |k, v| [ v, k ] }, {}, class: "field" %>
+    </div>
+    <div class="mt-4">
+      <%= form.label :amenities, class: "label" %>
+      <%= form.text_area :amenities, rows: 3, placeholder: "24h security, near High Street", class: "field" %>
+    </div>
+    <div class="mt-4">
+      <%= form.label :notes, "Notes buyers should hear", class: "label" %>
+      <%= form.text_area :notes, rows: 3, placeholder: "Seller relocating, needs 60-day close", class: "field" %>
+    </div>
+  </section>
+
+  <div class="flex flex-wrap items-center gap-3">
+    <%= form.submit listing.new_record? ? "Generate pack" : "Save listing", class: "btn btn-primary" %>
+    <%= link_to "Cancel", listings_path, class: "btn btn-ghost" %>
+    <% if listing.new_record? && current_user.free? %>
+      <% if current_user.can_generate_pack? %>
+        <p class="text-sm text-navy/60">Uses 1 of <%= User::FREE_PACKS_PER_MONTH %> free packs.</p>
+      <% else %>
+        <p class="text-sm text-clay">No free packs left — <%= link_to "upgrade on Plan", billing_path, class: "underline" %> to generate.</p>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

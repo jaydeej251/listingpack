@@ -1,0 +1,12 @@
+<% if notice = flash[:notice] %>
+  <div class="flash flash-notice mx-auto mt-4 flex max-w-6xl items-start justify-between gap-3 px-5" data-controller="flash" role="status">
+    <p id="notice"><%= notice %></p>
+    <button type="button" class="btn-ghost text-sm" data-action="flash#dismiss" aria-label="Dismiss">Close</button>
+  </div>
+<% end %>
+<% if alert = flash[:alert] %>
+  <div class="flash flash-alert mx-auto mt-4 flex max-w-6xl items-start justify-between gap-3 px-5" data-controller="flash" role="alert">
+    <p id="alert"><%= alert %></p>
+    <button type="button" class="btn-ghost text-sm" data-action="flash#dismiss" aria-label="Dismiss">Close</button>
+  </div>
+<% end %>

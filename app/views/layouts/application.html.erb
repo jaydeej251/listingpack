@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "ListingPack" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="min-h-screen bg-paper text-ink antialiased">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-navy focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
+
+    <header class="sticky top-0 z-20 border-b border-navy/10 bg-paper/85 backdrop-blur" data-controller="nav">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
+        <%= link_to studio_home_path, class: "font-serif text-2xl tracking-tight text-navy" do %>
+          ListingPack
+        <% end %>
+
+        <% if authenticated? %>
+          <nav class="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="Studio">
+            <%= link_to "Listings", listings_path, class: nav_link_class(current_page?(listings_path) || controller_name == "listings") %>
+            <%= link_to "This week", weekly_calendars_path, class: nav_link_class(controller_name == "weekly_calendars") %>
+            <%= link_to "Brand kit", edit_brand_kit_path, class: nav_link_class(controller_name == "brand_kits") %>
+            <%= link_to "Plan (#{plan_badge(current_user)})", billing_path, class: nav_link_class(controller_name == "billings") %>
+            <%= button_to "Log out", session_path, method: :delete, class: "btn-ghost cursor-pointer" %>
+          </nav>
+          <button type="button" class="btn btn-secondary md:hidden" data-nav-target="button" data-action="nav#toggle" aria-expanded="false" aria-controls="mobile-nav">Menu</button>
+        <% else %>
+          <nav class="flex items-center gap-3 text-sm font-medium" aria-label="Account">
+            <%= link_to "Log in", new_session_path, class: "btn-ghost" %>
+            <%= link_to "Start free", new_registration_path, class: "btn btn-primary" %>
+          </nav>
+        <% end %>
+      </div>
+
+      <% if authenticated? %>
+        <nav id="mobile-nav" class="hidden border-t border-navy/10 px-5 py-3 md:hidden" data-nav-target="menu" aria-label="Mobile">
+          <div class="flex flex-col gap-3 text-sm font-medium">
+            <%= link_to "Listings", listings_path %>
+            <%= link_to "This week", weekly_calendars_path %>
+            <%= link_to "New listing", new_listing_path %>
+            <%= link_to "Brand kit", edit_brand_kit_path %>
+            <%= link_to "Plan (#{plan_badge(current_user)})", billing_path %>
+            <%= button_to "Log out", session_path, method: :delete, class: "btn-ghost cursor-pointer text-left" %>
+          </div>
+        </nav>
+      <% end %>
+    </header>
+
+    <%= render "shared/flash" %>
+
+    <main id="main" class="mx-auto max-w-6xl px-5 py-10">
+      <%= yield %>
+    </main>
+
+    <% unless authenticated? %>
+      <footer class="border-t border-navy/10">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-navy/60">
+          <p>ListingPack · PH listing graphics + copy</p>
+          <%= link_to "Log in", new_session_path, class: "underline hover:text-clay" %>
+        </div>
+      </footer>
+    <% end %>
+  </body>
+</html>

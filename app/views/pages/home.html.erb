@@ -1,0 +1,323 @@
+<% content_for :title, "Listing graphics for PH agents — ListingPack" %>
+
+<%
+  channels = [
+    "Facebook profile", "Facebook groups", "Marketplace", "Instagram",
+    "Messenger follow-up", "Boosted ad copy", "Portal description", "Seller report"
+  ]
+
+  week_posts = [
+    [ "Mon", "Market pulse", "BGC buyers this week are asking two things: parking at saan malapit sa bus stop. If your budget is ₱12M and below, message me — may tatlo akong units na pasok." ],
+    [ "Tue", "Buyer tip", nil ],
+    [ "Wed", "Neighborhood spotlight", nil ],
+    [ "Thu", "Myth vs fact", nil ],
+    [ "Fri", "Open house invite", nil ]
+  ]
+
+  caption_tabs = [
+    [ "facebook", "Facebook", "Facebook profile · 6:00 PM",
+      "Just listed sa BGC — 2BR, 58 sqm, may parking na. Seller needs a 60-day close kaya may room pa for serious buyers. Pag-IBIG and bank financing both okay. DM lang po for viewing." ],
+    [ "marketplace", "Marketplace", "Marketplace listing · blurb",
+      "2BR condo for sale in BGC, Taguig. 58 sqm, 2 bathrooms, 1 parking slot, ₱8,500/mo association dues. Walking distance to BGC Bus. Pag-IBIG, bank, and cash accepted. Price: ₱12,500,000. Message for the full spec sheet and viewing schedule." ],
+    [ "instagram", "Instagram", "Instagram caption · carousel",
+      "Golden hour sa The Fort Residences. 2BR, 58 sqm, parking included — and the unit faces away from the highway kaya tahimik talaga. Swipe for the floor plan. Link in bio to book a viewing." ],
+    [ "messenger", "Messenger", "Follow-up DM · day 2",
+      "Hi po! Kayo yung nag-inquire sa 2BR sa BGC. Still available po siya. Free ba kayo this Saturday, 10AM or 2PM? Dala ko na rin yung computation for Pag-IBIG para makita niyo agad yung monthly." ]
+  ]
+
+  comparison = [
+    [ "Facebook and Instagram captions", true ],
+    [ "Branded 1080×1080 poster, no Canva", false ],
+    [ "Seller recap you can send the owner", false ],
+    [ "Five posts for a week with no listing", false ],
+    [ "Marketplace blurb and Messenger follow-up", false ],
+    [ "Price confirmation before you can download", false ]
+  ]
+
+  faqs = [
+    [ "Kailangan ko pa ba ng Canva?", "No. The poster comes out as a 1080×1080 PNG with your logo, colors, and photo already stamped on it. Download and post." ],
+    [ "Will it sound like a bot?", "Paste three of your real Facebook posts in the brand kit. Captions copy your rhythm, your Taglish, and your call to action instead of a generic FOMO template." ],
+    [ "Anong wika ang lalabas?", "Taglish, English, or Filipino — you pick per listing." ],
+    [ "Paano ang bayad?", "Free is three packs a month with a watermark. Pro is unlimited packs and clean posters. GCash/Maya via PayMongo and Facebook auto-post are coming later — nothing is charged today." ]
+  ]
+%>
+
+<section class="surface-hero grain px-6 py-14 sm:px-10 sm:py-20">
+  <div class="grid gap-16 lg:grid-cols-12 lg:items-center">
+    <div class="lg:col-span-6">
+      <span class="chip rise"><span class="dot-live" aria-hidden="true"></span> Built for Philippine agents</span>
+
+      <h1 class="rise rise-1 mt-5 font-serif text-5xl leading-[1.02] text-navy sm:text-6xl">
+        Upload a listing.<br>
+        Get posts you can <span class="marker">actually publish.</span>
+      </h1>
+
+      <p class="rise rise-2 mt-6 max-w-xl text-lg leading-relaxed text-navy/75">
+        Other tools stop at captions. ListingPack designs the graphic, writes the seller recap,
+        and keeps you posting on weeks when you have no new listing.
+      </p>
+
+      <div class="rise rise-3 mt-8 flex flex-wrap gap-3">
+        <%= link_to "Start free — 3 packs/month", new_registration_path, class: "btn btn-primary px-6 py-3" %>
+        <%= link_to "See a real pack", "#how", class: "btn btn-secondary px-6 py-3" %>
+      </div>
+
+      <div class="mt-8 flex items-center gap-3">
+        <div class="flex -space-x-2" aria-hidden="true">
+          <% [ [ "MS", "bg-navy" ], [ "JR", "bg-clay" ], [ "AL", "bg-sage" ] ].each do |initials, tone| %>
+            <span class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-paper <%= tone %> text-[0.65rem] font-semibold text-paper"><%= initials %></span>
+          <% end %>
+        </div>
+        <p class="text-sm text-navy/70">Agents posting BGC, QC, and Cebu listings every week.</p>
+      </div>
+    </div>
+
+    <div class="lg:col-span-6" aria-hidden="true">
+      <div class="rise rise-2 relative mx-auto max-w-sm sm:pb-24 lg:max-w-md">
+        <div class="mock overflow-hidden p-2 sm:ml-auto sm:w-[80%]">
+          <%= render "pages/sample_poster", variant: "just_listed" %>
+        </div>
+
+        <div class="mock mt-4 p-4 sm:absolute sm:bottom-0 sm:left-0 sm:mt-0 sm:w-[78%]">
+          <div class="flex items-center gap-2">
+            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-navy text-[0.7rem] font-semibold text-paper">MS</span>
+            <div class="leading-tight">
+              <p class="text-sm font-semibold text-navy">Maria Santos</p>
+              <p class="text-[0.7rem] text-navy/50">Just now · Facebook</p>
+            </div>
+          </div>
+          <p class="mt-3 text-sm leading-relaxed text-navy/80">
+            Just listed sa BGC — 2BR, 58 sqm, may parking na. Seller needs a 60-day close…
+          </p>
+          <div class="mt-3 flex items-center gap-3 border-t border-navy/10 pt-3 text-[0.7rem] font-medium text-navy/55">
+            <span>Like</span>
+            <span>Comment</span>
+            <span>Share</span>
+            <span class="ml-auto rounded-full bg-sage/15 px-2 py-0.5 text-sage">Copied</span>
+          </div>
+        </div>
+
+        <span class="chip absolute right-0 top-4 shadow-sm">Ready in ~20 seconds</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="marquee mt-8 overflow-hidden py-2" aria-label="Channels covered by one pack">
+  <div class="marquee-track gap-3">
+    <% 2.times do %>
+      <% channels.each do |channel| %>
+        <span class="chip whitespace-nowrap"><%= channel %></span>
+      <% end %>
+    <% end %>
+  </div>
+</section>
+
+<section id="how" class="mt-20">
+  <div class="max-w-2xl">
+    <p class="kicker">What lands in your studio</p>
+    <h2 class="mt-3 font-serif text-4xl text-navy">Three things captions-only tools don’t give you</h2>
+    <p class="mt-3 text-navy/70">Not mockups — this is what a pack actually looks like.</p>
+  </div>
+
+  <div class="mt-10 grid items-start gap-6 lg:grid-cols-3">
+    <article class="card lift flex flex-col p-5">
+      <div class="flex items-center justify-between">
+        <p class="kicker">01</p>
+        <span class="chip">1080 × 1080 PNG</span>
+      </div>
+      <h2 class="mt-2 font-serif text-2xl text-navy">The graphic</h2>
+      <p class="mt-2 text-sm text-navy/70">Your logo, your colors, your photo. The banner follows the listing stage.</p>
+
+      <div class="mock mt-5 overflow-hidden p-2">
+        <%= render "pages/sample_poster", variant: "just_listed" %>
+      </div>
+
+      <div class="mt-4 grid grid-cols-2 gap-3">
+        <div class="mock overflow-hidden p-1.5">
+          <%= render "pages/sample_poster", variant: "price_card" %>
+        </div>
+        <div class="mock overflow-hidden p-1.5">
+          <%= render "pages/sample_poster", variant: "agent_card" %>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-navy/55">Every pack ships all three templates.</p>
+    </article>
+
+    <article class="card lift flex flex-col p-5">
+      <div class="flex items-center justify-between">
+        <p class="kicker">02</p>
+        <span class="chip">Send every Friday</span>
+      </div>
+      <h2 class="mt-2 font-serif text-2xl text-navy">The seller recap</h2>
+      <p class="mt-2 text-sm text-navy/70">The update the owner keeps asking for, already written.</p>
+
+      <div class="mock mt-5 p-5">
+        <div class="flex items-center justify-between border-b border-navy/10 pb-3">
+          <p class="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-clay">Weekly seller update</p>
+          <span class="chip">Week 2</span>
+        </div>
+        <p class="mt-3 font-serif text-lg text-navy">2BR at The Fort Residences</p>
+        <p class="mt-2 text-sm leading-relaxed text-navy/75">Hi Mr. Cruz — mabilis na recap ng week 2.</p>
+
+        <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
+          <% [ [ "Reach", "4,180" ], [ "Saves", "41" ], [ "Viewings", "2" ] ].each do |label, value| %>
+            <div class="rounded-xl bg-sand/60 py-2">
+              <dt class="text-[0.6rem] uppercase tracking-[0.12em] text-navy/55"><%= label %></dt>
+              <dd class="font-semibold text-navy"><%= value %></dd>
+            </div>
+          <% end %>
+        </dl>
+
+        <p class="mt-4 text-sm leading-relaxed text-navy/75">
+          Buyers keep asking about parking and Pag-IBIG. Two viewings booked for Saturday.
+          My recommendation: hold the price one more week, then reduce to ₱12.2M if walk-ins stay flat.
+        </p>
+
+        <div class="mt-4 flex flex-wrap gap-2">
+          <span class="chip">Copy</span>
+          <span class="chip">Print / save PDF</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="card lift flex flex-col p-5">
+      <div class="flex items-center justify-between">
+        <p class="kicker">03</p>
+        <span class="chip">No listing required</span>
+      </div>
+      <h2 class="mt-2 font-serif text-2xl text-navy">The empty week</h2>
+      <p class="mt-2 text-sm text-navy/70">Five Mon–Fri posts so a slow month doesn’t make you disappear.</p>
+
+      <div class="mock mt-5 p-4">
+        <ol class="space-y-2">
+          <% week_posts.each do |day, title, body| %>
+            <li class="rounded-xl border px-3 py-2.5 <%= body ? "border-clay/40 bg-clay/5" : "border-navy/10" %>">
+              <div class="flex items-center gap-3">
+                <span class="w-9 shrink-0 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-clay"><%= day %></span>
+                <span class="text-sm font-medium text-navy"><%= title %></span>
+              </div>
+              <% if body %>
+                <p class="mt-2 text-sm leading-relaxed text-navy/75"><%= body %></p>
+                <span class="chip mt-3">Copy Monday post</span>
+              <% end %>
+            </li>
+          <% end %>
+        </ol>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="mt-20" data-controller="tabs" data-tabs-active-value="facebook">
+  <div class="max-w-2xl">
+    <p class="kicker">In your voice</p>
+    <h2 class="mt-3 font-serif text-4xl text-navy">The same listing, written per channel</h2>
+    <p class="mt-3 text-navy/70">One pack fills every box you normally rewrite by hand. Tap a channel.</p>
+  </div>
+
+  <div class="mt-6 flex flex-wrap gap-2" role="tablist">
+    <% caption_tabs.each do |id, label, _meta, _body| %>
+      <button type="button" class="btn btn-secondary" role="tab" data-tabs-target="tab" data-tabs-id-param="<%= id %>" data-action="tabs#select"><%= label %></button>
+    <% end %>
+  </div>
+
+  <% caption_tabs.each do |id, _label, meta, body| %>
+    <div class="mock mt-5 max-w-2xl p-6 <%= "hidden" unless id == "facebook" %>" data-tabs-target="panel" data-tab="<%= id %>" role="tabpanel">
+      <div class="flex items-center justify-between gap-4 border-b border-navy/10 pb-3">
+        <p class="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-navy/55"><%= meta %></p>
+        <span class="chip">Copy</span>
+      </div>
+      <p class="mt-4 leading-relaxed text-navy/85"><%= body %></p>
+    </div>
+  <% end %>
+</section>
+
+<section class="mt-20 grid gap-6 lg:grid-cols-2 lg:items-stretch">
+  <div class="card p-7">
+    <p class="kicker">Captions-only tools</p>
+    <h2 class="mt-2 font-serif text-3xl text-navy">You still open Canva</h2>
+    <ul class="mt-6 space-y-3">
+      <% comparison.each do |label, included| %>
+        <li class="flex items-start gap-3 text-sm <%= included ? "text-navy/80" : "text-navy/40" %>">
+          <span class="mt-0.5 w-4 shrink-0 text-center font-bold"><%= included ? "✓" : "—" %></span>
+          <span><%= label %></span>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+
+  <div class="surface-navy grain p-7">
+    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-clay">ListingPack</p>
+    <h2 class="mt-2 font-serif text-3xl">You post straight from the pack</h2>
+    <ul class="mt-6 space-y-3">
+      <% comparison.each do |label, _included| %>
+        <li class="flex items-start gap-3 text-sm text-paper/85">
+          <span class="mt-0.5 w-4 shrink-0 text-center font-bold text-clay">✓</span>
+          <span><%= label %></span>
+        </li>
+      <% end %>
+    </ul>
+    <%= link_to "Start free", new_registration_path, class: "btn mt-7 bg-clay text-paper hover:bg-paper hover:text-navy" %>
+  </div>
+</section>
+
+<section class="mt-20">
+  <div class="max-w-2xl">
+    <p class="kicker">Pricing</p>
+    <h2 class="mt-3 font-serif text-4xl text-navy">Try it on your next listing</h2>
+  </div>
+
+  <div class="mt-8 grid gap-6 md:grid-cols-2">
+    <article class="card lift p-6">
+      <h3 class="font-serif text-2xl text-navy">Free</h3>
+      <p class="mt-2 text-3xl text-navy">₱0</p>
+      <ul class="mt-4 space-y-2 text-sm text-navy/70">
+        <li><%= User::FREE_PACKS_PER_MONTH %> packs per month</li>
+        <li>All three poster templates</li>
+        <li>Watermark on posters</li>
+        <li>No card required</li>
+      </ul>
+      <%= link_to "Create account", new_registration_path, class: "btn btn-secondary mt-6" %>
+    </article>
+
+    <article class="surface-navy grain p-6">
+      <div class="flex items-center justify-between">
+        <h3 class="font-serif text-2xl">Pro</h3>
+        <span class="chip chip-dark">Most agents</span>
+      </div>
+      <p class="mt-2 text-3xl">₱499<span class="font-sans text-base opacity-70">/mo</span></p>
+      <ul class="mt-4 space-y-2 text-sm text-paper/80">
+        <li>Unlimited packs</li>
+        <li>No watermark on posters</li>
+        <li>Weekly calendars for every slow week</li>
+        <li>PayMongo + Facebook auto-post — coming later</li>
+      </ul>
+      <%= link_to "Start free, upgrade later", new_registration_path, class: "btn mt-6 bg-clay text-paper hover:bg-paper hover:text-navy" %>
+    </article>
+  </div>
+</section>
+
+<section class="mt-20 grid gap-8 lg:grid-cols-12">
+  <div class="lg:col-span-4">
+    <p class="kicker">Questions</p>
+    <h2 class="mt-3 font-serif text-4xl text-navy">Before you sign up</h2>
+  </div>
+  <div class="space-y-3 lg:col-span-8">
+    <% faqs.each do |question, answer| %>
+      <details class="card p-5">
+        <summary class="cursor-pointer list-none font-medium text-navy"><%= question %></summary>
+        <p class="mt-3 text-sm leading-relaxed text-navy/70"><%= answer %></p>
+      </details>
+    <% end %>
+  </div>
+</section>
+
+<section class="surface-navy grain mt-20 px-6 py-14 text-center sm:px-12">
+  <h2 class="mx-auto max-w-2xl font-serif text-4xl leading-tight sm:text-5xl">Your next listing can be posted before lunch.</h2>
+  <p class="mx-auto mt-4 max-w-xl text-paper/75">Photos in, pack out. Three free packs a month, no card.</p>
+  <div class="mt-8 flex flex-wrap justify-center gap-3">
+    <%= link_to "Start free", new_registration_path, class: "btn bg-clay px-6 py-3 text-paper hover:bg-paper hover:text-navy" %>
+    <%= link_to "Log in", new_session_path, class: "btn chip-dark px-6 py-3" %>
+  </div>
+</section>

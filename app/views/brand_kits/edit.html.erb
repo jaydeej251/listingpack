@@ -1,0 +1,84 @@
+<% content_for :title, "Brand kit — ListingPack" %>
+
+<% unless current_user.listings.exists? %>
+  <%= render "shared/onboarding_steps", current: :brand %>
+<% end %>
+
+<%= render "shared/page_header",
+      kicker: "Voice + look",
+      title: "Brand kit",
+      description: "Posters use your colors and face. Copy mimics the posts you paste below." %>
+
+<%= form_with model: @brand_kit, url: brand_kit_path, method: :patch, class: "mt-8 max-w-2xl space-y-5", data: { controller: "brand-preview" } do |form| %>
+  <% if @brand_kit.errors.any? %>
+    <div class="flash flash-alert">
+      <ul class="list-disc pl-5">
+        <% @brand_kit.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="card overflow-hidden p-0" data-brand-preview-target="card" style="--preview-accent: <%= @brand_kit.accent %>; --preview-ink: <%= @brand_kit.ink %>">
+    <div class="flex items-center justify-between px-5 py-4 text-paper" style="background: var(--preview-ink)">
+      <p class="text-xs uppercase tracking-[0.18em]">Poster preview</p>
+      <span class="rounded-full px-3 py-1 text-[0.65rem] font-semibold tracking-[0.16em]" style="background: var(--preview-accent)">JUST LISTED</span>
+    </div>
+    <div class="flex items-center gap-4 bg-sand/50 px-5 py-4">
+      <% if @brand_kit.logo.attached? %>
+        <%= image_tag @brand_kit.logo, class: "h-12 w-12 rounded-xl object-cover", alt: "Logo", data: { brand_preview_target: "logo" } %>
+      <% else %>
+        <%= tag.img alt: "Logo preview", class: "hidden h-12 w-12 rounded-xl object-cover", data: { brand_preview_target: "logo" } %>
+      <% end %>
+      <% if @brand_kit.headshot.attached? %>
+        <%= image_tag @brand_kit.headshot, class: "h-12 w-12 rounded-full object-cover", alt: "Headshot", data: { brand_preview_target: "headshot" } %>
+      <% else %>
+        <%= tag.img alt: "Headshot preview", class: "hidden h-12 w-12 rounded-full object-cover", data: { brand_preview_target: "headshot" } %>
+      <% end %>
+      <p class="text-sm text-navy/70">Accent and navy update as you pick colors. Upload a logo or headshot to see it here.</p>
+    </div>
+  </div>
+
+  <div>
+    <%= form.label :display_name, "Name on posts", class: "label" %>
+    <%= form.text_field :display_name, placeholder: "Maria Santos", class: field_classes(@brand_kit, :display_name) %>
+    <%= field_error @brand_kit, :display_name %>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <%= form.label :phone, class: "label" %>
+      <%= form.text_field :phone, placeholder: "0917 000 0000", class: "field" %>
+    </div>
+    <div>
+      <%= form.label :facebook_name, "Facebook name", class: "label" %>
+      <%= form.text_field :facebook_name, class: "field" %>
+    </div>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <%= form.label :primary_color, "Accent", class: "label" %>
+      <%= form.color_field :primary_color, value: @brand_kit.accent, class: "field h-11 cursor-pointer", data: { brand_preview_target: "accent", action: "brand-preview#updateColors" } %>
+    </div>
+    <div>
+      <%= form.label :secondary_color, "Navy / ink", class: "label" %>
+      <%= form.color_field :secondary_color, value: @brand_kit.ink, class: "field h-11 cursor-pointer", data: { brand_preview_target: "ink", action: "brand-preview#updateColors" } %>
+    </div>
+  </div>
+  <div>
+    <%= form.label :voice_samples, "Paste 3 of your real Facebook posts", class: "label" %>
+    <%= form.text_area :voice_samples, rows: 8, placeholder: "Just listed sa QC mga sis — parking included, DM lang...", class: "field" %>
+    <p class="mt-2 text-sm text-navy/55">The more Taglish (or English) you paste, the closer captions match how you actually post.</p>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <%= form.label :logo, class: "label" %>
+      <%= form.file_field :logo, accept: "image/*", class: "field", data: { action: "brand-preview#previewLogo" } %>
+    </div>
+    <div>
+      <%= form.label :headshot, class: "label" %>
+      <%= form.file_field :headshot, accept: "image/*", class: "field", data: { action: "brand-preview#previewHeadshot" } %>
+    </div>
+  </div>
+  <%= form.submit "Save brand kit", class: "btn btn-primary" %>
+<% end %>

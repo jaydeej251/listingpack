@@ -1,0 +1,33 @@
+<% content_for :title, "#{@calendar.week_label} — ListingPack" %>
+
+<%= render "shared/page_header",
+      kicker: @calendar.focus_area,
+      title: "Week of #{@calendar.week_label}",
+      actions: link_to("All weeks", weekly_calendars_path, class: "btn btn-secondary") %>
+
+<% if @calendar.failed? %>
+  <div class="card mt-8 border-clay/30 p-8">
+    <h2 class="font-serif text-3xl text-navy">Couldn’t generate this week</h2>
+    <p class="mt-3 text-navy/70"><%= @calendar.error_message %></p>
+    <%= button_to "Retry (does not use a free pack)", retry_weekly_calendar_path(@calendar), method: :post, class: "btn btn-primary mt-6" %>
+  </div>
+<% elsif @calendar.ready? %>
+  <ol class="mt-10 space-y-6">
+    <% Array(@calendar.posts).each do |post| %>
+      <li data-controller="clipboard" class="card p-6">
+        <div class="mb-2 flex items-center justify-between">
+          <p class="kicker"><%= post["day"] %></p>
+          <button type="button" data-clipboard-target="button" data-action="clipboard#copy" class="btn btn-secondary py-1 text-sm">Copy</button>
+        </div>
+        <h2 class="font-serif text-2xl text-navy"><%= post["title"] %></h2>
+        <textarea rows="6" readonly data-clipboard-target="source" class="field mt-3 bg-paper"><%= post["body"] %></textarea>
+      </li>
+    <% end %>
+  </ol>
+<% else %>
+  <div class="card mt-8 p-8" aria-busy="true" aria-live="polite" data-controller="poll">
+    <p class="kicker">Working</p>
+    <h2 class="mt-2 font-serif text-3xl text-navy">Writing this week’s posts</h2>
+    <p class="mt-3 text-navy/70">This page refreshes on its own.</p>
+  </div>
+<% end %>
