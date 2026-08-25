@@ -1,0 +1,20 @@
+bgc_condo:
+  user: one
+  title: 2BR at The Fort Residences
+  location: BGC, Taguig
+  price_amount: 12500000
+  previous_price_amount:
+  bedrooms: 2
+  bathrooms: 2.0
+  floor_area: 58
+  amenities: 24h security
+  notes: Seller relocating, 60-day close
+  language: taglish
+  status: draft
+  stage: listed
+  listing_type: for_sale
+  financing: pag_ibig
+  parking: true
+  association_dues: "₱8,500 / mo"
+  near_transit: BGC Bus
+  price_confirmed: false
