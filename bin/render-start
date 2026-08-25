@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Render start command: migrate, then run web + Solid Queue in one process.
+cd /rails
+
+echo "==> Preparing database"
+./bin/rails db:prepare
+
+if [ "${SEED_ON_BOOT:-false}" = "true" ]; then
+  echo "==> Seeding database"
+  ./bin/rails db:seed
+fi
+
+export SOLID_QUEUE_IN_PUMA="${SOLID_QUEUE_IN_PUMA:-true}"
+
+echo "==> Starting Rails on port ${PORT:-3000}"
+exec ./bin/rails server -b 0.0.0.0 -p "${PORT:-3000}"
