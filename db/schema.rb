@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_25_034410) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_25_150737) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_25_034410) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "billing_events", force: :cascade do |t|
+    t.string "provider", default: "paymongo", null: false
+    t.string "event_id", null: false
+    t.string "event_type", null: false
+    t.bigint "user_id"
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "processed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_billing_events_on_event_id", unique: true
+    t.index ["user_id"], name: "index_billing_events_on_user_id"
   end
 
   create_table "brand_kits", force: :cascade do |t|
@@ -140,6 +153,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_25_034410) do
     t.string "paymongo_customer_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "paymongo_checkout_session_id"
+    t.boolean "admin", default: false, null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
@@ -158,6 +173,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_25_034410) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "billing_events", "users"
   add_foreign_key "brand_kits", "users"
   add_foreign_key "content_packs", "listings"
   add_foreign_key "generated_assets", "content_packs"
