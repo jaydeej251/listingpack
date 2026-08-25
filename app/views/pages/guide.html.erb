@@ -1,0 +1,38 @@
+<% content_for :title, "Studio guide — ListingPack" %>
+
+<%= render "shared/page_header",
+      kicker: "Walkthrough",
+      title: "How to ship a listing pack",
+      description: "Brand kit once. Photos in. Download the PNG. Paste the caption." %>
+
+<ol class="mt-10 max-w-2xl space-y-6">
+  <li class="card p-5">
+    <p class="kicker">01</p>
+    <h2 class="mt-1 font-serif text-2xl text-navy">Brand kit</h2>
+    <p class="mt-2 text-sm text-navy/70">Set your name, phone, colors, logo, headshot, and paste 3 real Facebook posts so captions sound like you.</p>
+    <% if authenticated? %>
+      <%= link_to "Open Brand kit", edit_brand_kit_path, class: "btn btn-secondary mt-4" %>
+    <% end %>
+  </li>
+  <li class="card p-5">
+    <p class="kicker">02</p>
+    <h2 class="mt-1 font-serif text-2xl text-navy">New listing</h2>
+    <p class="mt-2 text-sm text-navy/70">Upload photos (first photo is the poster hero), price, beds/baths, Pag-IBIG, parking, and notes. Generate pack uses one Free credit.</p>
+    <% if authenticated? %>
+      <%= link_to "New listing", new_listing_path, class: "btn btn-secondary mt-4" %>
+    <% end %>
+  </li>
+  <li class="card p-5">
+    <p class="kicker">03</p>
+    <h2 class="mt-1 font-serif text-2xl text-navy">Download + post</h2>
+    <p class="mt-2 text-sm text-navy/70">When the pack is Ready, click a poster → Download PNG. Copy a caption. Attach the PNG as the photo on Facebook or Instagram, then paste the text.</p>
+  </li>
+  <li class="card p-5">
+    <p class="kicker">04</p>
+    <h2 class="mt-1 font-serif text-2xl text-navy">Slow weeks</h2>
+    <p class="mt-2 text-sm text-navy/70">This week writes five Mon–Fri posts when you have no new listing. It shares the same Free pack quota.</p>
+    <% if authenticated? %>
+      <%= link_to "This week", weekly_calendars_path, class: "btn btn-secondary mt-4" %>
+    <% end %>
+  </li>
+</ol>

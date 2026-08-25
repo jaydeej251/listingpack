@@ -1,0 +1,14 @@
+<% content_for :title, "Privacy — ListingPack" %>
+
+<%= render "shared/page_header",
+      kicker: "Legal",
+      title: "Privacy",
+      description: "How ListingPack handles agent and listing data." %>
+
+<article class="prose mt-10 max-w-2xl space-y-4 text-navy/80">
+  <p>ListingPack stores the account email you register with, brand kit details (name, phone, colors, voice samples, logo, headshot), listing facts, listing photos, generated captions, and poster PNGs.</p>
+  <p>Photos and posters are stored on the configured Active Storage service (local disk in development; S3-compatible object storage in production when configured).</p>
+  <p>If you enable an AI provider key (OpenAI or OpenRouter), listing text and optionally the first listing photo may be sent to that provider to write captions. Template fallbacks do not call an external AI.</p>
+  <p>Payment details for Pro are processed by PayMongo. ListingPack stores plan status and PayMongo identifiers, not full card numbers.</p>
+  <p>Contact the operator of your ListingPack instance to request deletion of your account and stored media.</p>
+</article>

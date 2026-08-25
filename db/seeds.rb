@@ -2,7 +2,8 @@ pro = User.find_or_create_by!(email_address: "agent@listingpack.local") do |user
   user.password = "password123"
   user.plan = "pro"
 end
-pro.update!(password: "password123", plan: "pro") unless pro.pro?
+pro.update!(password: "password123", plan: "pro", admin: true) unless pro.pro?
+pro.update!(admin: true)
 
 pro.brand_kit.update!(
   display_name: "Maria Santos",
@@ -88,6 +89,7 @@ free.brand_kit.update!(
 )
 
 puts "Demo logins:"
-puts "  Pro:  agent@listingpack.local / password123  (ready pack on Listings)"
+puts "  Pro:  agent@listingpack.local / password123  (ready pack on Listings; admin Failures)"
 puts "  Free: free@listingpack.local / password123  (1 of 3 packs used — watermark path)"
 puts "Posters need local Chrome/Chromium for PNG renders."
+puts "Recruiting tip: walk 5–10 agents through /guide after Brand kit + one listing pack."

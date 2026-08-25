@@ -17,6 +17,13 @@
     <%= button_to "Retry (does not use a free pack)", retry_listing_content_packs_path(listing), method: :post, class: "btn btn-primary mt-6" %>
   </div>
 <% elsif pack&.ready? %>
+  <% if pack.error_message.present? %>
+    <div class="mt-10 rounded-2xl border border-clay/40 bg-clay/10 px-5 py-4">
+      <p class="text-sm font-medium text-navy">Poster warning</p>
+      <p class="mt-1 text-sm text-navy/75"><%= pack.error_message %></p>
+    </div>
+  <% end %>
+
   <section class="mt-10">
     <h2 class="font-serif text-3xl text-navy">Posters</h2>
     <p class="mt-2 text-sm text-navy/60">
