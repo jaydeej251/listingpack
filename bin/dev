@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -e
+
+# Tailwind's watch process can exit immediately in some environments and
+# take Foreman (and the web server) down with it. Build CSS once, then serve.
+bin/rails tailwindcss:build
+export PORT="${PORT:-3000}"
+exec bin/rails server -b 127.0.0.1 -p "$PORT"
