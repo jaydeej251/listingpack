@@ -48,7 +48,6 @@ class ListingsController < ApplicationController
     @pack = @listing.latest_pack
     if @pack.blank? || @pack.seller_report.blank?
       redirect_to @listing, alert: "Generate a pack first — the seller report is part of it."
-      return
     end
   end
 
