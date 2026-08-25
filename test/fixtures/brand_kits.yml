@@ -1,0 +1,16 @@
+one:
+  user: one
+  display_name: Maria Santos
+  phone: "09170000000"
+  facebook_name: Maria Santos Realty
+  primary_color: "#C45C26"
+  secondary_color: "#14213D"
+  voice_samples: Just listed sa QC mga sis. Parking included. DM for viewing.
+
+two:
+  user: two
+  display_name: Carlo Reyes
+  phone: "09171111111"
+  facebook_name: Carlo Realty
+  primary_color: "#C45C26"
+  secondary_color: "#14213D"
