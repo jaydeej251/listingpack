@@ -7,7 +7,8 @@
       <li class="flex gap-3"><span class="text-clay">2</span> Writing captions, Messenger follow-up, and seller recap</li>
       <li class="flex gap-3"><span class="text-clay">3</span> Stamping branded posters</li>
     </ol>
-    <p class="mt-4 text-sm text-navy/60">Usually 10–30 seconds. This page refreshes on its own.</p>
+    <p class="mt-4 text-sm text-navy/60">Usually 10–30 seconds. This card stays put; the page reloads once when the pack is ready.</p>
+    <%= link_to "Check now", listing_path(listing), class: "btn btn-secondary mt-4" %>
   </div>
 <% elsif listing.failed? %>
   <div class="card mt-10 border-clay/30 p-8">
@@ -16,44 +17,20 @@
     <%= button_to "Retry (does not use a free pack)", retry_listing_content_packs_path(listing), method: :post, class: "btn btn-primary mt-6" %>
   </div>
 <% elsif pack&.ready? %>
-  <% unless listing.price_confirmed? %>
-    <div class="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-clay/40 bg-clay/10 px-5 py-4">
-      <p class="text-sm text-navy">Confirm the asking price to unlock PNG downloads. Copy still works.</p>
-      <%= button_to "I confirm this price is correct", confirm_price_listing_path(listing), method: :patch, class: "btn btn-danger" %>
-    </div>
-  <% end %>
-
   <section class="mt-10">
     <h2 class="font-serif text-3xl text-navy">Posters</h2>
-    <p class="mt-2 text-sm text-navy/60">Banner follows the listing stage. Free plans include a watermark.</p>
+    <p class="mt-2 text-sm text-navy/60">
+      These are the graphics you attach to the post — not part of the caption.
+      Click a poster to enlarge, then download the PNG. Copy a caption below and paste it as the text.
+      Free plans include a watermark.
+    </p>
     <div class="mt-6 grid gap-6 md:grid-cols-3">
       <% GeneratedAsset::TEMPLATE_KEYS.each do |key| %>
-        <% asset = pack.generated_assets.find { |item| item.template_key == key } %>
-        <figure class="card p-3">
-          <% if asset&.image&.attached? %>
-            <%= image_tag asset.image, class: "aspect-square w-full rounded-xl object-cover", alt: key.tr("_", " ") %>
-          <% else %>
-            <div class="flex aspect-square items-center justify-center rounded-xl bg-sand p-4 text-center text-sm text-navy/60">
-              PNG not ready — copy still works. HTML preview is below if you redraw.
-            </div>
-            <div class="mt-2 max-h-40 overflow-hidden rounded-xl">
-              <div class="origin-top-left scale-[0.2]">
-                <%= render template: "packs/templates/#{key}", layout: false %>
-              </div>
-            </div>
-          <% end %>
-          <figcaption class="mt-3 flex items-center justify-between text-sm">
-            <span><%= key.tr("_", " ").titleize %></span>
-            <span class="flex gap-3">
-              <% if asset&.persisted? %>
-                <%= button_to "Redraw", regenerate_listing_content_pack_generated_asset_path(listing, pack, asset), method: :post, class: "text-clay" %>
-                <% if listing.price_confirmed? && asset.image.attached? %>
-                  <%= link_to "PNG", rails_blob_path(asset.image, disposition: "attachment"), class: "underline" %>
-                <% end %>
-              <% end %>
-            </span>
-          </figcaption>
-        </figure>
+        <%= render "listings/poster",
+              listing: listing,
+              pack: pack,
+              asset: pack.generated_assets.find { |item| item.template_key == key },
+              key: key %>
       <% end %>
     </div>
   </section>
@@ -81,6 +58,7 @@
 
   <section class="mt-14" data-controller="tabs" data-tabs-active-value="post">
     <h2 class="font-serif text-3xl text-navy">Captions and follow-ups</h2>
+    <p class="mt-2 text-sm text-navy/60">Copy is text only. Facebook, Marketplace, and Instagram will not accept a photo inside the caption box — attach the downloaded PNG as the post image, then paste this text.</p>
     <div class="mt-4 flex flex-wrap gap-2" role="tablist">
       <% copy_tabs.each do |id, label, _fields| %>
         <button type="button" class="btn btn-secondary" role="tab" data-tabs-target="tab" data-tabs-id-param="<%= id %>" data-action="tabs#select"><%= label %></button>

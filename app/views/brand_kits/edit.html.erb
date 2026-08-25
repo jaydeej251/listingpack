@@ -7,7 +7,7 @@
 <%= render "shared/page_header",
       kicker: "Voice + look",
       title: "Brand kit",
-      description: "Posters use your colors and face. Copy mimics the posts you paste below." %>
+      description: "Set this once. Every pack stamps your look on the posters and writes captions in your voice." %>
 
 <%= form_with model: @brand_kit, url: brand_kit_path, method: :patch, class: "mt-8 max-w-2xl space-y-5", data: { controller: "brand-preview" } do |form| %>
   <% if @brand_kit.errors.any? %>
@@ -59,10 +59,12 @@
     <div>
       <%= form.label :primary_color, "Accent", class: "label" %>
       <%= form.color_field :primary_color, value: @brand_kit.accent, class: "field h-11 cursor-pointer", data: { brand_preview_target: "accent", action: "brand-preview#updateColors" } %>
+      <p class="mt-1 text-xs text-navy/50">JUST LISTED badge, price highlights, headshot ring.</p>
     </div>
     <div>
       <%= form.label :secondary_color, "Navy / ink", class: "label" %>
       <%= form.color_field :secondary_color, value: @brand_kit.ink, class: "field h-11 cursor-pointer", data: { brand_preview_target: "ink", action: "brand-preview#updateColors" } %>
+      <p class="mt-1 text-xs text-navy/50">Poster background and overlay — usually a dark navy.</p>
     </div>
   </div>
   <div>
@@ -72,12 +74,14 @@
   </div>
   <div class="grid gap-4 sm:grid-cols-2">
     <div>
-      <%= form.label :logo, class: "label" %>
+      <%= form.label :logo, "Logo (one file)", class: "label" %>
       <%= form.file_field :logo, accept: "image/*", class: "field", data: { action: "brand-preview#previewLogo" } %>
+      <p class="mt-1 text-xs text-navy/50">Brokerage or personal mark. One logo is reused on every poster.</p>
     </div>
     <div>
-      <%= form.label :headshot, class: "label" %>
+      <%= form.label :headshot, "Headshot (one file)", class: "label" %>
       <%= form.file_field :headshot, accept: "image/*", class: "field", data: { action: "brand-preview#previewHeadshot" } %>
+      <p class="mt-1 text-xs text-navy/50">Your face on the agent card — not listing photos. Those go on the listing form.</p>
     </div>
   </div>
   <%= form.submit "Save brand kit", class: "btn btn-primary" %>

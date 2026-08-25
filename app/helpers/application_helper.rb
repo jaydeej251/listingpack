@@ -24,6 +24,20 @@ module ApplicationHelper
     [ used, User::FREE_PACKS_PER_MONTH ]
   end
 
+  # Browser confirm before spending a Free pack. Always states remaining credits,
+  # never "1 of 3" which reads as "you have 1 left."
+  def pack_credit_confirm(user)
+    return nil unless user.free?
+    return nil unless user.can_generate_pack?
+
+    left = user.remaining_packs
+    cap = User::FREE_PACKS_PER_MONTH
+    after = left - 1
+    "This uses 1 pack credit. You have #{left} of #{cap} left this month" \
+      "#{after.positive? ? " — #{after} will remain" : " — this is your last free pack"}" \
+      ". Listing packs and This week share the same quota. Continue?"
+  end
+
   def field_classes(record, attribute)
     classes = "field"
     classes += " field-invalid" if record.errors[attribute].any?

@@ -17,6 +17,9 @@
         <p style="margin:8px 0 0;font-size:16px;opacity:.8;"><%= @listing.ph_badges.join(" · ") %></p>
       </div>
       <div style="text-align:right;">
+        <% if @logo_uri.present? %>
+          <img src="<%= @logo_uri %>" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:10px;margin:0 0 10px auto;display:block;">
+        <% end %>
         <p style="margin:0;font-weight:700;"><%= @brand.name %></p>
         <p style="margin:6px 0 0;"><%= @brand.phone %></p>
       </div>

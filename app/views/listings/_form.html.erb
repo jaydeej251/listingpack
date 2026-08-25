@@ -1,4 +1,4 @@
-<% confirm = listing.new_record? && current_user.free? && current_user.can_generate_pack? ? "This uses 1 of #{User::FREE_PACKS_PER_MONTH} free packs this month. Continue?" : nil %>
+<% confirm = listing.new_record? && current_user.free? ? pack_credit_confirm(current_user) : nil %>
 
 <%= form_with model: listing, class: "max-w-3xl space-y-8", data: { turbo_confirm: confirm }.compact do |form| %>
   <% if listing.errors.any? %>
@@ -15,7 +15,7 @@
   <section class="card p-6" data-controller="photos-preview">
     <p class="kicker">01</p>
     <h2 class="mt-1 font-serif text-2xl text-navy">Photos</h2>
-    <p class="mt-1 text-sm text-navy/60">The first photo becomes the poster hero.</p>
+    <p class="mt-1 text-sm text-navy/60">You can select several photos (Cmd or Ctrl + click). The first one is the 1080×1080 poster hero; the rest stay on the listing.</p>
     <%= form.label :photos, "Listing photos", class: "label mt-4" %>
     <%= form.file_field :photos, multiple: true, accept: "image/*", class: "field", data: { action: "photos-preview#preview" } %>
     <%= field_error listing, :photos %>
@@ -115,7 +115,7 @@
     <%= link_to "Cancel", listings_path, class: "btn btn-ghost" %>
     <% if listing.new_record? && current_user.free? %>
       <% if current_user.can_generate_pack? %>
-        <p class="text-sm text-navy/60">Uses 1 of <%= User::FREE_PACKS_PER_MONTH %> free packs.</p>
+        <p class="text-sm text-navy/60">Uses 1 credit. <%= quota_copy(current_user) %> (listing packs and This week share this quota).</p>
       <% else %>
         <p class="text-sm text-clay">No free packs left — <%= link_to "upgrade on Plan", billing_path, class: "underline" %> to generate.</p>
       <% end %>

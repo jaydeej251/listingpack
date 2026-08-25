@@ -3,7 +3,7 @@
 #
 # After first deploy:
 # 1. Set APP_HOST to your real hostname (e.g. listingpack.onrender.com)
-# 2. Optionally set OPENAI_API_KEY for live AI copy
+# 2. Optionally set OPENROUTER_API_KEY (or OPENAI_API_KEY) for live AI copy
 # 3. Seed once: set SEED_ON_BOOT=true, redeploy once, then set it back to false
 #    (Free web has no Render Shell)
 
@@ -46,6 +46,10 @@ services:
       - key: APP_HOST
         sync: false
       - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
         sync: false
       - key: SEED_ON_BOOT
         value: "false"

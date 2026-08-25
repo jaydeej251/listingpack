@@ -13,7 +13,7 @@
       actions: safe_join([
         link_to("Seller report", seller_report_listing_path(@listing), class: "btn btn-secondary"),
         link_to("Edit facts", edit_listing_path(@listing), class: "btn btn-secondary"),
-        button_to("Generate again", listing_content_packs_path(@listing), method: :post, class: "btn btn-primary", data: { turbo_confirm: current_user.free? ? "This uses one free pack credit. Generate a new pack?" : "Generate a new pack for this stage?" })
+        button_to("Generate again", listing_content_packs_path(@listing), method: :post, class: "btn btn-primary", data: { turbo_confirm: current_user.free? ? (pack_credit_confirm(current_user) || "You have 0 of #{User::FREE_PACKS_PER_MONTH} free packs left this month. Continue to Plan?") : "Generate a new pack for this stage?" })
       ], " ") %>
 
 <div class="mt-4 flex flex-wrap gap-2">
@@ -24,6 +24,10 @@
   <% end %>
 </div>
 
-<%= turbo_frame_tag "pack_status", src: status_listing_content_packs_path(@listing), data: { controller: ("poll" if @listing.generating?) } do %>
-  <p class="mt-10 text-navy/60">Loading pack…</p>
+<% if @listing.generating? %>
+  <div data-controller="poll" data-poll-url-value="<%= status_listing_content_packs_path(@listing, format: :json) %>">
+    <%= render "listings/pack", listing: @listing, pack: @pack %>
+  </div>
+<% else %>
+  <%= render "listings/pack", listing: @listing, pack: @pack %>
 <% end %>

@@ -7,7 +7,6 @@ Rails.application.routes.draw do
 
   resources :listings do
     member do
-      patch :confirm_price
       get :seller_report
     end
     resources :content_packs, only: %i[ create ] do

@@ -7,6 +7,10 @@ class WeeklyCalendarsController < ApplicationController
   end
 
   def show
+    respond_to do |format|
+      format.html
+      format.json { render json: { status: @calendar.status } }
+    end
   end
 
   def create
