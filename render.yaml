@@ -4,8 +4,11 @@
 # After first deploy:
 # 1. Set APP_HOST to your real hostname (e.g. listingpack.onrender.com)
 # 2. Optionally set OPENROUTER_API_KEY (or OPENAI_API_KEY) for live AI copy
-# 3. Seed once: set SEED_ON_BOOT=true, redeploy once, then set it back to false
+# 3. Set AWS_* + ACTIVE_STORAGE_SERVICE=cloud so uploads survive Free spin-down
+# 4. Set SMTP_* for password reset; PAYMONGO_SECRET_KEY for GCash/Maya checkout
+# 5. Seed once: set SEED_ON_BOOT=true, redeploy once, then set it back to false
 #    (Free web has no Render Shell)
+# 6. For reliable Chromium posters, upgrade web to a plan with ≥1 GB RAM (Starter+)
 
 databases:
   - name: listingpack-db
@@ -22,8 +25,7 @@ services:
     dockerfilePath: ./Dockerfile
     dockerCommand: ./bin/render-start
     healthCheckPath: /up
-    # Free web: no persistent disks. Uploads/PNGs live on ephemeral disk and
-    # are wiped on spin-down, restart, or redeploy. Fine for demos; use S3/R2 later.
+    # Free web: no persistent disks. Wire R2/S3 via AWS_* env vars below.
     envVars:
       - key: RAILS_ENV
         value: production
@@ -50,6 +52,32 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENAI_MODEL
+        sync: false
+      - key: ACTIVE_STORAGE_SERVICE
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_BUCKET
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: AWS_ENDPOINT
+        sync: false
+      - key: AWS_FORCE_PATH_STYLE
+        value: "true"
+      - key: SMTP_ADDRESS
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: MAILER_FROM
+        sync: false
+      - key: PAYMONGO_SECRET_KEY
         sync: false
       - key: SEED_ON_BOOT
         value: "false"

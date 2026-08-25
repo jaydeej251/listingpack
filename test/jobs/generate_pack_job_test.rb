@@ -18,7 +18,7 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert pack.facebook_caption.present?
   end
 
-  test "png failure still leaves ready copy and drawable asset rows" do
+  test "png failure still leaves ready copy with a poster warning" do
     listing = listings(:bgc_condo)
     listing.photos.attach(
       io: File.open(Rails.root.join("public/icon.png")),
@@ -33,6 +33,7 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     pack = listing.reload.latest_pack
     assert_equal "ready", pack.status
     assert pack.facebook_caption.present?
+    assert_match(/every poster failed|Some posters failed/i, pack.error_message.to_s)
     assert_equal GeneratedAsset::TEMPLATE_KEYS.size, pack.generated_assets.count
     pack.generated_assets.each do |asset|
       assert asset.persisted?

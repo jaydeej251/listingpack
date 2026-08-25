@@ -27,8 +27,31 @@ Optional: set `OPENROUTER_API_KEY` or `OPENAI_API_KEY` for live copy/vision. Ope
 ## Plans (honest)
 
 - **Free:** 3 packs/month, watermark on posters
-- **Pro:** unlimited packs, no watermark
-- PayMongo (GCash/Maya) and Facebook auto-post are **not live yet**. Local Unlock Pro is a stub for demos only.
+- **Pro:** unlimited packs, no watermark — ₱499/mo via PayMongo when `PAYMONGO_SECRET_KEY` is set
+- Local Unlock Pro stub still works without a PayMongo key
+- Facebook Page auto-post is Phase 9 (gated until paying agents stick)
+
+## Phase 6 — production hardening
+
+Before charging real agents, configure:
+
+| Concern | What to set |
+|---------|-------------|
+| Durable files | Cloudflare R2 or S3: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BUCKET`, `AWS_ENDPOINT` (R2), `ACTIVE_STORAGE_SERVICE=cloud` |
+| Posters | Prefer a Render **Starter** (or larger) web instance — Free 512 MB often OOMs Chromium |
+| Postgres | Upgrade off Free DB (30-day expiry) before paying customers |
+| Mail | `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAILER_FROM`, `APP_HOST` |
+| PayMongo | `PAYMONGO_SECRET_KEY` + webhook URL `https://YOUR_HOST/paymongo/webhooks` for `checkout_session.payment.paid` |
+| Admin | Seed Pro user is admin; open **/admin/failures** for failed packs / poster warnings |
+
+### Phase 6 QA checklist
+
+- [ ] Create listing → pack Ready → Download PNG → restart web service → same PNG still downloads (proves R2/S3)
+- [ ] Free watermark present; Pro (paid or local stub) has none
+- [ ] Kill Chrome / low RAM: captions still Ready with a **Poster warning** + Redraw
+- [ ] Forgot password email arrives when SMTP is configured
+- [ ] PayMongo test checkout upgrades plan after webhook (or local stub without key)
+- [ ] Cold start: first hit after idle may take ~1 minute on Free — landing copy mentions this
 
 ## Deploy on Render (Free)
 
@@ -41,11 +64,11 @@ The first `render.yaml` used **Starter** web + **paid Postgres** + a **persisten
 | Need | Paid choice | Free reality |
 |------|-------------|--------------|
 | Chromium poster PNGs | More CPU/RAM headroom | 512 MB Free often OOMs during render |
-| Photo / PNG storage | Persistent disk | Free has **no disks**; files wipe on spin-down |
+| Photo / PNG storage | R2/S3 (`AWS_*`) | Free has **no disks**; without R2/S3 files wipe on spin-down |
 | Seed / debug | Render Shell | Free has **no Shell** — use `SEED_ON_BOOT` |
 | Postgres | Always-on Basic | Free DB **expires after 30 days** |
 
-Free is fine for a demo; paid is what you’d want for a reliable agent product.
+Free is fine for a demo; paid + object storage is what you’d want for a reliable agent product.
 
 ### 1. Push the repo to GitHub
 
@@ -81,6 +104,12 @@ Already at `https://github.com/jaydeej251/listingpack` if you pushed earlier.
 | `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | Optional. OpenRouter `sk-or-…` keys auto-route to OpenRouter. Blank → Taglish templates |
 | `OPENAI_MODEL` | Optional. Default `gpt-4o-mini` (OpenAI) or `openai/gpt-4o-mini` (OpenRouter) |
 | `OPENAI_API_URL` | Optional override. Leave blank unless you must pin a custom endpoint |
+| `ACTIVE_STORAGE_SERVICE` | `cloud` when using R2/S3 |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_BUCKET` | Object storage |
+| `AWS_ENDPOINT` | R2 endpoint URL (skip for AWS S3) |
+| `AWS_REGION` | `auto` for R2; real region for S3 |
+| `SMTP_ADDRESS` / `SMTP_USERNAME` / `SMTP_PASSWORD` / `MAILER_FROM` | Password reset + receipts |
+| `PAYMONGO_SECRET_KEY` | Enables GCash/Maya checkout |
 | `SEED_ON_BOOT` | `true` for **one** deploy only (Free has no Shell) |
 
 7. Create Web Service and wait for the build.
@@ -101,11 +130,12 @@ Demo logins (after seed): `agent@listingpack.local` / `password123` and `free@li
 - **No Shell:** cannot `rails db:seed` from the dashboard — use `SEED_ON_BOOT`.
 - **Postgres 30-day expiry:** Free DB is deleted after grace unless you upgrade.
 - **Poster OOM:** Chromium may crash on Free 512 MB. App/copy can still work; PNG generation is the fragile part.
-- **Password reset email:** SMTP not configured yet.
+- **Password reset email:** needs `SMTP_*` env vars (Resend SMTP works).
 - **Health check:** `/up`
+- **Recruiting agents:** send them `/guide` after signup; track failures at `/admin/failures` (admin users).
 
-Optional: [`render.yaml`](render.yaml) is now Free-plan Blueprint-compatible. Prefer the manual steps above if Blueprint still prompts for billing.
+Optional: [`render.yaml`](render.yaml) is Free-plan Blueprint-compatible. Prefer the manual steps above if Blueprint still prompts for billing.
 
 ## Stack
 
-Rails 8, Hotwire, Tailwind, PostgreSQL, Solid Queue (production), Active Storage, Ferrum (Chrome HTML → PNG).
+Rails 8, Hotwire, Tailwind, PostgreSQL, Solid Queue (production), Active Storage (Disk local / S3-compatible production), Ferrum (Chrome HTML → PNG), PayMongo checkout.
