@@ -1,15 +1,15 @@
-# Render Blueprint — https://render.com/docs/blueprint-spec
-# Dashboard: New → Blueprint → connect this repo → apply.
+# Optional Blueprint — Free instances (no card required for Free web + Free Postgres).
+# Prefer manual setup from README if Blueprint still asks to upgrade.
 #
 # After first deploy:
 # 1. Set APP_HOST to your real hostname (e.g. listingpack.onrender.com)
 # 2. Optionally set OPENAI_API_KEY for live AI copy
-# 3. One-time seed: Render Shell → bin/rails db:seed
-#    or set SEED_ON_BOOT=true for a single restart, then turn it off
+# 3. Seed once: set SEED_ON_BOOT=true, redeploy once, then set it back to false
+#    (Free web has no Render Shell)
 
 databases:
   - name: listingpack-db
-    plan: basic-256mb
+    plan: free
     databaseName: listingpack
     user: listingpack
 
@@ -17,16 +17,13 @@ services:
   - type: web
     name: listingpack
     runtime: docker
-    plan: starter
+    plan: free
     region: singapore
     dockerfilePath: ./Dockerfile
     dockerCommand: ./bin/render-start
     healthCheckPath: /up
-    # Chromium + Rails needs RAM; Free/too-small plans often OOM on poster renders.
-    disk:
-      name: listingpack-storage
-      mountPath: /rails/storage
-      sizeGB: 2
+    # Free web: no persistent disks. Uploads/PNGs live on ephemeral disk and
+    # are wiped on spin-down, restart, or redeploy. Fine for demos; use S3/R2 later.
     envVars:
       - key: RAILS_ENV
         value: production
@@ -41,7 +38,7 @@ services:
       - key: SOLID_QUEUE_IN_PUMA
         value: "true"
       - key: RAILS_MAX_THREADS
-        value: "3"
+        value: "2"
       - key: WEB_CONCURRENCY
         value: "1"
       - key: CHROME_PATH
