@@ -1,0 +1,14 @@
+<% content_for :title, "Seller report — #{@listing.title}" %>
+
+<article class="card mx-auto max-w-2xl p-10 print:border-0 print:shadow-none" data-controller="clipboard">
+  <p class="kicker">Weekly seller update</p>
+  <h1 class="mt-2 font-serif text-4xl text-navy"><%= @listing.title %></h1>
+  <p class="mt-2 text-navy/70"><%= @listing.location %> · <%= @listing.stage_label %> · <%= @listing.peso_label %></p>
+  <div class="mt-8 whitespace-pre-wrap leading-relaxed text-navy/90" data-clipboard-target="source"><%= @pack.seller_report %></div>
+  <p class="mt-10 text-sm text-navy/50"><%= current_user.brand_kit&.name %> · ListingPack</p>
+  <div class="mt-8 flex flex-wrap gap-2 print:hidden">
+    <button type="button" class="btn btn-secondary" data-clipboard-target="button" data-action="clipboard#copy">Copy</button>
+    <button type="button" onclick="window.print()" class="btn btn-primary">Print / save PDF</button>
+    <%= link_to "Back to pack", @listing, class: "btn btn-ghost" %>
+  </div>
+</article>

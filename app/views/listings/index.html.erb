@@ -1,0 +1,47 @@
+<% content_for :title, "Your listings — ListingPack" %>
+
+<%= render "shared/page_header",
+      kicker: "Studio",
+      title: "Listings",
+      description: render("shared/quota", user: current_user),
+      actions: link_to("New listing", new_listing_path, class: "btn btn-primary") %>
+
+<% if @listings.any? %>
+  <ul class="mt-10 grid gap-4 sm:grid-cols-2">
+    <% @listings.each do |listing| %>
+      <li>
+        <%= link_to listing, class: "card group flex h-full overflow-hidden hover:border-clay" do %>
+          <div class="h-32 w-32 shrink-0 bg-sand">
+            <% if listing.photos.attached? %>
+              <%= image_tag listing.photos.first, class: "h-full w-full object-cover", alt: listing.title %>
+            <% else %>
+              <div class="flex h-full items-center justify-center text-xs text-navy/40">No photo</div>
+            <% end %>
+          </div>
+          <div class="flex min-w-0 flex-1 flex-col justify-between p-4">
+            <div>
+              <div class="flex flex-wrap gap-1.5">
+                <%= render "shared/status_pill", listing: listing, kind: "stage" %>
+                <%= render "shared/status_pill", listing: listing, kind: "pack" %>
+              </div>
+              <p class="mt-2 truncate font-serif text-xl text-navy"><%= listing.title %></p>
+              <p class="truncate text-sm text-navy/60"><%= listing.location %></p>
+            </div>
+            <p class="mt-2 text-sm font-semibold text-navy">
+              <%= listing.peso_label %>
+              <% if listing.stage == "price_reduced" && listing.previous_price_amount.present? %>
+                <span class="ml-1 font-normal text-navy/45 line-through"><%= listing.previous_peso_label %></span>
+              <% end %>
+            </p>
+          </div>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <%= render "shared/empty_state",
+        kicker: "First pack",
+        title: "No listings yet",
+        body: "Add one property with photos. ListingPack writes captions, a seller recap, and stamps branded posters.",
+        action: link_to("New listing", new_listing_path, class: "btn btn-primary") %>
+<% end %>

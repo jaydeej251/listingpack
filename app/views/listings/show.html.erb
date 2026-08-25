@@ -1,0 +1,29 @@
+<% content_for :title, "#{@listing.title} — ListingPack" %>
+
+<% if current_user.brand_kit&.display_name.blank? %>
+  <div class="flash flash-alert mb-6">
+    Posts will use your email until you set a name in <%= link_to "Brand kit", edit_brand_kit_path, class: "underline" %>.
+  </div>
+<% end %>
+
+<%= render "shared/page_header",
+      kicker: "#{@listing.stage_label} · #{@listing.location}",
+      title: @listing.title,
+      description: "#{@listing.peso_label} · #{@listing.facts_line}",
+      actions: safe_join([
+        link_to("Seller report", seller_report_listing_path(@listing), class: "btn btn-secondary"),
+        link_to("Edit facts", edit_listing_path(@listing), class: "btn btn-secondary"),
+        button_to("Generate again", listing_content_packs_path(@listing), method: :post, class: "btn btn-primary", data: { turbo_confirm: current_user.free? ? "This uses one free pack credit. Generate a new pack?" : "Generate a new pack for this stage?" })
+      ], " ") %>
+
+<div class="mt-4 flex flex-wrap gap-2">
+  <%= render "shared/status_pill", listing: @listing, kind: "stage" %>
+  <%= render "shared/status_pill", listing: @listing, kind: "pack" %>
+  <% @listing.ph_badges.each do |badge| %>
+    <span class="pill pill-fact"><%= badge %></span>
+  <% end %>
+</div>
+
+<%= turbo_frame_tag "pack_status", src: status_listing_content_packs_path(@listing), data: { controller: ("poll" if @listing.generating?) } do %>
+  <p class="mt-10 text-navy/60">Loading pack…</p>
+<% end %>

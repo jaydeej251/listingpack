@@ -1,0 +1,39 @@
+<% content_for :title, "This week — ListingPack" %>
+
+<%= render "shared/page_header",
+      kicker: "No listing required",
+      title: "This week's posts",
+      description: "Five Facebook posts so you stay visible between listings. Uses one pack credit on free plans." %>
+
+<div class="mt-4"><%= render "shared/quota", user: current_user %></div>
+
+<%= form_with model: WeeklyCalendar.new, url: weekly_calendars_path, class: "mt-8 flex flex-wrap items-end gap-3", data: { turbo_confirm: (current_user.free? ? "This uses 1 of #{User::FREE_PACKS_PER_MONTH} free packs this month. Continue?" : nil) }.compact do |form| %>
+  <div>
+    <%= form.label :focus_area, "Area to talk about", class: "label" %>
+    <%= form.text_field :focus_area, value: current_user.listings.order(created_at: :desc).first&.location || "Metro Manila", class: "field w-72" %>
+  </div>
+  <%= form.submit @calendar&.ready? ? "Regenerate this week" : "Generate this week", class: "btn btn-primary" %>
+<% end %>
+
+<% if @calendars.any? %>
+  <ul class="mt-10 space-y-3">
+    <% @calendars.each do |calendar| %>
+      <li>
+        <%= link_to calendar, class: "card flex items-center justify-between p-5 hover:border-clay" do %>
+          <span class="font-serif text-2xl text-navy"><%= calendar.week_label %> · <%= calendar.focus_area %></span>
+          <span class="<%= calendar.ready? ? "pill pill-ready" : (calendar.failed? ? "pill pill-failed" : "pill pill-generating") %>"><%= calendar.status_label %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="card mt-12 p-8">
+    <p class="kicker">Example Monday</p>
+    <h2 class="mt-2 font-serif text-3xl text-navy">No week generated yet</h2>
+    <p class="mt-3 max-w-xl text-navy/70">Generate five posts for this week. Until then, a sample of the kind of Monday post you’ll get:</p>
+    <blockquote class="mt-6 rounded-2xl bg-sand/60 p-5 text-navy/80">
+      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-clay">Monday · Market pulse</p>
+      <p class="mt-3">BGC buyers are still asking for parking + a 60-day close. If you have a 2BR that fits, I can package it today — photos, captions, and a seller recap included.</p>
+    </blockquote>
+  </div>
+<% end %>

@@ -1,0 +1,3 @@
+<%= turbo_frame_tag "pack_status", data: { controller: (@listing.generating? ? "poll" : nil) } do %>
+  <%= render "listings/pack", listing: @listing, pack: @pack %>
+<% end %>

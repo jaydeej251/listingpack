@@ -1,0 +1,21 @@
+<div class="poster" style="width:1080px;height:1080px;position:relative;overflow:hidden;font-family:Georgia,serif;color:#fff;background:<%= @brand.ink %>;">
+  <% if @photo_uri.present? %>
+    <img src="<%= @photo_uri %>" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+  <% end %>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 20%,rgba(20,33,61,.88) 100%);"></div>
+  <div style="position:absolute;top:56px;left:56px;background:<%= @brand.accent %>;color:#fff;padding:14px 22px;letter-spacing:.18em;font-family:Arial,sans-serif;font-size:22px;font-weight:700;"><%= @listing.stage_banner %></div>
+  <div style="position:absolute;left:56px;right:56px;bottom:56px;">
+    <p style="margin:0 0 12px;font-size:28px;letter-spacing:.08em;font-family:Arial,sans-serif;"><%= @listing.location %></p>
+    <h1 style="margin:0 0 18px;font-size:72px;line-height:1.05;"><%= @listing.title %></h1>
+    <% if @listing.stage == "price_reduced" && @listing.previous_price_amount.present? %>
+      <p style="margin:0 0 6px;font-size:24px;font-family:Arial,sans-serif;opacity:.7;text-decoration:line-through;"><%= @listing.previous_peso_label %></p>
+    <% end %>
+    <p style="margin:0 0 10px;font-size:42px;font-family:Arial,sans-serif;font-weight:700;"><%= @listing.peso_label %></p>
+    <p style="margin:0 0 12px;font-size:24px;font-family:Arial,sans-serif;opacity:.9;"><%= @listing.facts_line %></p>
+    <p style="margin:0 0 28px;font-size:20px;font-family:Arial,sans-serif;opacity:.9;"><%= @listing.ph_badges.join(" · ") %></p>
+    <p style="margin:0;font-family:Arial,sans-serif;font-size:22px;"><%= @brand.name %><% if @brand.phone.present? %> · <%= @brand.phone %><% end %></p>
+  </div>
+  <% if @watermark %>
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-18deg);font-family:Arial,sans-serif;font-size:64px;opacity:.28;letter-spacing:.2em;">LISTINGPACK FREE</div>
+  <% end %>
+</div>
