@@ -54,18 +54,23 @@ class TrustFlowsTest < ActionDispatch::IntegrationTest
     assert_equal "generating", listing.reload.status
   end
 
-  test "billing unlock is blocked outside local environments" do
+  test "billing unlock is blocked outside local environments without PayMongo" do
     user = users(:one)
     sign_in user
     assert user.free?
+
+    previous = ENV["PAYMONGO_SECRET_KEY"]
+    ENV.delete("PAYMONGO_SECRET_KEY")
 
     production = ActiveSupport::StringInquirer.new("production")
     stub_singleton(Rails, :env, production) do
       patch billing_path
       assert_redirected_to billing_path
       assert_equal "free", user.reload.plan
-      assert_match(/PayMongo|coming soon/i, flash[:alert])
+      assert_match(/PayMongo is not configured/i, flash[:alert])
     end
+  ensure
+    previous.nil? ? ENV.delete("PAYMONGO_SECRET_KEY") : ENV["PAYMONGO_SECRET_KEY"] = previous
   end
 
   test "billing unlock works in local environments" do

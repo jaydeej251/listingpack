@@ -23,6 +23,10 @@ class User < ApplicationRecord
     !pro?
   end
 
+  def admin?
+    admin
+  end
+
   def reset_quota_if_needed!
     start = Time.zone.today.beginning_of_month
     return if quota_period_start == start

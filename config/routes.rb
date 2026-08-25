@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   resource :registration, only: %i[ new create ]
   resource :brand_kit, only: %i[ edit update ]
   resource :billing, only: %i[ show update ]
+  post "paymongo/webhooks", to: "paymongo_webhooks#create", as: :paymongo_webhooks
 
   resources :listings do
     member do
@@ -28,6 +29,15 @@ Rails.application.routes.draw do
       post :retry
     end
   end
+
+  namespace :admin do
+    resources :failures, only: :index
+  end
+
+  get "privacy", to: "pages#privacy"
+  get "terms", to: "pages#terms"
+  get "guide", to: "pages#guide"
+  get "publishing", to: "pages#publishing"
 
   get "up" => "rails/health#show", as: :rails_health_check
   root "pages#home"
