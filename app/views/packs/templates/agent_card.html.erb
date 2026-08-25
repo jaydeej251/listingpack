@@ -1,0 +1,28 @@
+<div class="poster" style="width:1080px;height:1080px;position:relative;background:<%= @brand.ink %>;color:#f3eee4;font-family:Arial,sans-serif;">
+  <div style="position:absolute;inset:36px;border:1px solid rgba(243,238,228,.25);display:grid;grid-template-rows: 1fr auto; overflow:hidden;">
+    <div style="position:relative;">
+      <% if @photo_uri.present? %>
+        <img src="<%= @photo_uri %>" alt="" style="width:100%;height:100%;object-fit:cover;">
+      <% end %>
+      <div style="position:absolute;inset:auto 0 0 0;padding:36px;background:linear-gradient(transparent, <%= @brand.ink %>);">
+        <p style="margin:0 0 8px;letter-spacing:.2em;color:<%= @brand.accent %>;font-weight:700;">YOUR AGENT</p>
+        <h1 style="margin:0;font-family:Georgia,serif;font-size:52px;"><%= @listing.title %></h1>
+      </div>
+    </div>
+    <div style="display:flex;gap:28px;align-items:center;padding:36px 40px 40px;">
+      <% if @headshot_uri.present? %>
+        <img src="<%= @headshot_uri %>" alt="" style="width:148px;height:148px;object-fit:cover;border-radius:999px;border:3px solid <%= @brand.accent %>;">
+      <% else %>
+        <div style="width:148px;height:148px;border-radius:999px;background:<%= @brand.accent %>;display:flex;align-items:center;justify-content:center;font-size:42px;font-family:Georgia,serif;"><%= @brand.name.to_s.first %></div>
+      <% end %>
+      <div>
+        <p style="margin:0;font-family:Georgia,serif;font-size:36px;"><%= @brand.name %></p>
+        <p style="margin:8px 0 0;font-size:22px;opacity:.85;"><%= @listing.location %> · <%= @listing.peso_label %></p>
+        <p style="margin:16px 0 0;font-size:22px;">DM for viewing<% if @brand.phone.present? %> · <%= @brand.phone %><% end %></p>
+      </div>
+    </div>
+  </div>
+  <% if @watermark %>
+    <div style="position:absolute;top:42%;left:50%;transform:translate(-50%,-50%) rotate(-18deg);font-size:56px;opacity:.28;letter-spacing:.18em;">LISTINGPACK FREE</div>
+  <% end %>
+</div>

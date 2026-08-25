@@ -1,0 +1,3 @@
+<span class="<%= local_assigns[:kind] == "stage" ? "pill pill-stage" : pack_pill_class(listing) %>">
+  <%= local_assigns[:kind] == "stage" ? listing.stage_label : listing.pack_status_label %>
+</span>

@@ -1,0 +1,14 @@
+<% steps = [
+  [ :account, "Account" ],
+  [ :brand, "Brand kit" ],
+  [ :listing, "First listing" ]
+] %>
+<% current_index = steps.index { |key, _| key == current } || 0 %>
+
+<ol class="mb-8 flex flex-wrap gap-2 text-sm" aria-label="Getting started">
+  <% steps.each_with_index do |(key, label), index| %>
+    <li class="<%= index == current_index ? "pill pill-generating" : (index < current_index ? "pill pill-ready" : "pill pill-draft") %>">
+      <%= index + 1 %>. <%= label %>
+    </li>
+  <% end %>
+</ol>

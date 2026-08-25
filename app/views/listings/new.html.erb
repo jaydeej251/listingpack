@@ -1,0 +1,14 @@
+<% content_for :title, "New listing — ListingPack" %>
+
+<% unless current_user.listings.exists? %>
+  <%= render "shared/onboarding_steps", current: :listing %>
+<% end %>
+
+<%= render "shared/page_header",
+      kicker: "New pack",
+      title: "New listing",
+      description: "Photos plus facts. Generation starts when you save. You’ll confirm the price before PNG downloads." %>
+
+<div class="mt-8">
+  <%= render "form", listing: @listing %>
+</div>

@@ -1,0 +1,42 @@
+<% content_for :title, "Plan — ListingPack" %>
+
+<%= render "shared/page_header",
+      kicker: "Billing",
+      title: "Plan",
+      description: "You are on #{plan_badge(current_user)}. Pro today means unlimited packs and posters without a watermark." %>
+
+<div class="mt-10 grid gap-6 md:grid-cols-2">
+  <article class="card p-6 <%= "ring-2 ring-navy" unless current_user.pro? %>">
+    <p class="kicker">Starter</p>
+    <h2 class="mt-2 font-serif text-2xl text-navy">Free</h2>
+    <p class="mt-2 text-3xl text-navy">₱0</p>
+    <ul class="mt-4 space-y-2 text-sm text-navy/70">
+      <li><%= User::FREE_PACKS_PER_MONTH %> packs / month</li>
+      <li>Watermark on posters</li>
+      <li>Captions, seller recap, and This week</li>
+      <li><%= current_user.pro? ? "Upgrade path if you pause Pro" : "#{current_user.remaining_packs} left this month" %></li>
+    </ul>
+    <% unless current_user.pro? %>
+      <p class="mt-6 text-sm font-medium text-navy">Current plan</p>
+    <% end %>
+  </article>
+  <article class="rounded-[1.25rem] bg-navy p-6 text-paper <%= "ring-2 ring-clay" if current_user.pro? %>">
+    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-clay">For agents posting weekly</p>
+    <h2 class="mt-2 font-serif text-2xl">Pro</h2>
+    <p class="mt-2 text-3xl">₱499<span class="text-base font-sans opacity-70">/mo</span></p>
+    <ul class="mt-4 space-y-2 text-sm text-paper/75">
+      <li>Unlimited packs</li>
+      <li>No watermark on posters</li>
+      <li>Same posters, copy, and This week — without the cap</li>
+      <li>Facebook auto-post — coming later, not included yet</li>
+    </ul>
+    <% if current_user.pro? %>
+      <p class="mt-6 text-sm">Already Pro on this account.</p>
+    <% elsif Rails.env.local? %>
+      <%= button_to "Unlock Pro (local stub)", billing_path, method: :patch, class: "btn mt-6 bg-clay text-paper hover:bg-paper hover:text-navy" %>
+      <p class="mt-3 text-xs text-paper/60">Local demos only. GCash/Maya via PayMongo is not live yet.</p>
+    <% else %>
+      <p class="mt-6 text-sm text-paper/80">GCash and Maya via PayMongo are coming soon. Nothing is charged today.</p>
+    <% end %>
+  </article>
+</div>

@@ -1,0 +1,56 @@
+<% uid = local_assigns.fetch(:uid, SecureRandom.hex(4)) %>
+<% css = local_assigns.fetch(:class, "h-full w-full") %>
+<%
+  # x, y, width, height — layered towers, tallest in the middle band.
+  towers = [
+    [ 0, 240, 28, 164 ], [ 24, 198, 22, 206 ], [ 44, 256, 32, 148 ], [ 74, 170, 26, 234 ],
+    [ 98, 218, 34, 186 ], [ 130, 144, 30, 260 ], [ 158, 200, 24, 204 ], [ 180, 242, 36, 162 ],
+    [ 214, 178, 28, 226 ], [ 240, 214, 22, 190 ], [ 260, 252, 34, 152 ], [ 292, 166, 30, 238 ],
+    [ 320, 208, 26, 196 ], [ 344, 244, 32, 160 ], [ 374, 192, 26, 212 ]
+  ]
+%>
+
+<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" class="<%= css %>" role="img" aria-label="Dusk skyline over a Metro Manila condo district">
+  <defs>
+    <linearGradient id="sky<%= uid %>" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#101b33" />
+      <stop offset="0.38" stop-color="#3d3550" />
+      <stop offset="0.68" stop-color="#8a5348" />
+      <stop offset="1" stop-color="#dc8340" />
+    </linearGradient>
+    <linearGradient id="tower<%= uid %>" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#16243f" />
+      <stop offset="1" stop-color="#0a1121" />
+    </linearGradient>
+    <linearGradient id="fade<%= uid %>" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.42" stop-color="#080e1a" stop-opacity="0" />
+      <stop offset="1" stop-color="#080e1a" stop-opacity="0.82" />
+    </linearGradient>
+    <radialGradient id="glow<%= uid %>" cx="0.74" cy="0.68" r="0.42">
+      <stop offset="0" stop-color="#f6c079" stop-opacity="0.75" />
+      <stop offset="1" stop-color="#f6c079" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="400" height="400" fill="url(#sky<%= uid %>)" />
+  <circle cx="296" cy="272" r="34" fill="#f7cf92" opacity="0.75" />
+  <rect width="400" height="400" fill="url(#glow<%= uid %>)" />
+
+  <% towers.each_with_index do |(x, y, w, h), i| %>
+    <rect x="<%= x %>" y="<%= y %>" width="<%= w %>" height="<%= h %>" fill="url(#tower<%= uid %>)" opacity="<%= 0.8 + (i % 3) * 0.07 %>" />
+    <% if i % 4 == 1 %>
+      <rect x="<%= x + w / 2 %>" y="<%= y - 16 %>" width="1.5" height="16" fill="#0d1526" opacity="0.85" />
+      <circle cx="<%= x + w / 2 %>" cy="<%= y - 18 %>" r="1.8" fill="#e8654a" opacity="0.9" />
+    <% end %>
+
+    <% (((h - 18) / 20).to_i).times do |row| %>
+      <% (((w - 10) / 11).to_i).times do |col| %>
+        <% next if (i * 3 + row * 5 + col * 7) % 4 == 0 %>
+        <rect x="<%= x + 6 + col * 11 %>" y="<%= y + 12 + row * 20 %>" width="5" height="8" rx="0.5" fill="#fbd79a" opacity="<%= 0.2 + ((i + row * 2 + col) % 5) * 0.14 %>" />
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <rect y="352" width="400" height="48" fill="#070c16" opacity="0.95" />
+  <rect width="400" height="400" fill="url(#fade<%= uid %>)" />
+</svg>

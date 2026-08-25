@@ -1,0 +1,14 @@
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <% if local_assigns[:kicker] %>
+      <p class="kicker"><%= kicker %></p>
+    <% end %>
+    <h1 class="font-serif text-4xl text-navy"><%= title %></h1>
+    <% if local_assigns[:description] %>
+      <div class="mt-2 max-w-xl text-navy/70"><%= description %></div>
+    <% end %>
+  </div>
+  <% if local_assigns[:actions] %>
+    <div class="flex flex-wrap gap-2"><%= actions %></div>
+  <% end %>
+</div>
