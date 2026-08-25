@@ -5,6 +5,11 @@ set -euo pipefail
 cd /rails
 
 echo "==> Preparing database"
+if [ -z "${DATABASE_URL:-}" ]; then
+  echo "DATABASE_URL is not set on this service."
+  echo "On Render: Web Service → Environment → add DATABASE_URL = Internal Database URL from your Postgres."
+  exit 1
+fi
 ./bin/rails db:prepare
 
 if [ "${SEED_ON_BOOT:-false}" = "true" ]; then

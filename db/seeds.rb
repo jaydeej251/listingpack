@@ -30,15 +30,16 @@ listing.assign_attributes(
   near_transit: "BGC Bus",
   price_confirmed: true
 )
-listing.save!
 
 unless listing.photos.attached?
   listing.photos.attach(
-    io: File.open(Rails.root.join("public/icon.png")),
-    filename: "listing.png",
-    content_type: "image/png"
+    io: File.open(Rails.root.join("public/icon.svg")),
+    filename: "listing.svg",
+    content_type: "image/svg+xml"
   )
 end
+
+listing.save!
 
 pack = listing.content_packs.order(created_at: :desc).first
 pack ||= listing.content_packs.create!(language: "taglish", status: "ready", stage: "listed")
