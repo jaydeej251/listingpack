@@ -60,9 +60,10 @@ FROM base
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
-# Run and own only the runtime files as a non-root user for security
+# Runtime dirs are gitignored / dockerignored (tmp, log, storage), so create them here.
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
+    mkdir -p db log storage tmp && \
     chown -R rails:rails db log storage tmp && \
     chmod +x bin/docker-entrypoint bin/render-start bin/rails bin/rake bin/jobs
 USER 1000:1000
