@@ -18,9 +18,15 @@ Rails.application.configure do
   # Cache assets for far-future expiry since they are all digest stamped.
   config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
 
-  # Store uploaded files on the local file system (see config/storage.yml for options).
-  # On Render, mount a persistent disk at /rails/storage (see render.yaml).
-  config.active_storage.service = :local
+  # Prefer R2/S3 when AWS_BUCKET is set; Disk is ephemeral on Render Free.
+  config.active_storage.service =
+    if ENV["ACTIVE_STORAGE_SERVICE"].present?
+      ENV["ACTIVE_STORAGE_SERVICE"].to_sym
+    elsif ENV["AWS_BUCKET"].present?
+      :cloud
+    else
+      :local
+    end
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true
@@ -56,6 +62,28 @@ Rails.application.configure do
   app_host = ENV.fetch("APP_HOST", "example.com")
   config.action_mailer.default_url_options = { host: app_host, protocol: "https" }
   Rails.application.routes.default_url_options = { host: app_host, protocol: "https" }
+
+  # Transactional email (Resend SMTP or any SMTP). Without these, password reset cannot deliver.
+  if ENV["SMTP_ADDRESS"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.perform_deliveries = true
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.smtp_settings = {
+      address: ENV["SMTP_ADDRESS"],
+      port: ENV.fetch("SMTP_PORT", "587").to_i,
+      user_name: ENV["SMTP_USERNAME"],
+      password: ENV["SMTP_PASSWORD"],
+      authentication: :plain,
+      enable_starttls_auto: true
+    }
+  else
+    config.action_mailer.delivery_method = :test
+    config.action_mailer.perform_deliveries = false
+  end
+
+  config.action_mailer.default_options = {
+    from: ENV.fetch("MAILER_FROM", "noreply@#{app_host}")
+  }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

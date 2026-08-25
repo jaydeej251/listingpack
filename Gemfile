@@ -25,6 +25,9 @@ gem "bcrypt", "~> 3.1.7"
 # Chrome HTML → PNG posters
 gem "ferrum"
 
+# S3-compatible object storage (Cloudflare R2 / AWS S3) for Active Storage in production
+gem "aws-sdk-s3", require: false
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

@@ -36,11 +36,13 @@ class GeneratePackJob < ApplicationJob
     )
 
     watermark = listing.user.free?
+    poster_errors = []
     GeneratedAsset::TEMPLATE_KEYS.each do |key|
       pack.generated_assets.find_or_create_by!(template_key: key)
       begin
         Images::RenderTemplate.new(pack, key, watermark: watermark).call
       rescue Images::RenderTemplate::Error => e
+        poster_errors << "#{key}: #{e.message}"
         pack.generations.create!(
           kind: "image_#{key}",
           prompt_version: ::Prompts::ListingPack::VERSION,
@@ -50,7 +52,14 @@ class GeneratePackJob < ApplicationJob
       end
     end
 
-    pack.update!(status: "ready", error_message: nil)
+    poster_message =
+      if poster_errors.size == GeneratedAsset::TEMPLATE_KEYS.size
+        "Captions are ready, but every poster failed to render. #{poster_errors.first}. Use Redraw or try again on a host with more RAM for Chrome."
+      elsif poster_errors.any?
+        "Captions are ready. Some posters failed: #{poster_errors.join(' · ')}. Use Redraw on the missing ones."
+      end
+
+    pack.update!(status: "ready", error_message: poster_message)
     listing.update!(status: "ready")
   rescue Ai::Client::Error
     raise
