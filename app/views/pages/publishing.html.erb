@@ -1,0 +1,25 @@
+<% content_for :title, "Publishing — ListingPack" %>
+
+<%= render "shared/page_header",
+      kicker: "Phase 9",
+      title: "Channel publishing",
+      description: "Gated until Pro payers prove posters are the reason they stay." %>
+
+<div class="card mt-10 max-w-2xl p-6">
+  <p class="kicker">Not unlocked yet</p>
+  <h2 class="mt-2 font-serif text-2xl text-navy">Facebook Page schedule</h2>
+  <p class="mt-3 text-sm text-navy/70">
+    Official Meta APIs allow posting to a Facebook Page (and linked Instagram Business), not to personal timelines,
+    joined groups, or Marketplace listings. ListingPack will connect Page publishing only after paying agents
+    confirm the download-and-paste workflow is solid.
+  </p>
+  <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-navy/70">
+    <li>More poster templates / carousel set</li>
+    <li>Vision notes across multiple listing photos</li>
+    <li>Optional Facebook Page one-tap publish</li>
+  </ul>
+  <p class="mt-6 text-sm text-navy/60">Until then: download the PNG, attach it, paste the caption.</p>
+  <% if authenticated? %>
+    <%= link_to "Back to listings", listings_path, class: "btn btn-secondary mt-4" %>
+  <% end %>
+</div>

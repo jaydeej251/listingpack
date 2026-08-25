@@ -30,7 +30,11 @@
             <%= link_to "Listings", listings_path, class: nav_link_class(current_page?(listings_path) || controller_name == "listings") %>
             <%= link_to "This week", weekly_calendars_path, class: nav_link_class(controller_name == "weekly_calendars") %>
             <%= link_to "Brand kit", edit_brand_kit_path, class: nav_link_class(controller_name == "brand_kits") %>
+            <%= link_to "Guide", guide_path, class: nav_link_class(controller_name == "pages" && action_name == "guide") %>
             <%= link_to "Plan (#{plan_badge(current_user)})", billing_path, class: nav_link_class(controller_name == "billings") %>
+            <% if current_user.admin? %>
+              <%= link_to "Failures", admin_failures_path, class: nav_link_class(controller_name == "failures") %>
+            <% end %>
             <%= button_to "Log out", session_path, method: :delete, class: "btn-ghost cursor-pointer" %>
           </nav>
           <button type="button" class="btn btn-secondary md:hidden" data-nav-target="button" data-action="nav#toggle" aria-expanded="false" aria-controls="mobile-nav">Menu</button>
@@ -49,7 +53,11 @@
             <%= link_to "This week", weekly_calendars_path %>
             <%= link_to "New listing", new_listing_path %>
             <%= link_to "Brand kit", edit_brand_kit_path %>
+            <%= link_to "Guide", guide_path %>
             <%= link_to "Plan (#{plan_badge(current_user)})", billing_path %>
+            <% if current_user.admin? %>
+              <%= link_to "Failures", admin_failures_path %>
+            <% end %>
             <%= button_to "Log out", session_path, method: :delete, class: "btn-ghost cursor-pointer text-left" %>
           </div>
         </nav>
@@ -62,13 +70,19 @@
       <%= yield %>
     </main>
 
-    <% unless authenticated? %>
-      <footer class="border-t border-navy/10">
-        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-navy/60">
-          <p>ListingPack · PH listing graphics + copy</p>
-          <%= link_to "Log in", new_session_path, class: "underline hover:text-clay" %>
+    <footer class="border-t border-navy/10">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-navy/60">
+        <p>ListingPack · PH listing graphics + copy</p>
+        <div class="flex flex-wrap gap-4">
+          <%= link_to "Guide", guide_path, class: "underline hover:text-clay" %>
+          <%= link_to "Privacy", privacy_path, class: "underline hover:text-clay" %>
+          <%= link_to "Terms", terms_path, class: "underline hover:text-clay" %>
+          <%= link_to "Publishing", publishing_path, class: "underline hover:text-clay" %>
+          <% unless authenticated? %>
+            <%= link_to "Log in", new_session_path, class: "underline hover:text-clay" %>
+          <% end %>
         </div>
-      </footer>
-    <% end %>
+      </div>
+    </footer>
   </body>
 </html>
