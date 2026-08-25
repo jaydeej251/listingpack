@@ -11,6 +11,8 @@ if [ -z "${DATABASE_URL:-}" ]; then
   exit 1
 fi
 ./bin/rails db:prepare
+# One DATABASE_URL: db:prepare will not load db/queue_schema.rb (Solid Queue).
+./bin/rails db:prepare_solid
 
 if [ "${SEED_ON_BOOT:-false}" = "true" ]; then
   echo "==> Seeding database"
