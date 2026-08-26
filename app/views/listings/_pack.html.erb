@@ -28,12 +28,17 @@
   <section class="mt-10">
     <h2 class="font-serif text-3xl text-navy">Posters</h2>
     <p class="mt-2 text-sm text-navy/60">
-      Square, story (9:16), landscape (16:9), and Facebook banner — attach the graphic that fits the channel.
+      <% if GeneratedAsset.generation_keys.size < GeneratedAsset::TEMPLATE_KEYS.size %>
+        Square posters for feed posts (low-memory host). Use Redraw on a format if you need story / 16:9 / banner later.
+      <% else %>
+        Square, story (9:16), landscape (16:9), and Facebook banner — attach the graphic that fits the channel.
+      <% end %>
       Click to enlarge, then download. Copy a caption below and paste it as the text.
       Free plans include a watermark.
     </p>
     <div class="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-      <% GeneratedAsset::TEMPLATE_KEYS.each do |key| %>
+      <% display_keys = (GeneratedAsset.generation_keys + pack.generated_assets.map(&:template_key)).uniq %>
+      <% display_keys.each do |key| %>
         <%= render "listings/poster",
               listing: listing,
               pack: pack,

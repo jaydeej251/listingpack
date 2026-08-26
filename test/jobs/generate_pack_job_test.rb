@@ -34,11 +34,32 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert_equal "ready", pack.status
     assert pack.facebook_caption.present?
     assert_match(/every poster failed|Some posters failed/i, pack.error_message.to_s)
-    assert_equal GeneratedAsset::TEMPLATE_KEYS.size, pack.generated_assets.count
+    assert_equal GeneratedAsset.generation_keys.size, pack.generated_assets.count
     pack.generated_assets.each do |asset|
       assert asset.persisted?
       assert_not asset.image.attached?
     end
+  end
+
+  test "core format set only creates square poster rows" do
+    listing = listings(:bgc_condo)
+    listing.photos.attach(
+      io: File.open(Rails.root.join("public/icon.png")),
+      filename: "listing.png",
+      content_type: "image/png"
+    )
+
+    previous = ENV["POSTER_FORMAT_SET"]
+    ENV["POSTER_FORMAT_SET"] = "core"
+    stub_singleton(Images::Chrome, :path, nil) do
+      GeneratePackJob.perform_now(listing.id)
+    end
+
+    pack = listing.reload.latest_pack
+    assert_equal GeneratedAsset::CORE_TEMPLATE_KEYS.sort, pack.generated_assets.map(&:template_key).sort
+    assert_match(/three square|low-memory|every poster failed/i, pack.error_message.to_s)
+  ensure
+    previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
   end
 
   test "missing listing photo leaves a re-upload warning" do
