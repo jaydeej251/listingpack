@@ -12,14 +12,14 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
   <body class="min-h-screen bg-paper text-ink antialiased">
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-navy focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
 
-    <header class="sticky top-0 z-20 border-b border-navy/10 bg-paper/85 backdrop-blur" data-controller="nav">
+    <header class="sticky top-0 z-20 border-b border-navy/10 bg-paper/90 backdrop-blur" data-controller="nav">
       <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
         <%= link_to studio_home_path, class: "font-serif text-2xl tracking-tight text-navy" do %>
           ListingPack
@@ -66,9 +66,15 @@
 
     <%= render "shared/flash" %>
 
-    <main id="main" class="mx-auto max-w-6xl px-5 py-10">
-      <%= yield %>
-    </main>
+    <% if content_for?(:full_bleed) %>
+      <main id="main">
+        <%= yield %>
+      </main>
+    <% else %>
+      <main id="main" class="mx-auto max-w-6xl px-5 py-10">
+        <%= yield %>
+      </main>
+    <% end %>
 
     <footer class="border-t border-navy/10">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-navy/60">
