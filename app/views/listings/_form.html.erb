@@ -15,7 +15,7 @@
   <section class="card p-6" data-controller="photos-preview">
     <p class="kicker">01</p>
     <h2 class="mt-1 font-serif text-2xl text-navy">Photos</h2>
-    <p class="mt-1 text-sm text-navy/60">You can select several photos (Cmd or Ctrl + click). The first one is the 1080×1080 poster hero; the rest stay on the listing.</p>
+    <p class="mt-1 text-sm text-navy/60">You can select several photos (Cmd or Ctrl + click). The first one is the poster hero across all formats; the rest stay on the listing.</p>
     <%= form.label :photos, "Listing photos", class: "label mt-4" %>
     <%= form.file_field :photos, multiple: true, accept: "image/*", class: "field", data: { action: "photos-preview#preview" } %>
     <%= field_error listing, :photos %>

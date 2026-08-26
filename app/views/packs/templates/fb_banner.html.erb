@@ -1,0 +1,25 @@
+<%# 1200×628 — Facebook link / cover banner %>
+<div class="poster" style="width:1200px;height:628px;position:relative;overflow:hidden;font-family:Arial,sans-serif;color:#fff;background:<%= @brand.ink %>;">
+  <% if @photo_uri.present? %>
+    <img src="<%= @photo_uri %>" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+  <% end %>
+  <div style="position:absolute;inset:0;background:linear-gradient(105deg,rgba(11,31,58,.9) 0%,rgba(11,31,58,.45) 55%,rgba(11,31,58,.15) 100%);"></div>
+  <div style="position:absolute;left:48px;top:40px;background:<%= @brand.accent %>;padding:10px 18px;letter-spacing:.16em;font-size:16px;font-weight:700;"><%= @listing.stage_banner %></div>
+  <div style="position:absolute;left:48px;right:48px;bottom:40px;display:flex;justify-content:space-between;align-items:flex-end;gap:32px;">
+    <div style="max-width:70%;">
+      <p style="margin:0 0 8px;font-size:18px;letter-spacing:.06em;opacity:.85;"><%= @listing.location %></p>
+      <h1 style="margin:0 0 12px;font-family:Georgia,serif;font-size:42px;line-height:1.1;"><%= @listing.title %></h1>
+      <p style="margin:0;font-size:28px;font-weight:700;"><%= @listing.peso_label %> · <span style="font-weight:500;font-size:20px;opacity:.9;"><%= @listing.facts_line %></span></p>
+    </div>
+    <div style="text-align:right;">
+      <% if @logo_uri.present? %>
+        <img src="<%= @logo_uri %>" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:10px;background:#fff;margin:0 0 10px auto;display:block;">
+      <% end %>
+      <p style="margin:0;font-weight:700;font-size:18px;"><%= @brand.name %></p>
+      <p style="margin:6px 0 0;font-size:16px;opacity:.9;"><%= @brand.phone %></p>
+    </div>
+  </div>
+  <% if @watermark %>
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-10deg);font-size:40px;opacity:.28;letter-spacing:.18em;">LISTINGPACK FREE</div>
+  <% end %>
+</div>

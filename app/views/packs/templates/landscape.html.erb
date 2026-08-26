@@ -1,0 +1,23 @@
+<%# 1920×1080 — 16:9 cover / landscape post %>
+<div class="poster" style="width:1920px;height:1080px;position:relative;overflow:hidden;font-family:Georgia,serif;color:#fff;background:<%= @brand.ink %>;">
+  <% if @photo_uri.present? %>
+    <img src="<%= @photo_uri %>" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+  <% end %>
+  <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,31,58,.92) 0%,rgba(11,31,58,.55) 48%,rgba(11,31,58,.2) 100%);"></div>
+  <div style="position:absolute;left:72px;top:72px;background:<%= @brand.accent %>;color:#fff;padding:14px 22px;letter-spacing:.18em;font-family:Arial,sans-serif;font-size:22px;font-weight:700;"><%= @listing.stage_banner %></div>
+  <div style="position:absolute;left:72px;bottom:72px;right:42%;">
+    <p style="margin:0 0 14px;font-size:28px;letter-spacing:.08em;font-family:Arial,sans-serif;opacity:.85;"><%= @listing.location %></p>
+    <h1 style="margin:0 0 20px;font-size:68px;line-height:1.05;"><%= @listing.title %></h1>
+    <p style="margin:0 0 12px;font-size:44px;font-family:Arial,sans-serif;font-weight:700;"><%= @listing.peso_label %></p>
+    <p style="margin:0 0 28px;font-size:26px;font-family:Arial,sans-serif;opacity:.9;"><%= @listing.facts_line %></p>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <% if @logo_uri.present? %>
+        <img src="<%= @logo_uri %>" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:12px;background:#fff;">
+      <% end %>
+      <p style="margin:0;font-family:Arial,sans-serif;font-size:24px;"><%= @brand.name %><% if @brand.phone.present? %> · <%= @brand.phone %><% end %></p>
+    </div>
+  </div>
+  <% if @watermark %>
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font-family:Arial,sans-serif;font-size:56px;opacity:.28;letter-spacing:.2em;">LISTINGPACK FREE</div>
+  <% end %>
+</div>

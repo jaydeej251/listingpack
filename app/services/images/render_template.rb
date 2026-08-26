@@ -55,11 +55,12 @@ module Images
         png_path = dir.join("#{SecureRandom.uuid}.png")
         File.write(html_path, html)
 
+        size = GeneratedAsset.window_size(@template_key)
         browser = nil
         browser = Ferrum::Browser.new(
           headless: true,
           browser_path: Images::Chrome.path,
-          window_size: [ 1080, 1080 ],
+          window_size: size,
           timeout: 20,
           process_timeout: 20,
           browser_options: {

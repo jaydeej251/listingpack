@@ -1,6 +1,6 @@
 # ListingPack
 
-Rails 8 app for Philippine real-estate agents: listing photos in, branded 1080×1080 posters plus captions out.
+Rails 8 app for Philippine real-estate agents: listing photos in, multi-format branded posters (square, story, 16:9, banner) plus captions out.
 
 ## Where we are
 

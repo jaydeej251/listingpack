@@ -145,7 +145,7 @@ module Ai
 
           This week I published a #{@listing.stage_label.downcase} pack:
           • Facebook post, Facebook group post, Marketplace blurb, and Instagram caption
-          • 3 branded posters (feed graphic, price card, agent card)
+          • 6 branded posters (square just listed / price / agent, story 9:16, landscape 16:9, Facebook banner)
           • Asking #{price}#{@listing.parking? ? ", parking included" : ""}
 
           Next: please share the Facebook post to your own timeline/friends in the area, and send me 2 windows for viewing this week.
