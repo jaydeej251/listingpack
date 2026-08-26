@@ -34,6 +34,25 @@ class Phase6PagesTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Failures"
   end
 
+  test "admin can open another users listing from failures" do
+    owner = users(:one)
+    admin = users(:two)
+    admin.update!(admin: true)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "failed")
+
+    sign_in admin
+    get listing_path(listing)
+    assert_response :success
+    assert_match listing.title, response.body
+  end
+
+  test "non admin cannot open another users listing" do
+    sign_in users(:two)
+    get listing_path(listings(:bgc_condo))
+    assert_response :not_found
+  end
+
   test "paymongo webhook upgrades matching checkout" do
     user = users(:one)
     user.update!(plan: "free", paymongo_checkout_session_id: "cs_live_1")

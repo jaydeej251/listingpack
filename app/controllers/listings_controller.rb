@@ -48,7 +48,12 @@ class ListingsController < ApplicationController
 
   private
     def set_listing
-      @listing = Current.user.listings.find(params[:id])
+      @listing =
+        if Current.user.admin?
+          Listing.find(params[:id])
+        else
+          Current.user.listings.find(params[:id])
+        end
     end
 
     def listing_params
