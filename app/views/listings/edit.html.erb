@@ -8,3 +8,13 @@
 <div class="mt-8">
   <%= render "form", listing: @listing %>
 </div>
+
+<div class="mt-12 border-t border-navy/10 pt-8">
+  <h2 class="font-serif text-xl text-navy">Danger zone</h2>
+  <p class="mt-2 text-sm text-navy/60">Removes this listing and its packs from your studio. This cannot be undone.</p>
+  <%= button_to "Delete listing",
+        listing_path(@listing),
+        method: :delete,
+        class: "btn btn-danger mt-4",
+        data: { turbo_confirm: "Delete “#{@listing.title}”? This cannot be undone." } %>
+</div>

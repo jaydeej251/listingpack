@@ -5,13 +5,14 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     get root_path
     assert_response :success
     assert_select "h1", /Upload a listing/
-    assert_select "h2", "The graphic"
-    assert_select "h2", "The seller recap"
-    assert_select "h2", "The empty week"
+    assert_match(/The graphic/i, response.body)
+    assert_match(/The seller recap/i, response.body)
+    assert_match(/The empty week/i, response.body)
     assert_select "footer", /Log in/
+    assert_select ".hero-brand", text: "ListingPack"
   end
 
-  test "landing shows a rendered example inside each of the three cards" do
+  test "landing shows a rendered example inside each of the three stories" do
     get root_path
     assert_response :success
 
@@ -34,6 +35,7 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select "[data-controller=tabs]"
     assert_select "[data-tabs-target=tab]", 4
     assert_select "[data-tabs-target=panel]", 4
+    assert_select "[role=tab][aria-controls]", 4
     assert_match "Marketplace listing", response.body
   end
 
@@ -119,7 +121,8 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select "[data-controller=poster]"
     assert_select "button.poster-hit"
     assert_select "a", text: "Download PNG"
-    assert_select "dialog"
+    assert_select "dialog[aria-labelledby]"
+    assert_select "[data-poster-target=closeButton]"
   end
 
   test "ready listing show renders the pack inline, not a loading placeholder" do
@@ -198,6 +201,21 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input.field"
     assert_select "input.btn"
+  end
+
+  test "edit listing offers delete with confirm" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+
+    get edit_listing_path(listing)
+    assert_response :success
+    assert_select "button", text: "Delete listing"
+    assert_match(/cannot be undone/i, response.body)
+
+    assert_difference("Listing.count", -1) do
+      delete listing_path(listing)
+    end
+    assert_redirected_to listings_path
   end
 
   private

@@ -5,16 +5,23 @@
 
 <figure class="card p-3" data-controller="poster" data-poster-image-url-value="<%= image_url %>">
   <% if attached %>
-    <button type="button" class="poster-hit" data-action="poster#open">
+    <button type="button" class="poster-hit" data-action="poster#open" aria-haspopup="dialog" aria-controls="poster-dialog-<%= asset.id %>">
       <%= image_tag asset.image, class: "aspect-square w-full rounded-xl object-cover", alt: "#{key.tr("_", " ")} — click to enlarge" %>
     </button>
-    <dialog class="poster-dialog" data-poster-target="dialog" data-action="click->poster#backdrop">
+    <dialog
+      class="poster-dialog"
+      id="poster-dialog-<%= asset.id %>"
+      data-poster-target="dialog"
+      data-action="click->poster#backdrop"
+      aria-labelledby="poster-dialog-title-<%= asset.id %>"
+    >
       <div class="poster-dialog-body">
+        <h2 id="poster-dialog-title-<%= asset.id %>" class="sr-only"><%= key.tr("_", " ").titleize %> poster</h2>
         <%= image_tag asset.image, alt: key.tr("_", " ") %>
         <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
           <%= link_to "Download PNG", download_url, class: "btn btn-primary py-2 text-sm", data: { turbo: false } %>
           <button type="button" class="btn btn-secondary py-2 text-sm" data-poster-target="copyButton" data-action="poster#copyImage">Copy image</button>
-          <button type="button" class="btn btn-ghost py-2 text-sm" data-action="poster#close">Close</button>
+          <button type="button" class="btn btn-ghost py-2 text-sm" data-poster-target="closeButton" data-action="poster#close">Close</button>
         </div>
       </div>
     </dialog>

@@ -67,14 +67,33 @@
   <section class="mt-14" data-controller="tabs" data-tabs-active-value="post">
     <h2 class="font-serif text-3xl text-navy">Captions and follow-ups</h2>
     <p class="mt-2 text-sm text-navy/60">Copy is text only. Facebook, Marketplace, and Instagram will not accept a photo inside the caption box — attach the downloaded PNG as the post image, then paste this text.</p>
-    <div class="mt-4 flex flex-wrap gap-2" role="tablist">
+    <div class="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Caption channels">
       <% copy_tabs.each do |id, label, _fields| %>
-        <button type="button" class="btn btn-secondary" role="tab" data-tabs-target="tab" data-tabs-id-param="<%= id %>" data-action="tabs#select"><%= label %></button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          role="tab"
+          id="pack-tab-<%= id %>"
+          aria-controls="pack-panel-<%= id %>"
+          aria-selected="<%= id == "post" %>"
+          tabindex="<%= id == "post" ? "0" : "-1" %>"
+          data-tabs-target="tab"
+          data-tabs-id-param="<%= id %>"
+          data-action="tabs#select keydown->tabs#keydown"
+        ><%= label %></button>
       <% end %>
     </div>
 
     <% copy_tabs.each do |id, _label, fields| %>
-      <div class="mt-6 space-y-6 <%= "hidden" unless id == "post" %>" data-tabs-target="panel" data-tab="<%= id %>" role="tabpanel">
+      <div
+        class="mt-6 space-y-6 <%= "hidden" unless id == "post" %>"
+        data-tabs-target="panel"
+        data-tab="<%= id %>"
+        role="tabpanel"
+        id="pack-panel-<%= id %>"
+        aria-labelledby="pack-tab-<%= id %>"
+        <%= "hidden" unless id == "post" %>
+      >
         <% fields.each do |field, label| %>
           <div data-controller="clipboard" class="card p-5">
             <div class="mb-2 flex flex-wrap items-center justify-between gap-3">
