@@ -2,11 +2,16 @@
 <% attached = asset&.image&.attached? %>
 <% image_url = attached ? url_for(asset.image) : nil %>
 <% download_url = attached ? rails_blob_path(asset.image, disposition: "attachment") : nil %>
+<% ratio = GeneratedAsset.aspect_ratio_css(key) %>
+<% label = GeneratedAsset.format_for(key).fetch(:label) %>
 
 <figure class="card p-3" data-controller="poster" data-poster-image-url-value="<%= image_url %>">
   <% if attached %>
     <button type="button" class="poster-hit" data-action="poster#open" aria-haspopup="dialog" aria-controls="poster-dialog-<%= asset.id %>">
-      <%= image_tag asset.image, class: "aspect-square w-full rounded-xl object-cover", alt: "#{key.tr("_", " ")} — click to enlarge" %>
+      <%= image_tag asset.image,
+            class: "w-full rounded-xl object-cover",
+            style: "aspect-ratio: #{ratio};",
+            alt: "#{label} — click to enlarge" %>
     </button>
     <dialog
       class="poster-dialog"
@@ -16,8 +21,8 @@
       aria-labelledby="poster-dialog-title-<%= asset.id %>"
     >
       <div class="poster-dialog-body">
-        <h2 id="poster-dialog-title-<%= asset.id %>" class="sr-only"><%= key.tr("_", " ").titleize %> poster</h2>
-        <%= image_tag asset.image, alt: key.tr("_", " ") %>
+        <h2 id="poster-dialog-title-<%= asset.id %>" class="sr-only"><%= label %></h2>
+        <%= image_tag asset.image, alt: label %>
         <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
           <%= link_to "Download PNG", download_url, class: "btn btn-primary py-2 text-sm", data: { turbo: false } %>
           <button type="button" class="btn btn-secondary py-2 text-sm" data-poster-target="copyButton" data-action="poster#copyImage">Copy image</button>
@@ -26,12 +31,12 @@
       </div>
     </dialog>
   <% else %>
-    <div class="flex aspect-square items-center justify-center rounded-xl bg-sand p-4 text-center text-sm text-navy/60">
+    <div class="flex items-center justify-center rounded-xl bg-sand p-4 text-center text-sm text-navy/60" style="aspect-ratio: <%= ratio %>;">
       PNG not ready — copy still works. Redraw to try the graphic again.
     </div>
   <% end %>
   <figcaption class="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
-    <span class="font-medium text-navy"><%= key.tr("_", " ").titleize %></span>
+    <span class="font-medium text-navy"><%= label %></span>
     <span class="flex flex-wrap items-center gap-2">
       <% if attached %>
         <button type="button" class="text-navy underline" data-action="poster#open">View</button>

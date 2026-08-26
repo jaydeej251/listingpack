@@ -1,0 +1,21 @@
+<%# Overlapping flower of formats — hover a card to bloom them apart. %>
+<div class="hero-formats" aria-hidden="true">
+  <div class="hero-formats-stage">
+    <figure class="hero-formats-petal is-landscape">
+      <%= render "pages/sample_poster", variant: "landscape", class: "w-full" %>
+      <figcaption class="hero-formats-label">Landscape · 16:9</figcaption>
+    </figure>
+    <figure class="hero-formats-petal is-story">
+      <%= render "pages/sample_poster", variant: "story", class: "w-full" %>
+      <figcaption class="hero-formats-label">Story · 9:16</figcaption>
+    </figure>
+    <figure class="hero-formats-petal is-banner">
+      <%= render "pages/sample_poster", variant: "fb_banner", class: "w-full" %>
+      <figcaption class="hero-formats-label">Facebook banner</figcaption>
+    </figure>
+    <figure class="hero-formats-petal is-square">
+      <%= render "pages/sample_poster", variant: "just_listed", class: "w-full" %>
+      <figcaption class="hero-formats-label">Square post</figcaption>
+    </figure>
+  </div>
+</div>

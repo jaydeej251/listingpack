@@ -1,10 +1,11 @@
 <% variant = local_assigns.fetch(:variant, "just_listed") %>
 <% wrapper = local_assigns.fetch(:class, "w-full") %>
 <% uid = SecureRandom.hex(4) %>
+<% ratio = GeneratedAsset::FORMATS.key?(variant) ? GeneratedAsset.aspect_ratio_css(variant) : "1 / 1" %>
 
 <%# Sizing comes from poster-size-* / width classes in CSS — do not rely on arbitrary Tailwind utilities. %>
 <div class="lift <%= wrapper %>">
-  <div class="poster-mock">
+  <div class="poster-mock" style="aspect-ratio: <%= ratio %>;">
     <div class="poster-mock-fill">
       <% case variant %>
       <% when "price_card" %>
@@ -41,6 +42,37 @@
               </div>
             </div>
           </div>
+        </div>
+      <% when "story" %>
+        <%= render "pages/sample_photo", uid: uid, class: "absolute inset-0 h-full w-full object-cover" %>
+        <div class="absolute inset-0 bg-gradient-to-b from-navy/10 via-navy/25 to-navy/95"></div>
+        <div class="absolute left-[8%] top-[6%] rounded-sm bg-clay px-[4%] py-[1.4%] text-paper">
+          <span class="poster-badge font-bold uppercase">Just listed</span>
+        </div>
+        <div class="absolute inset-x-[8%] bottom-[8%] text-paper">
+          <p class="poster-eyebrow uppercase text-paper/70">BGC, Taguig</p>
+          <p class="poster-title mt-[3%] font-serif">2BR at The Fort</p>
+          <p class="poster-price mt-[4%] font-bold">₱12,500,000</p>
+          <p class="poster-meta mt-[3%] text-paper/80">Story · 9:16</p>
+        </div>
+      <% when "landscape" %>
+        <%= render "pages/sample_photo", uid: uid, class: "absolute inset-0 h-full w-full object-cover" %>
+        <div class="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/50 to-navy/15"></div>
+        <div class="absolute left-[5%] top-[10%] rounded-sm bg-clay px-[3%] py-[1.2%] text-paper">
+          <span class="poster-badge font-bold uppercase">Just listed</span>
+        </div>
+        <div class="absolute bottom-[10%] left-[5%] right-[40%] text-paper">
+          <p class="poster-eyebrow uppercase text-paper/70">BGC, Taguig</p>
+          <p class="poster-title mt-[2%] font-serif">2BR at The Fort Residences</p>
+          <p class="poster-price mt-[3%] font-bold">₱12,500,000</p>
+        </div>
+      <% when "fb_banner" %>
+        <%= render "pages/sample_photo", uid: uid, class: "absolute inset-0 h-full w-full object-cover" %>
+        <div class="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/55 to-transparent"></div>
+        <div class="absolute inset-y-0 left-[4%] flex w-[70%] flex-col justify-center text-paper">
+          <p class="poster-badge font-bold uppercase text-clay">Facebook banner</p>
+          <p class="poster-subtitle mt-[2%] font-serif">2BR at The Fort Residences</p>
+          <p class="poster-price mt-[2%] font-bold">₱12,500,000</p>
         </div>
       <% else %>
         <%= render "pages/sample_photo", uid: uid, class: "absolute inset-0 h-full w-full object-cover" %>

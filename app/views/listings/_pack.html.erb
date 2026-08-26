@@ -28,11 +28,11 @@
   <section class="mt-10">
     <h2 class="font-serif text-3xl text-navy">Posters</h2>
     <p class="mt-2 text-sm text-navy/60">
-      These are the graphics you attach to the post — not part of the caption.
-      Click a poster to enlarge, then download the PNG. Copy a caption below and paste it as the text.
+      Square, story (9:16), landscape (16:9), and Facebook banner — attach the graphic that fits the channel.
+      Click to enlarge, then download. Copy a caption below and paste it as the text.
       Free plans include a watermark.
     </p>
-    <div class="mt-6 grid gap-6 md:grid-cols-3">
+    <div class="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
       <% GeneratedAsset::TEMPLATE_KEYS.each do |key| %>
         <%= render "listings/poster",
               listing: listing,

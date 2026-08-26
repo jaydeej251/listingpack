@@ -12,13 +12,27 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select ".hero-brand", text: "ListingPack"
   end
 
+  test "landing shows format showcase in the hero" do
+    get root_path
+    assert_response :success
+
+    assert_select ".hero-formats"
+    assert_select ".hero-formats-stage"
+    assert_select ".hero-formats-petal", 4
+    assert_no_match "Hover to spread every format", response.body
+    assert_match "Square post", response.body
+    assert_match "Story · 9:16", response.body
+    assert_match "Landscape · 16:9", response.body
+    assert_match "Facebook banner", response.body
+  end
+
   test "landing shows a rendered example inside each of the three stories" do
     get root_path
     assert_response :success
 
-    assert_select ".poster-mock", minimum: 3
+    assert_select ".poster-mock", minimum: 6
     assert_select ".poster-price", text: /₱12,500,000/
-    assert_select "svg[role=img]", minimum: 1
+    assert_select "img[alt*='sample listing photo']", minimum: 1
 
     assert_match "Weekly seller update", response.body
     assert_match "Week 2", response.body

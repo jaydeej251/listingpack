@@ -1,6 +1,6 @@
 # ListingPack roadmap
 
-**Current phase: 8 (first agents / ops).** Product code for Phases 0–7 is in the repo. Phase 9 is gated and not started.
+**Current phase: 8 (first agents / ops), with Phase 9 multi-format layouts started.** Product code for Phases 0–7 is in the repo. Packs now ship six formats (square trio + story + 16:9 + banner). Remaining Phase 9 items (format selector, more variants, multi-photo vision, Facebook publish) stay gated.
 
 ## Phase map
 
@@ -10,13 +10,13 @@
 | 6 | Harden | Code done; host QA in [README.md](../README.md) still unchecked (R2/S3, Chrome/RAM, SMTP) |
 | 7 | Billing | Code done; needs `PAYMONGO_SECRET_KEY` in production (local Unlock Pro stub works) |
 | **8** | **First agents** | **Current** — [/guide](/guide), [/admin/failures](/admin/failures), [FIRST_AGENTS.md](FIRST_AGENTS.md). Recruiting/ops, not new features |
-| 9 | Pack depth | Deferred — [PHASE9_BACKLOG.md](PHASE9_BACKLOG.md) + `/publishing` stub |
+| 9 | Pack depth | **In progress** — six formats shipped; selector / vision / FB publish still deferred — [PHASE9_BACKLOG.md](PHASE9_BACKLOG.md) |
 
 ## Full product demo today
 
 Brand kit → listing → OpenRouter captions → 3 branded PNGs → download + paste (see `/guide`).
 
-That is enough to demo vs captions-only tools. Multi-format layouts (story, 16:9, banner, selector) are **Phase 9 furnishing**, not a demo blocker. Do not pull them into Phase 8.
+That is enough to demo vs captions-only tools. Multi-format layouts (story, 16:9, banner) are **shipping**; format selector and other Phase 9 items remain furnishing.
 
 ## What still must be done
 

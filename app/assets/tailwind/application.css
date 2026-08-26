@@ -261,6 +261,7 @@
   .hero-plane {
     position: relative;
     isolation: isolate;
+    overflow-x: clip;
     min-height: min(68vh, 560px);
     background:
       linear-gradient(105deg, color-mix(in srgb, var(--color-navy) 88%, transparent) 0%, color-mix(in srgb, var(--color-navy) 55%, transparent) 42%, transparent 68%),
@@ -332,6 +333,161 @@
     box-shadow:
       0 18px 40px -22px rgba(11, 31, 58, 0.5),
       0 2px 8px rgba(11, 31, 58, 0.08);
+  }
+
+  /* Hero: overlapping flower of Square / Story / 16:9 / Banner. Bounded box so zoom cannot stack them into a column. */
+  .hero-formats {
+    position: relative;
+    width: 100%;
+    max-width: 30rem;
+    margin-inline: auto;
+    padding-bottom: 7rem;
+    animation: hero-poster-in 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    outline: none;
+  }
+
+  .hero-formats-stage {
+    position: relative;
+    width: min(100%, 58svh, 30rem);
+    aspect-ratio: 1 / 1;
+    margin-inline: auto;
+    pointer-events: none;
+  }
+
+  .hero-formats-petal {
+    position: absolute;
+    margin: 0;
+    pointer-events: auto;
+    transform-origin: 50% 55%;
+    transition:
+      transform 480ms cubic-bezier(0.22, 1, 0.36, 1),
+      filter 480ms ease;
+  }
+
+  .hero-formats-petal .lift,
+  .hero-formats-petal .lift:hover {
+    transform: none;
+    box-shadow: none;
+    z-index: auto;
+  }
+
+  .hero-formats-petal .poster-mock {
+    outline: 2px solid color-mix(in srgb, white 82%, transparent);
+    outline-offset: 0;
+    box-shadow:
+      0 22px 48px -18px rgba(5, 12, 28, 0.72),
+      0 2px 8px rgba(5, 12, 28, 0.28);
+  }
+
+  .hero-formats-petal.is-story {
+    width: 22%;
+    left: 16%;
+    top: 16%;
+    z-index: 2;
+    transform: rotate(-11deg) translate(8%, 10%);
+  }
+
+  .hero-formats-petal.is-landscape {
+    width: 46%;
+    left: 36%;
+    top: 12%;
+    z-index: 1;
+    transform: rotate(8deg) translate(-4%, 6%);
+  }
+
+  .hero-formats-petal.is-banner {
+    width: 52%;
+    left: 24%;
+    top: 50%;
+    z-index: 3;
+    transform: rotate(-4deg) translate(2%, 2%);
+  }
+
+  .hero-formats-petal.is-square {
+    width: 52%;
+    left: 24%;
+    top: 20%;
+    z-index: 4;
+    transform: rotate(-1.5deg);
+  }
+
+  .hero-formats-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 0.4rem);
+    margin: 0;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: center;
+    color: color-mix(in srgb, white 78%, transparent);
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 280ms ease, transform 280ms ease;
+    pointer-events: none;
+    text-shadow: 0 1px 8px rgba(5, 12, 28, 0.55);
+  }
+
+  .hero-formats:has(.hero-formats-petal:hover) .is-story,
+  .hero-formats.is-bloom .is-story {
+    transform: rotate(-8deg) translate(-90%, -14%);
+    z-index: 6;
+  }
+
+  .hero-formats:has(.hero-formats-petal:hover) .is-landscape,
+  .hero-formats.is-bloom .is-landscape {
+    transform: rotate(5deg) translate(42%, -58%);
+    z-index: 5;
+  }
+
+  .hero-formats:has(.hero-formats-petal:hover) .is-banner,
+  .hero-formats.is-bloom .is-banner {
+    transform: rotate(3deg) translate(41%, 76%);
+    z-index: 6;
+  }
+
+  .hero-formats:has(.hero-formats-petal:hover) .is-square,
+  .hero-formats.is-bloom .is-square {
+    transform: rotate(0deg) translate(-6%, -2%) scale(0.92);
+    z-index: 7;
+  }
+
+  .hero-formats:has(.hero-formats-petal:hover) .hero-formats-label,
+  .hero-formats.is-bloom .hero-formats-label {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .hero-formats-petal:hover {
+    filter: brightness(1.06);
+  }
+
+  @media (min-width: 64rem) {
+    .hero-formats {
+      max-width: 34rem;
+      margin-inline: 0 0;
+      margin-left: auto;
+    }
+
+    .hero-formats-stage {
+      width: min(100%, 62svh, 34rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-formats-petal,
+    .hero-formats-label {
+      transition: none;
+    }
+
+    .hero-formats-petal.is-story,
+    .hero-formats-petal.is-landscape,
+    .hero-formats-petal.is-banner,
+    .hero-formats-petal.is-square {
+      transform: none;
+    }
   }
 
   .poster-mock-fill {
