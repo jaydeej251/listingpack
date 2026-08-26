@@ -10,9 +10,12 @@ class GeneratedAssetTest < ActiveSupport::TestCase
     assert_equal "1080 / 1920", GeneratedAsset.aspect_ratio_css("story")
   end
 
-  test "batches are two groups of three" do
-    assert_equal GeneratedAsset::CORE_TEMPLATE_KEYS, GeneratedAsset.batches[0]
-    assert_equal GeneratedAsset::EXTENDED_TEMPLATE_KEYS, GeneratedAsset.batches[1]
+  test "sequential mode is one key per batch" do
+    previous = ENV["POSTER_RENDER_MODE"]
+    ENV["POSTER_RENDER_MODE"] = "sequential"
+    assert_equal GeneratedAsset::TEMPLATE_KEYS.map { |key| [ key ] }, GeneratedAsset.batches
+  ensure
+    previous.nil? ? ENV.delete("POSTER_RENDER_MODE") : ENV["POSTER_RENDER_MODE"] = previous
   end
 
   test "generation_keys respects POSTER_FORMAT_SET" do

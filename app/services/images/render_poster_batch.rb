@@ -1,5 +1,6 @@
 module Images
-  # Renders one batch of posters with a single shared Chromium, then quits.
+  # Renders one or more posters, then always quits Chromium before returning.
+  # Call with a single key for Free-tier 1-by-1; call with 3 keys for future Pro batch mode.
   class RenderPosterBatch
     def initialize(content_pack, template_keys)
       @pack = content_pack
@@ -54,6 +55,7 @@ module Images
         end
       ensure
         browser&.quit
+        browser = nil
         GC.start
       end
 

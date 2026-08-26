@@ -36,16 +36,16 @@ class GeneratePackJob < ApplicationJob
     )
 
     ensure_poster_rows!(pack)
-    first_batch = GeneratedAsset.batches.first || []
-    pack.generated_assets.where(template_key: first_batch).update_all(status: "rendering", updated_at: Time.current)
+    first_keys = GeneratedAsset.batches(user: listing.user).first || []
+    pack.generated_assets.where(template_key: first_keys).update_all(status: "rendering", updated_at: Time.current)
 
-    # Captions first — posters continue in RenderPosterBatchJob (3 + 3).
     pack.update!(
       status: "ready",
-      error_message: "Captions are ready. Posters stamp in groups of three so this host stays within Free memory."
+      error_message: Packs::UpdatePosterWarning.progress_message(pack)
     )
     listing.update!(status: "ready")
 
+    # One poster (or one batch) per job so Chrome can fully exit before the next starts.
     RenderPosterBatchJob.perform_later(pack.id, 0)
   rescue Ai::Client::Error
     raise

@@ -6,7 +6,7 @@ export default class extends Controller {
   static values = {
     interval: { type: Number, default: 2500 },
     url: String,
-    maxAttempts: { type: Number, default: 72 } // ~3 minutes for two poster batches
+    maxAttempts: { type: Number, default: 120 } // ~5 minutes for six sequential posters
   }
 
   connect() {
