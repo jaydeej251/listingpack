@@ -41,7 +41,7 @@ Before charging real agents, configure:
 
 | Concern | What to set |
 |---------|-------------|
-| Durable files | Cloudflare R2 or S3: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BUCKET`, `AWS_ENDPOINT` (R2), `ACTIVE_STORAGE_SERVICE=cloud` |
+| Durable files | Cloudflare R2 or S3: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BUCKET`, `AWS_ENDPOINT` (R2), `ACTIVE_STORAGE_SERVICE=cloud`. R2 needs the checksum flags already in `config/storage.yml` (`when_required`) — otherwise listing create 500s with “one non-default checksum at a time.” |
 | Posters | Prefer a Render **Starter** (or larger) web instance — Free 512 MB often OOMs Chromium |
 | Postgres | Upgrade off Free DB (30-day expiry) before paying customers |
 | Mail | `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAILER_FROM`, `APP_HOST` |

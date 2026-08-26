@@ -8,12 +8,16 @@ local:
 
 # S3-compatible (AWS S3 or Cloudflare R2). Used in production when
 # ACTIVE_STORAGE_SERVICE=cloud and credentials are set.
+# request/response checksums: aws-sdk-s3 1.178+ sends CRC32 *and* Active Storage MD5.
+# R2 rejects that with "You can only specify one non-default checksum at a time."
 cloud:
   service: S3
   access_key_id: <%= ENV["AWS_ACCESS_KEY_ID"] %>
   secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>
   region: <%= ENV.fetch("AWS_REGION", "auto") %>
   bucket: <%= ENV["AWS_BUCKET"] %>
+  request_checksum_calculation: when_required
+  response_checksum_validation: when_required
   <% if ENV["AWS_ENDPOINT"].present? %>
   endpoint: <%= ENV["AWS_ENDPOINT"] %>
   force_path_style: <%= ENV.fetch("AWS_FORCE_PATH_STYLE", "true") %>

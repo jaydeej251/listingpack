@@ -46,4 +46,10 @@ class ProductionStorageTest < ActiveSupport::TestCase
   ensure
     previous.each { |key, value| value.nil? ? ENV.delete(key) : ENV[key] = value }
   end
+
+  test "cloud S3 config only checksums when the API requires it" do
+    yaml = Rails.root.join("config/storage.yml").read
+    assert_match(/request_checksum_calculation:\s*when_required/, yaml)
+    assert_match(/response_checksum_validation:\s*when_required/, yaml)
+  end
 end
