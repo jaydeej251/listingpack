@@ -41,7 +41,11 @@ services:
         value: "true"
       - key: RAILS_MAX_THREADS
         value: "2"
+      - key: DB_POOL
+        value: "10"
       - key: WEB_CONCURRENCY
+        value: "1"
+      - key: JOB_CONCURRENCY
         value: "1"
       - key: CHROME_PATH
         value: /usr/bin/chromium

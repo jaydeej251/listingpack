@@ -103,6 +103,8 @@ Already at `https://github.com/jaydeej251/listingpack` if you pushed earlier.
 | `SOLID_QUEUE_IN_PUMA` | `true` |
 | `WEB_CONCURRENCY` | `1` |
 | `RAILS_MAX_THREADS` | `2` |
+| `DB_POOL` | `10` (Solid Queue needs ≥5 even when threads are 2) |
+| `JOB_CONCURRENCY` | `1` |
 | `CHROME_PATH` | `/usr/bin/chromium` |
 | `APP_HOST` | Leave blank first deploy, then set to `YOUR-SERVICE.onrender.com` (no `https://`) |
 | `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | Optional. OpenRouter `sk-or-…` keys auto-route to OpenRouter. Blank → Taglish templates |

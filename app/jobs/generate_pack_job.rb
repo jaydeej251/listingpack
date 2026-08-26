@@ -60,6 +60,8 @@ class GeneratePackJob < ApplicationJob
           model: "ferrum",
           error_message: e.message
         )
+      ensure
+        GC.start
       end
     end
 

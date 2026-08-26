@@ -69,7 +69,9 @@ module Images
           process_timeout: 20,
           browser_options: {
             "no-sandbox" => nil,
-            "disable-gpu" => nil
+            "disable-gpu" => nil,
+            "disable-dev-shm-usage" => nil,
+            "js-flags" => "--max-old-space-size=128"
           }
         )
         browser.go_to("file://#{html_path}")
