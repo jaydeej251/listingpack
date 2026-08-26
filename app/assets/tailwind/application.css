@@ -18,6 +18,11 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 4.25rem; /* sticky header clearance for in-page anchors */
+  }
+
   body {
     font-family: var(--font-sans);
     background: var(--color-paper);
@@ -35,6 +40,9 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
 
     *,
     *::before,
@@ -257,6 +265,15 @@
     background:
       linear-gradient(105deg, color-mix(in srgb, var(--color-navy) 88%, transparent) 0%, color-mix(in srgb, var(--color-navy) 55%, transparent) 42%, transparent 68%),
       linear-gradient(180deg, #0b1f3a 0%, #12304f 100%);
+  }
+
+  /* Desktop: one full page under sticky header (py-4 + text-2xl logo + border ≈ 4.25rem) */
+  @media (min-width: 64rem) {
+    .hero-plane {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100svh - 4.25rem);
+    }
   }
 
   .hero-brand {
