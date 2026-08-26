@@ -6,7 +6,7 @@ module Images
   class RenderTemplate
     class Error < StandardError; end
 
-    def initialize(content_pack, template_key, watermark: false, photo_uri: :lookup, logo_uri: :lookup, headshot_uri: :lookup)
+    def initialize(content_pack, template_key, watermark: false, photo_uri: :lookup, logo_uri: :lookup, headshot_uri: :lookup, browser: nil)
       @pack = content_pack
       @listing = content_pack.listing
       @brand = @listing.user.brand_kit
@@ -15,6 +15,7 @@ module Images
       @photo_uri = photo_uri == :lookup ? Images::DataUri.from_attachment(@listing.photos.first) : photo_uri
       @logo_uri = logo_uri == :lookup ? Images::DataUri.from_attachment(@brand&.logo) : logo_uri
       @headshot_uri = headshot_uri == :lookup ? Images::DataUri.from_attachment(@brand&.headshot) : headshot_uri
+      @browser = browser
     end
 
     def call
@@ -37,8 +38,6 @@ module Images
 
     private
       def screenshot_html
-        raise Error, "Google Chrome was not found" unless Images::Chrome.path
-
         html = ApplicationController.render(
           template: "packs/templates/#{@template_key}",
           layout: "poster",
@@ -59,29 +58,23 @@ module Images
         png_path = dir.join("#{SecureRandom.uuid}.png")
         File.write(html_path, html)
 
-        size = GeneratedAsset.window_size(@template_key)
-        browser = nil
-        browser = Ferrum::Browser.new(
-          headless: true,
-          browser_path: Images::Chrome.path,
-          window_size: size,
-          timeout: 20,
-          process_timeout: 20,
-          browser_options: {
-            "no-sandbox" => nil,
-            "disable-gpu" => nil,
-            "disable-dev-shm-usage" => nil,
-            "js-flags" => "--max-old-space-size=128"
-          }
-        )
-        browser.go_to("file://#{html_path}")
-        browser.screenshot(path: png_path.to_s, selector: ".poster", format: "png")
-        png_path.to_s
-      rescue StandardError => e
-        raise Error, e.message
-      ensure
-        browser&.quit
-        File.delete(html_path) if defined?(html_path) && html_path && File.exist?(html_path)
+        width, height = GeneratedAsset.window_size(@template_key)
+        owns_browser = @browser.nil?
+        browser = @browser
+        begin
+          browser ||= Images::PosterBrowser.open(window_size: [ width, height ])
+          browser.page.resize(width: width, height: height)
+          browser.go_to("file://#{html_path}")
+          browser.screenshot(path: png_path.to_s, selector: ".poster", format: "png")
+          png_path.to_s
+        rescue Images::PosterBrowser::Error => e
+          raise Error, e.message
+        rescue StandardError => e
+          raise Error, e.message
+        ensure
+          browser&.quit if owns_browser
+          File.delete(html_path) if html_path && File.exist?(html_path)
+        end
       end
   end
 end

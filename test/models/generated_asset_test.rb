@@ -9,4 +9,15 @@ class GeneratedAssetTest < ActiveSupport::TestCase
     assert_equal [ 1200, 628 ], GeneratedAsset.window_size("fb_banner")
     assert_equal "1080 / 1920", GeneratedAsset.aspect_ratio_css("story")
   end
+
+  test "generation_keys respects POSTER_FORMAT_SET" do
+    previous = ENV["POSTER_FORMAT_SET"]
+    ENV["POSTER_FORMAT_SET"] = "core"
+    assert_equal GeneratedAsset::CORE_TEMPLATE_KEYS, GeneratedAsset.generation_keys
+
+    ENV["POSTER_FORMAT_SET"] = "all"
+    assert_equal GeneratedAsset::TEMPLATE_KEYS, GeneratedAsset.generation_keys
+  ensure
+    previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
+  end
 end
