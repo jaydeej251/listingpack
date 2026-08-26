@@ -3,7 +3,7 @@ class GeneratedAssetsController < ApplicationController
 
   def regenerate
     RenderAssetJob.perform_now(@asset.content_pack, @asset.template_key)
-    redirect_to @asset.content_pack.listing, notice: "Redrawing that poster…"
+    redirect_to @asset.content_pack.listing, notice: "Poster redrawn."
   end
 
   private
