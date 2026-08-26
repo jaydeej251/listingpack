@@ -29,6 +29,7 @@
     <p class="kicker">Working</p>
     <h2 class="mt-2 font-serif text-3xl text-navy">Writing this week’s posts</h2>
     <p class="mt-3 text-navy/70">This card stays put. The page reloads once when the five posts are ready.</p>
+    <p class="mt-4 hidden text-sm text-clay" data-poll-stuck role="status">Still working longer than usual — tap Check now, or retry if it stays stuck.</p>
     <%= link_to "Check now", weekly_calendar_path(@calendar), class: "btn btn-secondary mt-4" %>
   </div>
 <% end %>

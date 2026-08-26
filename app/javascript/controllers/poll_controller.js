@@ -5,10 +5,12 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static values = {
     interval: { type: Number, default: 2500 },
-    url: String
+    url: String,
+    maxAttempts: { type: Number, default: 48 } // ~2 minutes at default interval
   }
 
   connect() {
+    this.attempts = 0
     this.timer = setInterval(() => this.refresh(), this.intervalValue)
   }
 
@@ -19,6 +21,13 @@ export default class extends Controller {
   async refresh() {
     const url = this.hasUrlValue ? this.urlValue : this.element.getAttribute("src")
     if (!url) return
+
+    this.attempts += 1
+    if (this.attempts > this.maxAttemptsValue) {
+      this.disconnect()
+      this.showStuckHint()
+      return
+    }
 
     try {
       const response = await fetch(url, {
@@ -35,6 +44,21 @@ export default class extends Controller {
 
     this.disconnect()
     this.reloadPage()
+  }
+
+  showStuckHint() {
+    const hint = this.element.querySelector("[data-poll-stuck]")
+    if (hint) {
+      hint.classList.remove("hidden")
+      hint.hidden = false
+      return
+    }
+
+    const note = document.createElement("p")
+    note.className = "mt-4 text-sm text-clay"
+    note.setAttribute("role", "status")
+    note.textContent = "Still working longer than usual — tap Check now, or retry if it stays stuck."
+    this.element.appendChild(note)
   }
 
   reloadPage() {
