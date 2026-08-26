@@ -111,13 +111,19 @@
   </section>
 
   <div class="flex flex-wrap items-center gap-3">
-    <%= form.submit listing.new_record? ? "Generate pack" : "Save listing", class: "btn btn-primary" %>
+    <% submit_label =
+         if listing.new_record?
+           (current_user.free? && !current_user.can_generate_pack?) ? "Save draft" : "Generate pack"
+         else
+           "Save listing"
+         end %>
+    <%= form.submit submit_label, class: "btn btn-primary" %>
     <%= link_to "Cancel", listings_path, class: "btn btn-ghost" %>
     <% if listing.new_record? && current_user.free? %>
       <% if current_user.can_generate_pack? %>
         <p class="text-sm text-navy/60">Uses 1 credit. <%= quota_copy(current_user) %> (listing packs and This week share this quota).</p>
       <% else %>
-        <p class="text-sm text-clay">No free packs left — <%= link_to "upgrade on Plan", billing_path, class: "underline" %> to generate.</p>
+        <p class="text-sm text-clay">No free packs left — this saves a draft only. <%= link_to "Upgrade on Plan", billing_path, class: "underline" %> to generate.</p>
       <% end %>
     <% end %>
   </div>

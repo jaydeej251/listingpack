@@ -13,7 +13,7 @@ class CaptionsController < ApplicationController
       redirect_to @pack.listing, notice: "Caption saved."
     else
       WriteCaptionJob.perform_now(@pack, field)
-      redirect_to @pack.listing, notice: "Rewriting that caption…"
+      redirect_to @pack.listing, notice: "Caption rewritten."
     end
   end
 

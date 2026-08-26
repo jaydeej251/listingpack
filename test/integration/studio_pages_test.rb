@@ -45,6 +45,8 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select "h3", "Pro"
     assert_select "a[href=?]", new_registration_path, minimum: 3
     assert_select "details summary", minimum: 3
+    assert_match(/Pay with GCash/, response.body)
+    assert_no_match(/nothing is charged today/i, response.body)
   end
 
   test "listings index shows photo card with stage and pack pills" do
