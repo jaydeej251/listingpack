@@ -2,6 +2,10 @@
 
 Rails 8 app for Philippine real-estate agents: listing photos in, branded 1080×1080 posters plus captions out.
 
+## Where we are
+
+**Phase 8 (first agents / ops).** Phases 0–7 are in code; Phase 9 (multi-format layouts, more vision, Facebook publish) is deferred furnishing. Full map: [docs/ROADMAP.md](docs/ROADMAP.md). First-agent checklist: [docs/FIRST_AGENTS.md](docs/FIRST_AGENTS.md).
+
 ## Run locally
 
 ```bash
