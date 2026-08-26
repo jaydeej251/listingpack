@@ -2,17 +2,18 @@
 
 @theme {
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Fraunces", ui-serif, Georgia, serif;
-  --color-paper: #f3eee4;
-  --color-ink: #1c1917;
-  --color-clay: #c45c26;
-  --color-navy: #14213d;
-  --color-sage: #3f5c4c;
-  --color-sand: #e7dcc8;
-  --color-surface: #fffcf7;
-  --color-muted: #6b645b;
+  --font-serif: "Newsreader", ui-serif, Georgia, serif;
+  /* Cool PH listing-board: near-white canvas, deep navy, mangrove teal accent */
+  --color-paper: #f5f7f9;
+  --color-ink: #0f172a;
+  --color-clay: #0f766e; /* teal accent (legacy class name kept for churn) */
+  --color-navy: #0b1f3a;
+  --color-sage: #1a6b5a;
+  --color-sand: #e8eef3;
+  --color-surface: #ffffff;
+  --color-muted: #64748b;
   --color-danger: #b42318;
-  --color-success: #3f5c4c;
+  --color-success: #1a6b5a;
 }
 
 @layer base {
@@ -75,11 +76,11 @@
   .btn-ghost:hover { color: var(--color-clay); }
 
   .btn-danger {
-    border: 1px solid color-mix(in srgb, var(--color-clay) 50%, transparent);
-    color: var(--color-clay);
+    border: 1px solid color-mix(in srgb, var(--color-danger) 45%, transparent);
+    color: var(--color-danger);
     background: transparent;
   }
-  .btn-danger:hover { background: color-mix(in srgb, var(--color-clay) 12%, white); }
+  .btn-danger:hover { background: color-mix(in srgb, var(--color-danger) 10%, white); }
 
   .label {
     display: block;
@@ -147,18 +148,19 @@
     font-size: 0.9rem;
   }
   .flash-notice { background: color-mix(in srgb, var(--color-sage) 12%, white); color: var(--color-sage); }
-  .flash-alert { background: color-mix(in srgb, var(--color-clay) 12%, white); color: var(--color-clay); }
+  .flash-alert { background: color-mix(in srgb, var(--color-danger) 10%, white); color: var(--color-danger); }
 
   .chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    border-radius: 9999px;
+    gap: 0.35rem;
+    border-radius: 0.4rem;
     border: 1px solid color-mix(in srgb, var(--color-navy) 12%, transparent);
-    background: color-mix(in srgb, white 70%, transparent);
-    padding: 0.3rem 0.75rem;
-    font-size: 0.75rem;
+    background: var(--color-surface);
+    padding: 0.25rem 0.55rem;
+    font-size: 0.7rem;
     font-weight: 600;
+    letter-spacing: 0.02em;
     color: var(--color-navy);
   }
   .chip-dark {
@@ -172,23 +174,45 @@
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    border-radius: 2rem;
   }
 
   .surface-hero {
-    border: 1px solid color-mix(in srgb, var(--color-navy) 8%, transparent);
+    border: 0;
+    border-radius: 0;
     background:
-      radial-gradient(115% 95% at 6% 0%, color-mix(in srgb, var(--color-sand) 92%, white) 0%, transparent 58%),
-      radial-gradient(80% 70% at 100% 2%, color-mix(in srgb, var(--color-clay) 28%, transparent) 0%, transparent 62%),
-      radial-gradient(95% 85% at 72% 108%, color-mix(in srgb, var(--color-navy) 16%, transparent) 0%, transparent 60%),
-      var(--color-surface);
+      radial-gradient(90% 80% at 88% 12%, color-mix(in srgb, var(--color-clay) 22%, transparent) 0%, transparent 55%),
+      radial-gradient(70% 60% at 8% 90%, color-mix(in srgb, var(--color-navy) 14%, transparent) 0%, transparent 50%),
+      linear-gradient(165deg, #eef3f7 0%, var(--color-paper) 42%, #e4ebf2 100%);
+  }
+
+  .surface-hero-boxed {
+    border-radius: 1.5rem;
+    border: 1px solid color-mix(in srgb, var(--color-navy) 8%, transparent);
   }
 
   .surface-navy {
+    border-radius: 1.5rem;
     background:
-      radial-gradient(85% 75% at 10% 0%, color-mix(in srgb, var(--color-clay) 45%, transparent) 0%, transparent 58%),
-      linear-gradient(160deg, #1b2f5a 0%, var(--color-navy) 48%, #0a1122 100%);
+      radial-gradient(85% 75% at 10% 0%, color-mix(in srgb, var(--color-clay) 35%, transparent) 0%, transparent 58%),
+      linear-gradient(160deg, #12304f 0%, var(--color-navy) 48%, #061018 100%);
     color: var(--color-paper);
+  }
+
+  .hero-plane {
+    position: relative;
+    isolation: isolate;
+    min-height: min(72vh, 640px);
+    background:
+      linear-gradient(105deg, color-mix(in srgb, var(--color-navy) 88%, transparent) 0%, color-mix(in srgb, var(--color-navy) 55%, transparent) 42%, transparent 68%),
+      linear-gradient(180deg, #0b1f3a 0%, #12304f 100%);
+  }
+
+  .hero-brand {
+    font-family: var(--font-serif);
+    font-size: clamp(2.75rem, 7vw, 5.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: white;
   }
 
   .grain::after {
@@ -261,6 +285,15 @@
     100% { box-shadow: 0 0 0 0 transparent; }
   }
 
+  .hero-poster-reveal {
+    animation: hero-poster-in 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 120ms;
+  }
+  @keyframes hero-poster-in {
+    from { opacity: 0; transform: translateY(24px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+
   /* Entrance animation. `both` fill means the element always ends visible,
      even when reduced motion collapses the duration. */
   .rise {
@@ -321,7 +354,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .marquee-track,
-  .dot-live {
+  .dot-live,
+  .hero-poster-reveal {
     animation: none !important;
   }
   .lift:hover { transform: none; }
