@@ -37,10 +37,21 @@ class GeneratePackJob < ApplicationJob
 
     watermark = listing.user.free?
     poster_errors = []
+    photo_uri = Images::DataUri.from_attachment(listing.photos.first)
+    logo_uri = Images::DataUri.from_attachment(listing.user.brand_kit&.logo)
+    headshot_uri = Images::DataUri.from_attachment(listing.user.brand_kit&.headshot)
+    photo_missing = listing.photos.attached? && photo_uri.blank?
     GeneratedAsset::TEMPLATE_KEYS.each do |key|
       pack.generated_assets.find_or_create_by!(template_key: key)
       begin
-        Images::RenderTemplate.new(pack, key, watermark: watermark).call
+        Images::RenderTemplate.new(
+          pack,
+          key,
+          watermark: watermark,
+          photo_uri: photo_uri,
+          logo_uri: logo_uri,
+          headshot_uri: headshot_uri
+        ).call
       rescue Images::RenderTemplate::Error => e
         poster_errors << "#{key}: #{e.message}"
         pack.generations.create!(
@@ -58,6 +69,12 @@ class GeneratePackJob < ApplicationJob
       elsif poster_errors.any?
         "Captions are ready. Some posters failed: #{poster_errors.join(' · ')}. Use Redraw on the missing ones."
       end
+    if photo_missing
+      poster_message = [
+        poster_message,
+        "The listing photo is missing from storage (common after an R2 checksum error or a Render disk wipe). The object in R2 may be from an earlier failed upload with a different key. Re-upload the photo, then Redraw."
+      ].compact.join(" ")
+    end
 
     pack.update!(status: "ready", error_message: poster_message)
     listing.update!(status: "ready")

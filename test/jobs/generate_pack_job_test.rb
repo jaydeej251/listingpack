@@ -41,6 +41,26 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     end
   end
 
+  test "missing listing photo leaves a re-upload warning" do
+    listing = listings(:bgc_condo)
+    listing.photos.attach(
+      io: File.open(Rails.root.join("public/icon.png")),
+      filename: "listing.png",
+      content_type: "image/png"
+    )
+    blob = listing.photos.first.blob
+    blob.service.delete(blob.key)
+
+    stub_singleton(Images::Chrome, :path, nil) do
+      GeneratePackJob.perform_now(listing.id)
+    end
+
+    pack = listing.reload.latest_pack
+    assert_equal "ready", pack.status
+    assert_match(/missing from storage/i, pack.error_message.to_s)
+    assert_match(/Re-upload/i, pack.error_message.to_s)
+  end
+
   test "retry reuses the same content pack row" do
     listing = listings(:bgc_condo)
     listing.photos.attach(

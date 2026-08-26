@@ -16,8 +16,8 @@ cloud:
   secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>
   region: <%= ENV.fetch("AWS_REGION", "auto") %>
   bucket: <%= ENV["AWS_BUCKET"] %>
-  request_checksum_calculation: when_required
-  response_checksum_validation: when_required
+  request_checksum_calculation: "when_required"
+  response_checksum_validation: "when_required"
   <% if ENV["AWS_ENDPOINT"].present? %>
   endpoint: <%= ENV["AWS_ENDPOINT"] %>
   force_path_style: <%= ENV.fetch("AWS_FORCE_PATH_STYLE", "true") %>

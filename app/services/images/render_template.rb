@@ -6,12 +6,15 @@ module Images
   class RenderTemplate
     class Error < StandardError; end
 
-    def initialize(content_pack, template_key, watermark: false)
+    def initialize(content_pack, template_key, watermark: false, photo_uri: :lookup, logo_uri: :lookup, headshot_uri: :lookup)
       @pack = content_pack
       @listing = content_pack.listing
       @brand = @listing.user.brand_kit
       @template_key = template_key
       @watermark = watermark
+      @photo_uri = photo_uri == :lookup ? Images::DataUri.from_attachment(@listing.photos.first) : photo_uri
+      @logo_uri = logo_uri == :lookup ? Images::DataUri.from_attachment(@brand&.logo) : logo_uri
+      @headshot_uri = headshot_uri == :lookup ? Images::DataUri.from_attachment(@brand&.headshot) : headshot_uri
     end
 
     def call
@@ -23,7 +26,8 @@ module Images
       asset.image.attach(
         io: StringIO.new(png_data),
         filename: "#{@template_key}.png",
-        content_type: "image/png"
+        content_type: "image/png",
+        identify: false
       )
       asset.save!
       asset
@@ -42,9 +46,9 @@ module Images
             listing: @listing,
             brand: @brand,
             pack: @pack,
-            photo_uri: Images::DataUri.from_attachment(@listing.photos.first),
-            logo_uri: Images::DataUri.from_attachment(@brand&.logo),
-            headshot_uri: Images::DataUri.from_attachment(@brand&.headshot),
+            photo_uri: @photo_uri,
+            logo_uri: @logo_uri,
+            headshot_uri: @headshot_uri,
             watermark: @watermark
           }
         )

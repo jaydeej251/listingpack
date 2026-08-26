@@ -77,9 +77,11 @@ class TrustFlowsTest < ActionDispatch::IntegrationTest
     user = users(:one)
     sign_in user
 
-    patch billing_path
-    assert_redirected_to billing_path
-    assert_equal "pro", user.reload.plan
+    without_env("PAYMONGO_SECRET_KEY") do
+      patch billing_path
+      assert_redirected_to billing_path
+      assert_equal "pro", user.reload.plan
+    end
   end
 
   test "calendar retry does not consume quota" do
