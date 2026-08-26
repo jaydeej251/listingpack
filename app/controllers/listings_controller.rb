@@ -6,6 +6,7 @@ class ListingsController < ApplicationController
   end
 
   def show
+    Packs::RecoverStaleGenerations.recover_listing_if_stale!(@listing)
     @pack = @listing.latest_pack
     assign_poster_vars
   end

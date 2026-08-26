@@ -17,7 +17,11 @@ default: &default
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  # Solid Queue needs ≥5 connections even when RAILS_MAX_THREADS is 2.
+  pool: <%= begin
+    require_relative "database_pool"
+    DatabasePool.size
+  end %>
 
 
 development:

@@ -15,4 +15,12 @@ test:
   <<: *default
 
 production:
-  <<: *default
+  dispatchers:
+    - polling_interval: 1
+      batch_size: 500
+  workers:
+    # One job thread on Free — Chromium posters are RAM-heavy; parallel jobs OOM the dyno.
+    - queues: "*"
+      threads: 1
+      processes: <%= ENV.fetch("JOB_CONCURRENCY", 1) %>
+      polling_interval: 1

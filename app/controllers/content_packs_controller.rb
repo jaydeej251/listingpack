@@ -37,6 +37,7 @@ class ContentPacksController < ApplicationController
   end
 
   def status
+    Packs::RecoverStaleGenerations.recover_listing_if_stale!(@listing)
     @pack = @listing.latest_pack
     respond_to do |format|
       format.html do
