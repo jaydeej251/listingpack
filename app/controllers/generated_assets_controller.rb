@@ -2,8 +2,9 @@ class GeneratedAssetsController < ApplicationController
   before_action :set_asset
 
   def regenerate
-    RenderAssetJob.perform_now(@asset.content_pack, @asset.template_key)
-    redirect_to @asset.content_pack.listing, notice: "Poster redrawn."
+    @asset.update!(status: "rendering", error_message: nil)
+    RenderAssetJob.perform_later(@asset.content_pack.id, @asset.template_key)
+    redirect_to @asset.content_pack.listing, notice: "Redrawing that poster…"
   end
 
   private

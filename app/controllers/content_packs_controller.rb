@@ -44,7 +44,13 @@ class ContentPacksController < ApplicationController
         assign_poster_vars
         render :status, layout: false
       end
-      format.json { render json: { status: @listing.pack_status } }
+      format.json do
+        render json: {
+          status: @listing.pack_status,
+          posters_complete: @pack.blank? || @pack.posters_complete?,
+          posters: @pack&.poster_states || {}
+        }
+      end
     end
   end
 

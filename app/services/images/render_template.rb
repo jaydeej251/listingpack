@@ -30,6 +30,8 @@ module Images
         content_type: "image/png",
         identify: false
       )
+      asset.status = "ready"
+      asset.error_message = nil
       asset.save!
       asset
     ensure

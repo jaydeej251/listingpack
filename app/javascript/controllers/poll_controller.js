@@ -1,12 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Poll a JSON status URL. When work finishes, reload the full page once so
-// header pills and the pack render together — never leave a "Loading pack…" frame.
+// Poll a JSON status URL. Reloads when copy is done AND poster batches finish
+// (or when generation fails). Keeps per-card Generating/Waiting UI in sync.
 export default class extends Controller {
   static values = {
     interval: { type: Number, default: 2500 },
     url: String,
-    maxAttempts: { type: Number, default: 48 } // ~2 minutes at default interval
+    maxAttempts: { type: Number, default: 72 } // ~3 minutes for two poster batches
   }
 
   connect() {
@@ -38,6 +38,7 @@ export default class extends Controller {
 
       const data = await response.json()
       if (data.status === "generating" || data.status === "pending") return
+      if (data.posters_complete === false) return
     } catch (_error) {
       return
     }

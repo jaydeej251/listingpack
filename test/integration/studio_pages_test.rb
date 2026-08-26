@@ -94,14 +94,36 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select "li", /Writing captions/
   end
 
-  test "status json reports pack status for polling" do
+  test "status json reports pack status and poster progress for polling" do
     sign_in users(:one)
     listing = listings(:bgc_condo)
-    listing.update!(status: "generating")
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(status: "ready", facebook_caption: "Hi")
+    pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
+    pack.generated_assets.create!(template_key: "story", status: "pending")
 
     get status_listing_content_packs_path(listing, format: :json)
     assert_response :success
-    assert_equal "generating", JSON.parse(response.body)["status"]
+    body = JSON.parse(response.body)
+    assert_equal "ready", body["status"]
+    assert_equal false, body["posters_complete"]
+    assert_equal "rendering", body["posters"]["just_listed"]
+  end
+
+  test "ready pack with pending posters shows generating and waiting cards" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
+    pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
+    pack.generated_assets.create!(template_key: "price_card", status: "pending")
+    pack.generated_assets.create!(template_key: "story", status: "pending")
+
+    get listing_path(listing)
+    assert_response :success
+    assert_match(/Generating/, response.body)
+    assert_match(/Waiting/, response.body)
+    assert_select "[data-controller=poll]"
   end
 
   test "ready pack uses copy tabs and download without a confirm step" do
@@ -116,7 +138,7 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select "h2", "Captions and follow-ups"
     assert_select "button", "Post"
     assert_select "button", "Marketplace"
-    assert_match "PNG not ready", response.body
+    assert_match "Waiting", response.body
     assert_no_match(/Confirm the asking price/, response.body)
     assert_match "text only", response.body
   end

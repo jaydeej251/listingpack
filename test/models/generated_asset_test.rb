@@ -10,13 +10,18 @@ class GeneratedAssetTest < ActiveSupport::TestCase
     assert_equal "1080 / 1920", GeneratedAsset.aspect_ratio_css("story")
   end
 
+  test "batches are two groups of three" do
+    assert_equal GeneratedAsset::CORE_TEMPLATE_KEYS, GeneratedAsset.batches[0]
+    assert_equal GeneratedAsset::EXTENDED_TEMPLATE_KEYS, GeneratedAsset.batches[1]
+  end
+
   test "generation_keys respects POSTER_FORMAT_SET" do
     previous = ENV["POSTER_FORMAT_SET"]
     ENV["POSTER_FORMAT_SET"] = "core"
     assert_equal GeneratedAsset::CORE_TEMPLATE_KEYS, GeneratedAsset.generation_keys
 
     ENV["POSTER_FORMAT_SET"] = "all"
-    assert_equal GeneratedAsset::TEMPLATE_KEYS, GeneratedAsset.generation_keys
+    assert_equal GeneratedAsset::TEMPLATE_KEYS.sort, GeneratedAsset.generation_keys.sort
   ensure
     previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
   end
