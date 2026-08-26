@@ -28,4 +28,17 @@ class ImagesDataUriTest < ActiveSupport::TestCase
   test "returns nil for blank" do
     assert_nil Images::DataUri.from_attachment(nil)
   end
+
+  test "returns nil when the blob row exists but the file is gone" do
+    listing = listings(:bgc_condo)
+    listing.photos.attach(
+      io: File.open(Rails.root.join("public/icon.png")),
+      filename: "listing.png",
+      content_type: "image/png"
+    )
+    blob = listing.photos.first.blob
+    blob.service.delete(blob.key)
+
+    assert_nil Images::DataUri.from_attachment(listing.photos.first)
+  end
 end

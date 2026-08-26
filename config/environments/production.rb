@@ -19,14 +19,8 @@ Rails.application.configure do
   config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
 
   # Prefer R2/S3 when AWS_BUCKET is set; Disk is ephemeral on Render Free.
-  config.active_storage.service =
-    if ENV["ACTIVE_STORAGE_SERVICE"].present?
-      ENV["ACTIVE_STORAGE_SERVICE"].to_sym
-    elsif ENV["AWS_BUCKET"].present?
-      :cloud
-    else
-      :local
-    end
+  require_relative "../storage_resolver"
+  config.active_storage.service = StorageResolver.call
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true

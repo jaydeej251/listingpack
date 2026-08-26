@@ -21,5 +21,13 @@ module ActiveSupport
     ensure
       singleton.define_method(method_name, original)
     end
+
+    def without_env(*keys)
+      previous = keys.index_with { |key| ENV[key] }
+      keys.each { |key| ENV.delete(key) }
+      yield
+    ensure
+      previous.each { |key, value| value.nil? ? ENV.delete(key) : ENV[key] = value }
+    end
   end
 end

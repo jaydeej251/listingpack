@@ -72,6 +72,8 @@ module Ai
 
     def data_uri_for(blob)
       "data:#{blob.content_type};base64,#{Base64.strict_encode64(blob.download)}"
+    rescue ActiveStorage::FileNotFoundError
+      nil
     end
 
     private
