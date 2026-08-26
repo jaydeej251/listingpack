@@ -107,6 +107,7 @@ Already at `https://github.com/jaydeej251/listingpack` if you pushed earlier.
 | `JOB_CONCURRENCY` | `1` |
 | `POSTER_FORMAT_SET` | `all` (six formats) or `core` (squares only) |
 | `POSTER_RENDER_MODE` | `sequential` (1 Chrome at a time — Free default); later `batch` for Pro |
+| `CHROME_PROCESS_TIMEOUT` | `90` — seconds to wait for Chromium WS URL on Free |
 | `CHROME_PATH` | `/usr/bin/chromium` |
 | `APP_HOST` | Leave blank first deploy, then set to `YOUR-SERVICE.onrender.com` (no `https://`) |
 | `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | Optional. OpenRouter `sk-or-…` keys auto-route to OpenRouter. Blank → Taglish templates |

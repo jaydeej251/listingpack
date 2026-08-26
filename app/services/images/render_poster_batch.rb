@@ -24,7 +24,18 @@ module Images
 
       browser = nil
       begin
-        browser = Images::PosterBrowser.open if Images::Chrome.path
+        begin
+          browser = Images::PosterBrowser.open if Images::Chrome.path
+        rescue Images::PosterBrowser::Error => e
+          # Startup failure (common on Free when Chrome is slow) — fail this batch, let the chain continue.
+          fail_all!(e.message)
+          return { errors: @keys.map { |key| "#{key}: #{e.message}" }, rendered: 0 }
+        end
+
+        unless browser
+          fail_all!("Google Chrome was not found")
+          return { errors: @keys.map { |key| "#{key}: Google Chrome was not found" }, rendered: 0 }
+        end
 
         @keys.each do |key|
           asset = @pack.generated_assets.find_by!(template_key: key)
@@ -54,12 +65,32 @@ module Images
           end
         end
       ensure
-        browser&.quit
+        begin
+          browser&.quit
+        rescue StandardError
+          nil
+        end
         browser = nil
         GC.start
       end
 
       { errors: errors, rendered: @keys.size - errors.size }
     end
+
+    private
+      def fail_all!(message)
+        @keys.each do |key|
+          asset = @pack.generated_assets.find_by(template_key: key)
+          next unless asset
+
+          asset.update!(status: "failed", error_message: message)
+          @pack.generations.create!(
+            kind: "image_#{key}",
+            prompt_version: ::Prompts::ListingPack::VERSION,
+            model: "ferrum",
+            error_message: message
+          )
+        end
+      end
   end
 end

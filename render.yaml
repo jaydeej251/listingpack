@@ -51,6 +51,10 @@ services:
         value: "all"
       - key: POSTER_RENDER_MODE
         value: "sequential"
+      - key: CHROME_PROCESS_TIMEOUT
+        value: "90"
+      - key: CHROME_TIMEOUT
+        value: "60"
       - key: CHROME_PATH
         value: /usr/bin/chromium
       - key: APP_HOST
