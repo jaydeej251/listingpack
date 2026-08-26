@@ -1,20 +1,44 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = [ "dialog", "copyButton" ]
+  static targets = [ "dialog", "copyButton", "closeButton" ]
   static values = { imageUrl: String }
 
-  open() {
+  open(event) {
     if (!this.hasDialogTarget) return
+    this.opener = event?.currentTarget || document.activeElement
     this.dialogTarget.showModal()
+    if (this.hasCloseButtonTarget) {
+      this.closeButtonTarget.focus()
+    }
   }
 
   close() {
-    if (this.hasDialogTarget) this.dialogTarget.close()
+    if (!this.hasDialogTarget) return
+    this.dialogTarget.close()
+    this.restoreFocus()
   }
 
   backdrop(event) {
     if (event.target === this.dialogTarget) this.close()
+  }
+
+  restoreFocus() {
+    if (this.opener && typeof this.opener.focus === "function") {
+      this.opener.focus()
+    }
+  }
+
+  connect() {
+    if (!this.hasDialogTarget) return
+    this.boundOnClose = () => this.restoreFocus()
+    this.dialogTarget.addEventListener("close", this.boundOnClose)
+  }
+
+  disconnect() {
+    if (this.hasDialogTarget && this.boundOnClose) {
+      this.dialogTarget.removeEventListener("close", this.boundOnClose)
+    }
   }
 
   async copyImage() {
