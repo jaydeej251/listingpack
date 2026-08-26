@@ -35,11 +35,18 @@ class GeneratePackJob < ApplicationJob
       error_message: photo_result[:error]
     )
 
-    # Captions first — if Chrome OOMs later, stale recovery can still surface ready copy.
-    pack.update!(status: "ready", error_message: nil)
+    ensure_poster_rows!(pack)
+    first_batch = GeneratedAsset.batches.first || []
+    pack.generated_assets.where(template_key: first_batch).update_all(status: "rendering", updated_at: Time.current)
+
+    # Captions first — posters continue in RenderPosterBatchJob (3 + 3).
+    pack.update!(
+      status: "ready",
+      error_message: "Captions are ready. Posters stamp in groups of three so this host stays within Free memory."
+    )
     listing.update!(status: "ready")
 
-    render_posters!(pack, listing)
+    RenderPosterBatchJob.perform_later(pack.id, 0)
   rescue Ai::Client::Error
     raise
   rescue StandardError => e
@@ -51,65 +58,10 @@ class GeneratePackJob < ApplicationJob
   end
 
   private
-    def render_posters!(pack, listing)
-      keys = GeneratedAsset.generation_keys
-      watermark = listing.user.free?
-      poster_errors = []
-      photo_uri = Images::DataUri.from_attachment(listing.photos.first)
-      logo_uri = Images::DataUri.from_attachment(listing.user.brand_kit&.logo)
-      headshot_uri = Images::DataUri.from_attachment(listing.user.brand_kit&.headshot)
-      photo_missing = listing.photos.attached? && photo_uri.blank?
-
-      keys.each { |key| pack.generated_assets.find_or_create_by!(template_key: key) }
-
-      browser = nil
-      begin
-        browser = Images::PosterBrowser.open if Images::Chrome.path
-        keys.each do |key|
-          begin
-            Images::RenderTemplate.new(
-              pack,
-              key,
-              watermark: watermark,
-              photo_uri: photo_uri,
-              logo_uri: logo_uri,
-              headshot_uri: headshot_uri,
-              browser: browser
-            ).call
-          rescue Images::RenderTemplate::Error, Images::PosterBrowser::Error => e
-            poster_errors << "#{key}: #{e.message}"
-            pack.generations.create!(
-              kind: "image_#{key}",
-              prompt_version: ::Prompts::ListingPack::VERSION,
-              model: "ferrum",
-              error_message: e.message
-            )
-          ensure
-            GC.start
-          end
-        end
-      ensure
-        browser&.quit
+    def ensure_poster_rows!(pack)
+      GeneratedAsset.generation_keys.each do |key|
+        asset = pack.generated_assets.find_or_create_by!(template_key: key)
+        asset.update!(status: "pending", error_message: nil)
       end
-
-      poster_message =
-        if poster_errors.size == keys.size
-          "Captions are ready, but every poster failed to render. #{poster_errors.first}. Use Redraw or try again on a host with more RAM for Chrome."
-        elsif poster_errors.any?
-          "Captions are ready. Some posters failed: #{poster_errors.join(' · ')}. Use Redraw on the missing ones."
-        end
-      if photo_missing
-        poster_message = [
-          poster_message,
-          "The listing photo is missing from storage (common after an R2 checksum error or a Render disk wipe). The object in R2 may be from an earlier failed upload with a different key. Re-upload the photo, then Redraw."
-        ].compact.join(" ")
-      end
-      if keys.size < GeneratedAsset::TEMPLATE_KEYS.size && poster_message.blank?
-        poster_message = "This host renders the three square posters only (low-memory mode). Story / 16:9 / banner stay available via Redraw when RAM allows."
-      elsif keys.size < GeneratedAsset::TEMPLATE_KEYS.size && poster_message.present?
-        poster_message = "#{poster_message} Low-memory mode: only square posters were attempted."
-      end
-
-      pack.update!(error_message: poster_message)
     end
 end

@@ -105,7 +105,7 @@ Already at `https://github.com/jaydeej251/listingpack` if you pushed earlier.
 | `RAILS_MAX_THREADS` | `2` |
 | `DB_POOL` | `10` (Solid Queue needs ≥5 even when threads are 2) |
 | `JOB_CONCURRENCY` | `1` |
-| `POSTER_FORMAT_SET` | `core` on Free (3 squares); `all` for six formats on ≥1 GB RAM |
+| `POSTER_FORMAT_SET` | `all` (two batches of 3 posters); `core` = squares only emergency |
 | `CHROME_PATH` | `/usr/bin/chromium` |
 | `APP_HOST` | Leave blank first deploy, then set to `YOUR-SERVICE.onrender.com` (no `https://`) |
 | `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | Optional. OpenRouter `sk-or-…` keys auto-route to OpenRouter. Blank → Taglish templates |

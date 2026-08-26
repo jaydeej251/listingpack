@@ -10,13 +10,18 @@ class GeneratedAsset < ApplicationRecord
   }.freeze
 
   TEMPLATE_KEYS = FORMATS.keys.freeze
-  # Original Free-friendly set — fits Render Free 512MB better than all six.
+  # Batch 1 = proven Free-tier squares; batch 2 = extended (after Chrome quits).
   CORE_TEMPLATE_KEYS = %w[just_listed price_card agent_card].freeze
+  EXTENDED_TEMPLATE_KEYS = %w[fb_banner story landscape].freeze
+  RENDER_BATCHES = [ CORE_TEMPLATE_KEYS, EXTENDED_TEMPLATE_KEYS ].freeze
+
+  STATUSES = %w[pending rendering ready failed].freeze
 
   belongs_to :content_pack
   has_one_attached :image
 
   validates :template_key, inclusion: { in: TEMPLATE_KEYS }
+  validates :status, inclusion: { in: STATUSES }
 
   def label
     FORMATS.fetch(template_key).fetch(:label)
@@ -34,6 +39,12 @@ class GeneratedAsset < ApplicationRecord
     self.class.aspect_ratio_css(template_key)
   end
 
+  def pending? = status == "pending"
+  def rendering? = status == "rendering"
+  def ready? = status == "ready" || image.attached?
+  def failed? = status == "failed"
+  def in_progress? = pending? || rendering?
+
   def self.format_for(key)
     FORMATS.fetch(key.to_s)
   end
@@ -48,13 +59,17 @@ class GeneratedAsset < ApplicationRecord
     [ spec[:width], spec[:height] ]
   end
 
-  # POSTER_FORMAT_SET=core → three squares (pre-multi-format). Default/all → six formats.
+  # POSTER_FORMAT_SET=core → only batch 1. Default/all → both batches (6 formats).
   def self.generation_keys
+    batches.flatten
+  end
+
+  def self.batches
     case ENV.fetch("POSTER_FORMAT_SET", "all").downcase
     when "core", "square", "free"
-      CORE_TEMPLATE_KEYS
+      [ CORE_TEMPLATE_KEYS ]
     else
-      TEMPLATE_KEYS
+      RENDER_BATCHES
     end
   end
 end

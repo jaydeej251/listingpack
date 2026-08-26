@@ -25,8 +25,8 @@
   <% end %>
 </div>
 
-<% if @listing.generating? %>
-  <div data-controller="poll" data-poll-url-value="<%= status_listing_content_packs_path(@listing, format: :json) %>">
+<% if @listing.generating? || @pack&.posters_in_progress? %>
+  <div data-controller="poll" data-poll-url-value="<%= status_listing_content_packs_path(@listing, format: :json) %>" data-poll-max-attempts-value="72">
     <%= render "listings/pack", listing: @listing, pack: @pack %>
   </div>
 <% else %>

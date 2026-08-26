@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_25_150737) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_26_175244) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -92,6 +92,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_25_150737) do
     t.string "template_key", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "status", default: "pending", null: false
+    t.text "error_message"
     t.index ["content_pack_id"], name: "index_generated_assets_on_content_pack_id"
   end
 

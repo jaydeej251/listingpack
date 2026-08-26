@@ -48,7 +48,7 @@ services:
       - key: JOB_CONCURRENCY
         value: "1"
       - key: POSTER_FORMAT_SET
-        value: "core"
+        value: "all"
       - key: CHROME_PATH
         value: /usr/bin/chromium
       - key: APP_HOST
