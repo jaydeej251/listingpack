@@ -55,7 +55,12 @@ class WeeklyCalendarsController < ApplicationController
 
   private
     def set_calendar
-      @calendar = Current.user.weekly_calendars.find(params[:id])
+      @calendar =
+        if Current.user.admin?
+          WeeklyCalendar.find(params[:id])
+        else
+          Current.user.weekly_calendars.find(params[:id])
+        end
     end
 
     def calendar_params
