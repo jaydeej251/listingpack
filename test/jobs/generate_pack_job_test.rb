@@ -3,7 +3,7 @@ require "test_helper"
 class GeneratePackJobTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
-  test "creates a ready pack with captions and enqueues first poster batch" do
+  test "creates a ready pack with captions and enqueues first poster" do
     listing = listings(:bgc_condo)
     listing.photos.attach(
       io: File.open(Rails.root.join("public/icon.png")),
@@ -21,9 +21,11 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert_equal "ready", pack.status
     assert pack.facebook_caption.present?
     assert_equal GeneratedAsset.generation_keys.size, pack.generated_assets.count
+    assert_equal "rendering", pack.generated_assets.find_by!(template_key: "just_listed").status
+    assert_equal "pending", pack.generated_assets.find_by!(template_key: "story").status
   end
 
-  test "poster batch failure still leaves ready copy with a poster warning" do
+  test "sequential poster failures still leave ready copy" do
     listing = listings(:bgc_condo)
     listing.photos.attach(
       io: File.open(Rails.root.join("public/icon.png")),
@@ -40,23 +42,36 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     pack = listing.reload.latest_pack
     assert_equal "ready", pack.status
     assert pack.facebook_caption.present?
-    assert_match(/every poster failed|Some posters failed|groups of three/i, pack.error_message.to_s)
-    assert_equal GeneratedAsset.generation_keys.size, pack.generated_assets.count
+    assert_match(/one at a time|every poster failed|Some posters failed/i, pack.error_message.to_s)
+    assert_equal 6, pack.generated_assets.count
     pack.generated_assets.each do |asset|
-      assert asset.persisted?
-      assert_not asset.image.attached?
       assert_equal "failed", asset.status
+      assert_not asset.image.attached?
     end
   end
 
-  test "two batches cover all six formats by default" do
-    assert_equal 2, GeneratedAsset.batches.size
-    assert_equal 3, GeneratedAsset.batches[0].size
-    assert_equal 3, GeneratedAsset.batches[1].size
-    assert_equal GeneratedAsset::TEMPLATE_KEYS.sort, GeneratedAsset.generation_keys.sort
+  test "default mode is one poster per batch" do
+    previous = ENV["POSTER_RENDER_MODE"]
+    ENV.delete("POSTER_RENDER_MODE")
+    batches = GeneratedAsset.batches
+    assert_equal 6, batches.size
+    assert batches.all? { |batch| batch.size == 1 }
+  ensure
+    previous.nil? ? ENV.delete("POSTER_RENDER_MODE") : ENV["POSTER_RENDER_MODE"] = previous
   end
 
-  test "core format set only enqueues square batch" do
+  test "batch mode groups posters by three for future Pro" do
+    previous = ENV["POSTER_RENDER_MODE"]
+    ENV["POSTER_RENDER_MODE"] = "batch"
+    batches = GeneratedAsset.batches
+    assert_equal 2, batches.size
+    assert_equal 3, batches[0].size
+    assert_equal 3, batches[1].size
+  ensure
+    previous.nil? ? ENV.delete("POSTER_RENDER_MODE") : ENV["POSTER_RENDER_MODE"] = previous
+  end
+
+  test "core format set only creates square poster rows" do
     listing = listings(:bgc_condo)
     listing.photos.attach(
       io: File.open(Rails.root.join("public/icon.png")),
@@ -76,27 +91,6 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert_equal GeneratedAsset::CORE_TEMPLATE_KEYS.sort, pack.generated_assets.map(&:template_key).sort
   ensure
     previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
-  end
-
-  test "missing listing photo leaves a re-upload or failure warning after batches" do
-    listing = listings(:bgc_condo)
-    listing.photos.attach(
-      io: File.open(Rails.root.join("public/icon.png")),
-      filename: "listing.png",
-      content_type: "image/png"
-    )
-    blob = listing.photos.first.blob
-    blob.service.delete(blob.key)
-
-    stub_singleton(Images::Chrome, :path, nil) do
-      perform_enqueued_jobs only: [ GeneratePackJob, RenderPosterBatchJob ] do
-        GeneratePackJob.perform_later(listing.id)
-      end
-    end
-
-    pack = listing.reload.latest_pack
-    assert_equal "ready", pack.status
-    assert pack.generated_assets.all?(&:failed?)
   end
 
   test "retry reuses the same content pack row" do

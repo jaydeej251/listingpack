@@ -10,10 +10,8 @@ class GeneratedAsset < ApplicationRecord
   }.freeze
 
   TEMPLATE_KEYS = FORMATS.keys.freeze
-  # Batch 1 = proven Free-tier squares; batch 2 = extended (after Chrome quits).
   CORE_TEMPLATE_KEYS = %w[just_listed price_card agent_card].freeze
   EXTENDED_TEMPLATE_KEYS = %w[fb_banner story landscape].freeze
-  RENDER_BATCHES = [ CORE_TEMPLATE_KEYS, EXTENDED_TEMPLATE_KEYS ].freeze
 
   STATUSES = %w[pending rendering ready failed].freeze
 
@@ -59,17 +57,31 @@ class GeneratedAsset < ApplicationRecord
     [ spec[:width], spec[:height] ]
   end
 
-  # POSTER_FORMAT_SET=core → only batch 1. Default/all → both batches (6 formats).
   def self.generation_keys
-    batches.flatten
-  end
-
-  def self.batches
     case ENV.fetch("POSTER_FORMAT_SET", "all").downcase
     when "core", "square", "free"
-      [ CORE_TEMPLATE_KEYS ]
+      CORE_TEMPLATE_KEYS
     else
-      RENDER_BATCHES
+      TEMPLATE_KEYS
+    end
+  end
+
+  # sequential (default): one Chrome per poster — safest on Render Free 512MB.
+  # batch: groups of 3 (future Pro / larger hosts). Set POSTER_RENDER_MODE=batch.
+  def self.render_mode(user: nil)
+    mode = ENV.fetch("POSTER_RENDER_MODE", "sequential").downcase
+    # Future: enable batch for Pro without flipping Free.
+    # return "batch" if user&.pro? && mode == "plan"
+    mode
+  end
+
+  def self.batches(user: nil)
+    keys = generation_keys
+    case render_mode(user: user)
+    when "batch"
+      keys.each_slice(3).to_a
+    else
+      keys.map { |key| [ key ] }
     end
   end
 end

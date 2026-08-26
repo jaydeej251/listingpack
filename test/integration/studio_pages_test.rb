@@ -122,7 +122,7 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     get listing_path(listing)
     assert_response :success
     assert_match(/Generating/, response.body)
-    assert_match(/Waiting/, response.body)
+    assert_match(/Next in the one-at-a-time queue|Waiting/, response.body)
     assert_select "[data-controller=poll]"
   end
 

@@ -16,21 +16,24 @@ class RenderPosterBatchJobTest < ActiveSupport::TestCase
     end
   end
 
-  test "batch 0 renders core keys and enqueues batch 1" do
+  test "index 0 renders first poster and enqueues index 1" do
     stub_singleton(Images::Chrome, :path, nil) do
       assert_enqueued_with(job: RenderPosterBatchJob, args: [ @pack.id, 1 ]) do
         RenderPosterBatchJob.perform_now(@pack.id, 0)
       end
     end
 
-    core = @pack.generated_assets.where(template_key: GeneratedAsset::CORE_TEMPLATE_KEYS)
-    assert core.all?(&:failed?)
+    first = @pack.generated_assets.find_by!(template_key: GeneratedAsset.batches.first.first)
+    assert_equal "failed", first.status
+    second = @pack.generated_assets.find_by!(template_key: GeneratedAsset.batches[1].first)
+    assert_equal "rendering", second.status
   end
 
-  test "batch 1 does not enqueue another batch" do
+  test "last index does not enqueue another job" do
+    last = GeneratedAsset.batches.size - 1
     stub_singleton(Images::Chrome, :path, nil) do
       assert_no_enqueued_jobs only: RenderPosterBatchJob do
-        RenderPosterBatchJob.perform_now(@pack.id, 1)
+        RenderPosterBatchJob.perform_now(@pack.id, last)
       end
     end
   end
