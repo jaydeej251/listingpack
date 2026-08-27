@@ -52,7 +52,7 @@ Before charging real agents, configure:
 
 - [ ] Create listing → pack Ready → Download PNG → restart web service → same PNG still downloads (proves R2/S3)
 - [ ] Free watermark present; Pro (paid or local stub) has none
-- [ ] Kill Chrome / low RAM: captions still Ready with a **Poster warning** + Redraw
+- [ ] Kill Chrome / low RAM: captions still Ready with failure copy + Redraw
 - [ ] Forgot password email arrives when SMTP is configured
 - [ ] PayMongo test checkout upgrades plan after webhook (or local stub without key)
 - [ ] Cold start: first hit after idle may take ~1 minute on Free — landing copy mentions this

@@ -1,14 +1,15 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Two phases:
-// - pack_ready: leave the "Building…" screen as soon as captions exist (listing ready/failed)
-// - posters: stay on the pack view and reload when a poster card changes / all finish
+// - pack_ready: leave "Building…" with a full visit once captions exist
+// - posters: refresh only the listing_posters Turbo Frame (no scroll jump)
 export default class extends Controller {
   static values = {
     interval: { type: Number, default: 2500 },
     url: String,
     maxAttempts: { type: Number, default: 120 },
-    until: { type: String, default: "pack_ready" } // pack_ready | posters
+    until: { type: String, default: "pack_ready" }, // pack_ready | posters
+    frame: { type: String, default: "listing_posters" }
   }
 
   connect() {
@@ -42,31 +43,43 @@ export default class extends Controller {
       const data = await response.json()
 
       if (this.untilValue === "pack_ready") {
-        // Still writing captions — keep the Building… screen.
         if (data.status === "generating" || data.status === "pending") return
-        // Captions ready (or failed) — go to pack view even if posters are still queueing.
         this.disconnect()
         this.reloadPage()
         return
       }
 
-      // Poster phase: refresh when any card state changes; stop when all done.
       const snapshot = JSON.stringify(data.posters || {})
       if (this.lastPosters === null) {
         this.lastPosters = snapshot
       } else if (snapshot !== this.lastPosters) {
         this.lastPosters = snapshot
-        this.disconnect()
-        this.reloadPage()
-        return
+        await this.refreshPostersFrame()
       }
 
       if (data.posters_complete === false) return
 
       this.disconnect()
+      await this.refreshPostersFrame()
     } catch (_error) {
       return
     }
+  }
+
+  async refreshPostersFrame() {
+    const frame = document.getElementById(this.frameValue)
+    if (frame && typeof frame.reload === "function") {
+      frame.reload()
+      return
+    }
+
+    if (frame && window.Turbo?.visit) {
+      await window.Turbo.visit(window.location.href, { frame: this.frameValue, action: "replace" })
+      return
+    }
+
+    // Last resort — full reload (may jump scroll).
+    this.reloadPage()
   }
 
   showStuckHint() {

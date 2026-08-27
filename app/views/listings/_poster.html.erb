@@ -45,7 +45,7 @@
     <div class="flex flex-col items-center justify-center gap-2 rounded-xl bg-sand p-4 text-center" style="aspect-ratio: <%= ratio %>;" aria-busy="true">
       <span class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-navy/20 border-t-clay" aria-hidden="true"></span>
       <p class="text-sm font-medium text-navy">Generating…</p>
-      <p class="text-xs text-navy/55">Stamping this format now</p>
+      <p class="text-xs text-navy/55">Rendering this format</p>
     </div>
   <% elsif status == "failed" %>
     <div class="flex flex-col items-center justify-center gap-2 rounded-xl bg-sand p-4 text-center" style="aspect-ratio: <%= ratio %>;">
@@ -55,7 +55,7 @@
   <% else %>
     <div class="flex flex-col items-center justify-center gap-2 rounded-xl bg-sand/80 p-4 text-center" style="aspect-ratio: <%= ratio %>;">
       <p class="text-sm font-medium text-navy/70">Waiting…</p>
-      <p class="text-xs text-navy/50">Next in the one-at-a-time queue</p>
+      <p class="text-xs text-navy/50">Queued</p>
     </div>
   <% end %>
   <figcaption class="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">

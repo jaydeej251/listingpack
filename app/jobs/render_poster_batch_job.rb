@@ -1,7 +1,7 @@
 class RenderPosterBatchJob < ApplicationJob
   queue_as :default
 
-  # Pause between posters so Chromium RSS can be reclaimed on Render Free 512MB.
+  # Pause between posters so Chromium RSS can be reclaimed between renders.
   NEXT_POSTER_WAIT = ENV.fetch("POSTER_NEXT_WAIT_SECONDS", "3").to_i.seconds
 
   def perform(content_pack_id, batch_index = 0)
