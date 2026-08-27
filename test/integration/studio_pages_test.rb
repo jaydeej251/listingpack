@@ -110,6 +110,18 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_equal "rendering", body["posters"]["just_listed"]
   end
 
+  test "generating listing polls until pack is ready not until all posters finish" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "generating")
+
+    get listing_path(listing)
+    assert_response :success
+    assert_select "h2", "Building this pack"
+    assert_select "[data-poll-until-value=pack_ready]"
+    assert_select "[data-poll-until-value=posters]", count: 0
+  end
+
   test "ready pack with pending posters shows generating and waiting cards" do
     sign_in users(:one)
     listing = listings(:bgc_condo)
@@ -124,6 +136,9 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_match(/Generating/, response.body)
     assert_match(/Next in the one-at-a-time queue|Waiting/, response.body)
     assert_select "[data-controller=poll]"
+    assert_select "[data-poll-until-value=posters]"
+    assert_select "h2", "Posters"
+    assert_select "h2", text: "Building this pack", count: 0
   end
 
   test "ready pack uses copy tabs and download without a confirm step" do
