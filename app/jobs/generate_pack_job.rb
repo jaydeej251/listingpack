@@ -1,6 +1,9 @@
 class GeneratePackJob < ApplicationJob
   queue_as :default
 
+  # Let the copy job finish and free memory before the first Chrome launch.
+  FIRST_POSTER_WAIT = ENV.fetch("POSTER_FIRST_WAIT_SECONDS", "2").to_i.seconds
+
   # Reuse the same pack row across retries. Refund Free credit only when retries are exhausted.
   retry_on Ai::Client::Error, wait: :polynomially_longer, attempts: 3 do |job, error|
     listing_id, content_pack_id, consume_quota = job.arguments
@@ -36,8 +39,10 @@ class GeneratePackJob < ApplicationJob
     )
 
     ensure_poster_rows!(pack)
-    first_keys = GeneratedAsset.batches(user: listing.user).first || []
-    pack.generated_assets.where(template_key: first_keys).update_all(status: "rendering", updated_at: Time.current)
+    first_key = GeneratedAsset.batches(user: listing.user).dig(0, 0)
+    if first_key
+      pack.generated_assets.where(template_key: first_key).update_all(status: "rendering", updated_at: Time.current)
+    end
 
     pack.update!(
       status: "ready",
@@ -45,8 +50,9 @@ class GeneratePackJob < ApplicationJob
     )
     listing.update!(status: "ready")
 
-    # One poster (or one batch) per job so Chrome can fully exit before the next starts.
-    RenderPosterBatchJob.perform_later(pack.id, 0)
+    GC.start
+    # Captions are done. Poster #1 starts after a short pause; #2 only after #1's job finishes.
+    RenderPosterBatchJob.set(wait: FIRST_POSTER_WAIT).perform_later(pack.id, 0) if first_key
   rescue Ai::Client::Error
     raise
   rescue StandardError => e
