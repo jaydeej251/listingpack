@@ -5,9 +5,9 @@
     <ol class="mt-6 space-y-3 text-navy/80">
       <li class="flex gap-3"><span class="text-clay">1</span> Reading listing photos</li>
       <li class="flex gap-3"><span class="text-clay">2</span> Writing captions, Messenger follow-up, and seller recap</li>
-      <li class="flex gap-3"><span class="text-clay">3</span> Stamping branded posters</li>
+      <li class="flex gap-3"><span class="text-clay">3</span> Creating branded posters</li>
     </ol>
-    <p class="mt-4 text-sm text-navy/60">Usually 10–30 seconds for captions. You’ll land on the pack view as soon as copy is ready — posters keep stamping one at a time in the background.</p>
+    <p class="mt-4 text-sm text-navy/60">Usually 10–30 seconds for captions. You’ll open the pack as soon as copy is ready — posters continue in the background.</p>
     <p class="mt-4 hidden text-sm text-clay" data-poll-stuck role="status">Still working longer than usual — tap Check now, or retry if it stays stuck.</p>
     <%= link_to "Check now", listing_path(listing), class: "btn btn-secondary mt-4" %>
   </div>
@@ -18,30 +18,7 @@
     <%= button_to "Retry (does not use a free pack)", retry_listing_content_packs_path(listing), method: :post, class: "btn btn-primary mt-6" %>
   </div>
 <% elsif pack&.ready? %>
-  <% if pack.error_message.present? %>
-    <div class="mt-10 rounded-2xl border border-clay/40 bg-clay/10 px-5 py-4">
-      <p class="text-sm font-medium text-navy">Poster warning</p>
-      <p class="mt-1 text-sm text-navy/75"><%= pack.error_message %></p>
-    </div>
-  <% end %>
-
-  <section class="mt-10">
-    <h2 class="font-serif text-3xl text-navy">Posters</h2>
-    <p class="mt-2 text-sm text-navy/60">
-      All six formats stamp <strong>one at a time</strong> on this host (Free-friendly memory).
-      The active card shows Generating…; the rest wait in queue, then flip to ready.
-      Free plans include a watermark.
-    </p>
-    <div class="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-      <% GeneratedAsset::TEMPLATE_KEYS.each do |key| %>
-        <%= render "listings/poster",
-              listing: listing,
-              pack: pack,
-              asset: pack.generated_assets.find { |item| item.template_key == key },
-              key: key %>
-      <% end %>
-    </div>
-  </section>
+  <%= render "listings/posters_section", listing: listing, pack: pack %>
 
   <% copy_tabs = [
     ["post", "Post", [

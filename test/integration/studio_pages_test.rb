@@ -133,10 +133,13 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
 
     get listing_path(listing)
     assert_response :success
+    assert_match(/Creating posters/, response.body)
     assert_match(/Generating/, response.body)
-    assert_match(/Next in the one-at-a-time queue|Waiting/, response.body)
+    assert_match(/Waiting|Queued/, response.body)
     assert_select "[data-controller=poll]"
     assert_select "[data-poll-until-value=posters]"
+    assert_select "[data-poll-frame-value=listing_posters]"
+    assert_select "turbo-frame#listing_posters"
     assert_select "h2", "Posters"
     assert_select "h2", text: "Building this pack", count: 0
   end

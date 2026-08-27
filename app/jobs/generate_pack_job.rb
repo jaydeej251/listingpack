@@ -44,10 +44,7 @@ class GeneratePackJob < ApplicationJob
       pack.generated_assets.where(template_key: first_key).update_all(status: "rendering", updated_at: Time.current)
     end
 
-    pack.update!(
-      status: "ready",
-      error_message: Packs::UpdatePosterWarning.progress_message(pack)
-    )
+    pack.update!(status: "ready", error_message: nil)
     listing.update!(status: "ready")
 
     GC.start

@@ -45,7 +45,7 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     pack = listing.reload.latest_pack
     assert_equal "ready", pack.status
     assert pack.facebook_caption.present?
-    assert_match(/one at a time|every poster failed|Some posters failed/i, pack.error_message.to_s)
+    assert_match(/couldn’t create the posters|need a retry/i, pack.error_message.to_s)
     assert_equal 6, pack.generated_assets.count
     pack.generated_assets.each do |asset|
       assert_equal "failed", asset.status
