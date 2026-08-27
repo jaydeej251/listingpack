@@ -1,16 +1,19 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Poll a JSON status URL. Reloads when copy is done AND poster batches finish
-// (or when generation fails). Keeps per-card Generating/Waiting UI in sync.
+// Two phases:
+// - pack_ready: leave the "Building…" screen as soon as captions exist (listing ready/failed)
+// - posters: stay on the pack view and reload when a poster card changes / all finish
 export default class extends Controller {
   static values = {
     interval: { type: Number, default: 2500 },
     url: String,
-    maxAttempts: { type: Number, default: 120 } // ~5 minutes for six sequential posters
+    maxAttempts: { type: Number, default: 120 },
+    until: { type: String, default: "pack_ready" } // pack_ready | posters
   }
 
   connect() {
     this.attempts = 0
+    this.lastPosters = null
     this.timer = setInterval(() => this.refresh(), this.intervalValue)
   }
 
@@ -37,14 +40,33 @@ export default class extends Controller {
       if (!response.ok) return
 
       const data = await response.json()
-      if (data.status === "generating" || data.status === "pending") return
+
+      if (this.untilValue === "pack_ready") {
+        // Still writing captions — keep the Building… screen.
+        if (data.status === "generating" || data.status === "pending") return
+        // Captions ready (or failed) — go to pack view even if posters are still queueing.
+        this.disconnect()
+        this.reloadPage()
+        return
+      }
+
+      // Poster phase: refresh when any card state changes; stop when all done.
+      const snapshot = JSON.stringify(data.posters || {})
+      if (this.lastPosters === null) {
+        this.lastPosters = snapshot
+      } else if (snapshot !== this.lastPosters) {
+        this.lastPosters = snapshot
+        this.disconnect()
+        this.reloadPage()
+        return
+      }
+
       if (data.posters_complete === false) return
+
+      this.disconnect()
     } catch (_error) {
       return
     }
-
-    this.disconnect()
-    this.reloadPage()
   }
 
   showStuckHint() {
