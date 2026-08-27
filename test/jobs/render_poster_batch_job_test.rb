@@ -16,17 +16,24 @@ class RenderPosterBatchJobTest < ActiveSupport::TestCase
     end
   end
 
-  test "index 0 renders first poster and enqueues index 1" do
+  test "index 0 finishes first poster before enqueueing index 1" do
     stub_singleton(Images::Chrome, :path, nil) do
-      assert_enqueued_with(job: RenderPosterBatchJob, args: [ @pack.id, 1 ]) do
-        RenderPosterBatchJob.perform_now(@pack.id, 0)
+      freeze_time do
+        assert_enqueued_with(
+          job: RenderPosterBatchJob,
+          args: [ @pack.id, 1 ],
+          at: RenderPosterBatchJob::NEXT_POSTER_WAIT.from_now
+        ) do
+          RenderPosterBatchJob.perform_now(@pack.id, 0)
+        end
       end
     end
 
-    first = @pack.generated_assets.find_by!(template_key: GeneratedAsset.batches.first.first)
+    first = @pack.generated_assets.find_by!(template_key: "just_listed")
     assert_equal "failed", first.status
-    second = @pack.generated_assets.find_by!(template_key: GeneratedAsset.batches[1].first)
+    second = @pack.generated_assets.find_by!(template_key: "price_card")
     assert_equal "rendering", second.status
+    assert_equal "pending", @pack.generated_assets.find_by!(template_key: "story").status
   end
 
   test "last index does not enqueue another job" do
@@ -36,5 +43,19 @@ class RenderPosterBatchJobTest < ActiveSupport::TestCase
         RenderPosterBatchJob.perform_now(@pack.id, last)
       end
     end
+  end
+
+  test "only one template key is rendered per job invocation" do
+    rendered = []
+    stub_singleton(Images::Chrome, :path, nil) do
+      stub_singleton(Images::RenderPosterBatch, :new, ->(pack, keys) {
+        rendered << keys.dup
+        Object.new.tap { |obj| obj.define_singleton_method(:call) { { errors: [], rendered: 0 } } }
+      }) do
+        RenderPosterBatchJob.perform_now(@pack.id, 0)
+      end
+    end
+
+    assert_equal [ [ "just_listed" ] ], rendered
   end
 end

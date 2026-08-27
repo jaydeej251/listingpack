@@ -66,12 +66,11 @@ class GeneratedAsset < ApplicationRecord
     end
   end
 
-  # sequential (default): one Chrome per poster — safest on Render Free 512MB.
-  # batch: groups of 3 (future Pro / larger hosts). Set POSTER_RENDER_MODE=batch.
+  # sequential (default): exactly one Chrome process per job; next poster waits until this one finishes.
+  # batch: groups of 3 (future Pro / ≥1GB hosts). Set POSTER_RENDER_MODE=batch.
   def self.render_mode(user: nil)
     mode = ENV.fetch("POSTER_RENDER_MODE", "sequential").downcase
-    # Future: enable batch for Pro without flipping Free.
-    # return "batch" if user&.pro? && mode == "plan"
+    # Future: return "batch" if user&.pro? && ENV["POSTER_PRO_BATCH"] == "true"
     mode
   end
 
@@ -81,6 +80,7 @@ class GeneratedAsset < ApplicationRecord
     when "batch"
       keys.each_slice(3).to_a
     else
+      # One key per job — poster N+1 is only enqueued after poster N's job returns.
       keys.map { |key| [ key ] }
     end
   end

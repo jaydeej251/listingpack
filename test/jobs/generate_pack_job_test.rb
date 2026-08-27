@@ -3,7 +3,7 @@ require "test_helper"
 class GeneratePackJobTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
-  test "creates a ready pack with captions and enqueues first poster" do
+  test "creates a ready pack with captions and schedules first poster only" do
     listing = listings(:bgc_condo)
     listing.photos.attach(
       io: File.open(Rails.root.join("public/icon.png")),
@@ -11,8 +11,10 @@ class GeneratePackJobTest < ActiveSupport::TestCase
       content_type: "image/png"
     )
 
-    assert_enqueued_with(job: RenderPosterBatchJob) do
-      GeneratePackJob.perform_now(listing.id)
+    freeze_time do
+      assert_enqueued_with(job: RenderPosterBatchJob, at: GeneratePackJob::FIRST_POSTER_WAIT.from_now) do
+        GeneratePackJob.perform_now(listing.id)
+      end
     end
 
     listing.reload
@@ -23,6 +25,7 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert_equal GeneratedAsset.generation_keys.size, pack.generated_assets.count
     assert_equal "rendering", pack.generated_assets.find_by!(template_key: "just_listed").status
     assert_equal "pending", pack.generated_assets.find_by!(template_key: "story").status
+    assert_equal "pending", pack.generated_assets.find_by!(template_key: "landscape").status
   end
 
   test "sequential poster failures still leave ready copy" do
