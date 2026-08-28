@@ -1,41 +1,56 @@
 <%# locals: listing:, pack: %>
+<% display_keys = GeneratedAsset.display_keys %>
 <% assets = pack.generated_assets.to_a %>
-<% ready_count = assets.count { |a| a.status == "ready" || a.image.attached? } %>
-<% total_count = [ assets.size, GeneratedAsset::TEMPLATE_KEYS.size ].max %>
+<% scoped_assets = assets.select { |asset| display_keys.include?(asset.template_key) } %>
+<% ready_count = scoped_assets.count { |a| a.status == "ready" || a.image.attached? } %>
+<% total_count = display_keys.size %>
 <% in_progress = pack.posters_in_progress? %>
+<% single_poster = total_count == 1 %>
 
 <%= turbo_frame_tag "listing_posters" do %>
   <% if in_progress %>
     <div class="mt-10 rounded-2xl border border-navy/10 bg-sand/40 px-5 py-4" aria-live="polite">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p class="text-sm font-medium text-navy">Creating posters</p>
-          <p class="mt-1 text-sm text-navy/65"><%= ready_count %> of <%= total_count %> ready — others are queued.</p>
+          <p class="text-sm font-medium text-navy"><%= single_poster ? "Creating poster" : "Creating posters" %></p>
+          <p class="mt-1 text-sm text-navy/65">
+            <% if single_poster %>
+              Your branded graphic is on the way.
+            <% else %>
+              <%= ready_count %> of <%= total_count %> ready — others are queued.
+            <% end %>
+          </p>
         </div>
         <span class="inline-flex items-center gap-2 text-sm text-navy/55">
           <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-navy/15 border-t-clay" aria-hidden="true"></span>
           Working
         </span>
       </div>
-      <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-navy/10">
-        <div class="h-full rounded-full bg-clay transition-[width] duration-500" style="width: <%= total_count.zero? ? 0 : ((ready_count * 100.0) / total_count).round %>%;"></div>
-      </div>
+      <% unless single_poster %>
+        <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-navy/10">
+          <div class="h-full rounded-full bg-clay transition-[width] duration-500" style="width: <%= total_count.zero? ? 0 : ((ready_count * 100.0) / total_count).round %>%;"></div>
+        </div>
+      <% end %>
     </div>
   <% elsif pack.error_message.present? %>
     <div class="mt-10 rounded-2xl border border-clay/30 bg-clay/10 px-5 py-4">
-      <p class="text-sm font-medium text-navy">Posters</p>
+      <p class="text-sm font-medium text-navy"><%= single_poster ? "Poster" : "Posters" %></p>
       <p class="mt-1 text-sm text-navy/75"><%= pack.error_message %></p>
     </div>
   <% end %>
 
   <section class="<%= in_progress || pack.error_message.present? ? "mt-6" : "mt-10" %>">
-    <h2 class="font-serif text-3xl text-navy">Posters</h2>
+    <h2 class="font-serif text-3xl text-navy"><%= single_poster ? "Poster" : "Posters" %></h2>
     <p class="mt-2 text-sm text-navy/60">
-      Square, story, landscape, and banner — download the format that fits the channel.
-      <% if current_user.free? %>Free plans include a watermark.<% end %>
+      <% if single_poster %>
+        Branded square graphic for Facebook, Instagram, and Marketplace — attach it to your post, then paste the caption.
+      <% else %>
+        Square, story, landscape, and banner — download the format that fits the channel.
+      <% end %>
+      <% if current_user.free? %> Free plans include a watermark.<% end %>
     </p>
-    <div class="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-      <% GeneratedAsset::TEMPLATE_KEYS.each do |key| %>
+    <div class="mt-6 grid gap-6 <%= single_poster ? "max-w-md" : "sm:grid-cols-2 xl:grid-cols-3" %>">
+      <% display_keys.each do |key| %>
         <%= render "listings/poster",
               listing: listing,
               pack: pack,

@@ -105,7 +105,7 @@ Already at `https://github.com/jaydeej251/listingpack` if you pushed earlier.
 | `RAILS_MAX_THREADS` | `2` |
 | `DB_POOL` | `10` (Solid Queue needs ≥5 even when threads are 2) |
 | `JOB_CONCURRENCY` | `1` |
-| `POSTER_FORMAT_SET` | `all` (six formats) or `core` (squares only) |
+| `POSTER_FORMAT_SET` | `demo` (one square poster — Free default), `core` (three squares), or `all` (six formats) |
 | `POSTER_RENDER_MODE` | `sequential` (1 Chrome at a time — Free default); later `batch` for Pro |
 | `CHROME_PROCESS_TIMEOUT` | `90` — seconds to wait for Chromium WS URL on Free |
 | `CHROME_PATH` | `/usr/bin/chromium` |

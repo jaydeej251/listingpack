@@ -122,6 +122,28 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select "[data-poll-until-value=posters]", count: 0
   end
 
+  test "demo mode shows a single poster card and singular progress copy" do
+    previous = ENV["POSTER_FORMAT_SET"]
+    ENV["POSTER_FORMAT_SET"] = "demo"
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
+    pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
+
+    get listing_path(listing)
+    assert_response :success
+    assert_match(/Creating poster/, response.body)
+    assert_match(/Your branded graphic is on the way/, response.body)
+    assert_match(/Branded square graphic for Facebook/, response.body)
+    assert_select "h2", "Poster"
+    assert_select "[data-controller=poster]", 1
+    assert_no_match(/Queued/, response.body)
+    assert_no_match(/Waiting/, response.body)
+  ensure
+    previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
+  end
+
   test "ready pack with pending posters shows generating and waiting cards" do
     sign_in users(:one)
     listing = listings(:bgc_condo)

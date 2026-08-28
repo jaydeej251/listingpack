@@ -25,18 +25,24 @@ class ContentPack < ApplicationRecord
     status == "generating"
   end
 
-  def posters_complete?
-    return true if generated_assets.empty?
+  def active_poster_assets
+    keys = GeneratedAsset.display_keys
+    generated_assets.select { |asset| keys.include?(asset.template_key) }
+  end
 
-    generated_assets.none?(&:in_progress?)
+  def posters_complete?
+    assets = active_poster_assets
+    return true if assets.empty?
+
+    assets.none?(&:in_progress?)
   end
 
   def posters_in_progress?
-    generated_assets.any?(&:in_progress?)
+    active_poster_assets.any?(&:in_progress?)
   end
 
   def poster_states
-    GeneratedAsset::TEMPLATE_KEYS.index_with do |key|
+    GeneratedAsset.display_keys.index_with do |key|
       asset = generated_assets.find { |row| row.template_key == key }
       next "missing" if asset.blank?
       next "ready" if asset.image.attached? || asset.status == "ready"

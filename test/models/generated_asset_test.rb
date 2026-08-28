@@ -23,9 +23,34 @@ class GeneratedAssetTest < ActiveSupport::TestCase
     ENV["POSTER_FORMAT_SET"] = "core"
     assert_equal GeneratedAsset::CORE_TEMPLATE_KEYS, GeneratedAsset.generation_keys
 
+    ENV["POSTER_FORMAT_SET"] = "demo"
+    assert_equal GeneratedAsset::DEMO_TEMPLATE_KEYS, GeneratedAsset.generation_keys
+
     ENV["POSTER_FORMAT_SET"] = "all"
     assert_equal GeneratedAsset::TEMPLATE_KEYS.sort, GeneratedAsset.generation_keys.sort
   ensure
     previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
+  end
+
+  test "demo mode can override the single poster format" do
+    previous_set = ENV["POSTER_FORMAT_SET"]
+    previous_single = ENV["POSTER_SINGLE_FORMAT"]
+    ENV["POSTER_FORMAT_SET"] = "demo"
+    ENV["POSTER_SINGLE_FORMAT"] = "fb_banner"
+    assert_equal [ "fb_banner" ], GeneratedAsset.generation_keys
+  ensure
+    previous_set.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous_set
+    previous_single.nil? ? ENV.delete("POSTER_SINGLE_FORMAT") : ENV["POSTER_SINGLE_FORMAT"] = previous_single
+  end
+
+  test "demo mode rejects unknown single format keys" do
+    previous_set = ENV["POSTER_FORMAT_SET"]
+    previous_single = ENV["POSTER_SINGLE_FORMAT"]
+    ENV["POSTER_FORMAT_SET"] = "demo"
+    ENV["POSTER_SINGLE_FORMAT"] = "not_a_format"
+    assert_equal GeneratedAsset::DEMO_TEMPLATE_KEYS, GeneratedAsset.generation_keys
+  ensure
+    previous_set.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous_set
+    previous_single.nil? ? ENV.delete("POSTER_SINGLE_FORMAT") : ENV["POSTER_SINGLE_FORMAT"] = previous_single
   end
 end
