@@ -24,8 +24,9 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert pack.facebook_caption.present?
     assert_equal GeneratedAsset.generation_keys.size, pack.generated_assets.count
     assert_equal "rendering", pack.generated_assets.find_by!(template_key: "just_listed").status
-    assert_equal "pending", pack.generated_assets.find_by!(template_key: "story").status
-    assert_equal "pending", pack.generated_assets.find_by!(template_key: "landscape").status
+    GeneratedAsset.generation_keys.drop(1).each do |key|
+      assert_equal "pending", pack.generated_assets.find_by!(template_key: key).status
+    end
   end
 
   test "sequential poster failures still leave ready copy" do
@@ -46,7 +47,7 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert_equal "ready", pack.status
     assert pack.facebook_caption.present?
     assert_match(/couldn’t create the posters|need a retry/i, pack.error_message.to_s)
-    assert_equal 6, pack.generated_assets.count
+    assert_equal GeneratedAsset.generation_keys.size, pack.generated_assets.count
     pack.generated_assets.each do |asset|
       assert_equal "failed", asset.status
       assert_not asset.image.attached?
@@ -72,6 +73,28 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert_equal 3, batches[1].size
   ensure
     previous.nil? ? ENV.delete("POSTER_RENDER_MODE") : ENV["POSTER_RENDER_MODE"] = previous
+  end
+
+  test "demo format set only creates one poster row" do
+    listing = listings(:bgc_condo)
+    listing.photos.attach(
+      io: File.open(Rails.root.join("public/icon.png")),
+      filename: "listing.png",
+      content_type: "image/png"
+    )
+
+    previous = ENV["POSTER_FORMAT_SET"]
+    ENV["POSTER_FORMAT_SET"] = "demo"
+    stub_singleton(Images::Chrome, :path, nil) do
+      perform_enqueued_jobs only: [ GeneratePackJob, RenderPosterBatchJob ] do
+        GeneratePackJob.perform_later(listing.id)
+      end
+    end
+
+    pack = listing.reload.latest_pack
+    assert_equal GeneratedAsset::DEMO_TEMPLATE_KEYS, pack.generated_assets.map(&:template_key)
+  ensure
+    previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
   end
 
   test "core format set only creates square poster rows" do

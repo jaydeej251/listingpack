@@ -48,7 +48,7 @@ services:
       - key: JOB_CONCURRENCY
         value: "1"
       - key: POSTER_FORMAT_SET
-        value: "all"
+        value: "demo"
       - key: POSTER_RENDER_MODE
         value: "sequential"
       - key: POSTER_FIRST_WAIT_SECONDS

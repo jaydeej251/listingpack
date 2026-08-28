@@ -10,6 +10,7 @@ class GeneratedAsset < ApplicationRecord
   }.freeze
 
   TEMPLATE_KEYS = FORMATS.keys.freeze
+  DEMO_TEMPLATE_KEYS = %w[just_listed].freeze
   CORE_TEMPLATE_KEYS = %w[just_listed price_card agent_card].freeze
   EXTENDED_TEMPLATE_KEYS = %w[fb_banner story landscape].freeze
 
@@ -59,11 +60,22 @@ class GeneratedAsset < ApplicationRecord
 
   def self.generation_keys
     case ENV.fetch("POSTER_FORMAT_SET", "all").downcase
+    when "demo", "single"
+      key = ENV.fetch("POSTER_SINGLE_FORMAT", DEMO_TEMPLATE_KEYS.first)
+      TEMPLATE_KEYS.include?(key) ? [ key ] : DEMO_TEMPLATE_KEYS
     when "core", "square", "free"
       CORE_TEMPLATE_KEYS
     else
       TEMPLATE_KEYS
     end
+  end
+
+  def self.display_keys
+    generation_keys
+  end
+
+  def self.multi_format?
+    display_keys.size > 1
   end
 
   # sequential (default): exactly one Chrome process per job; next poster waits until this one finishes.
