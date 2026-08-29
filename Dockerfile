@@ -14,9 +14,9 @@ FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages (Chromium required for Ferrum poster PNGs)
+# Install base packages (libvips for poster PNG compositing)
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client chromium fonts-liberation && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client fonts-liberation && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment
@@ -24,7 +24,7 @@ ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
-    CHROME_PATH="/usr/bin/chromium"
+    POSTER_RENDERER="vips"
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build

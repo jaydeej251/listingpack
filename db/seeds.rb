@@ -62,17 +62,17 @@ end
 
 if Images::PosterRender.enabled?
   begin
-    GeneratedAsset::TEMPLATE_KEYS.each do |key|
+    GeneratedAsset.generation_keys(user: pro).each do |key|
       asset = pack.generated_assets.find_by!(template_key: key)
       next if asset.image.attached?
 
-      Images::RenderTemplate.new(pack, key, watermark: false).call
+      Images::ComposePoster.new(pack, key, watermark: false).call
     end
-  rescue Images::RenderTemplate::Error => e
-    puts "Poster PNGs skipped (Chrome missing or render failed): #{e.message}"
+  rescue Images::ComposePoster::Error => e
+    puts "Poster PNGs skipped (vips render failed): #{e.message}"
   end
 else
-  puts "Poster PNGs skipped (Chrome is disabled on this host so the web process stays up)."
+  puts "Poster PNGs skipped (POSTER_RENDERER is off)."
 end
 
 free = User.find_or_create_by!(email_address: "free@listingpack.local") do |user|
@@ -95,5 +95,5 @@ free.brand_kit.update!(
 puts "Demo logins:"
 puts "  Pro:  agent@listingpack.local / password123  (ready pack on Listings; admin Failures)"
 puts "  Free: free@listingpack.local / password123  (1 of 3 packs used — watermark path)"
-puts "Posters need local Chrome/Chromium for PNG renders."
+puts "Posters render with libvips (POSTER_RENDERER=vips)."
 puts "Recruiting tip: walk 5–10 agents through /guide after Brand kit + one listing pack."

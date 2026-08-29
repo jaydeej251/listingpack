@@ -68,7 +68,7 @@ class PacksRecoverStaleGenerationsTest < ActiveSupport::TestCase
     assert_match(/interrupted/i, calendar.error_message)
   end
 
-  test "unsticks rendering posters immediately when chrome is disabled" do
+  test "unsticks rendering posters immediately when poster rendering is disabled" do
     listing = listings(:bgc_condo)
     listing.update!(status: "ready")
     pack = listing.content_packs.create!(
@@ -79,7 +79,7 @@ class PacksRecoverStaleGenerationsTest < ActiveSupport::TestCase
     )
     pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
 
-    with_env("POSTER_RENDER_ENABLED" => "false") do
+    with_env("POSTER_RENDERER" => "off") do
       Packs::RecoverStaleGenerations.recover_listing_if_stale!(listing)
     end
 
@@ -88,7 +88,7 @@ class PacksRecoverStaleGenerationsTest < ActiveSupport::TestCase
     assert_match(/paused on this server/i, pack.reload.error_message)
   end
 
-  test "fails stale rendering posters on a ready pack when chrome is on" do
+  test "fails stale rendering posters on a ready pack when vips is enabled" do
     listing = listings(:bgc_condo)
     listing.update!(status: "ready")
     pack = listing.content_packs.create!(
@@ -100,7 +100,7 @@ class PacksRecoverStaleGenerationsTest < ActiveSupport::TestCase
     asset = pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
     asset.update_column(:updated_at, 20.minutes.ago)
 
-    without_env("POSTER_RENDER_ENABLED", "RENDER") do
+    without_env("POSTER_RENDERER") do
       Packs::RecoverStaleGenerations.recover_listing_if_stale!(listing, stale_after: 8.minutes)
     end
 
@@ -109,7 +109,7 @@ class PacksRecoverStaleGenerationsTest < ActiveSupport::TestCase
     assert_match(/interrupted/i, asset.error_message)
   end
 
-  test "leaves fresh rendering posters alone when chrome is on" do
+  test "leaves fresh rendering posters alone when vips is enabled" do
     listing = listings(:bgc_condo)
     listing.update!(status: "ready")
     pack = listing.content_packs.create!(
@@ -120,7 +120,7 @@ class PacksRecoverStaleGenerationsTest < ActiveSupport::TestCase
     )
     pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
 
-    without_env("POSTER_RENDER_ENABLED", "RENDER") do
+    without_env("POSTER_RENDERER") do
       Packs::RecoverStaleGenerations.recover_listing_if_stale!(listing, stale_after: 8.minutes)
     end
 

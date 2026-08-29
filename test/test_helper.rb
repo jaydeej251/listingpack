@@ -4,8 +4,9 @@ require "rails/test_help"
 
 module ActiveSupport
   class TestCase
-    # Run tests in parallel with specified workers
-    parallelize(workers: :number_of_processors)
+    # libvips can crash parallel workers on macOS after fork(); Linux CI stays parallel.
+    workers = RUBY_PLATFORM.match?(/darwin/) ? 1 : :number_of_processors
+    parallelize(workers: workers)
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all

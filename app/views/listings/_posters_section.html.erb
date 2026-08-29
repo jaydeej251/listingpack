@@ -1,5 +1,5 @@
 <%# locals: listing:, pack: %>
-<% display_keys = GeneratedAsset.display_keys %>
+<% display_keys = GeneratedAsset.display_keys(user: listing.user) %>
 <% assets = pack.generated_assets.to_a %>
 <% ready_count = pack.poster_ready_count %>
 <% total_count = pack.poster_total_count %>
@@ -43,6 +43,9 @@
     <p class="mt-2 text-sm text-navy/60">
       <% if single_poster %>
         Branded square graphic for Facebook, Instagram, and Marketplace — attach it to your post, then paste the caption.
+        <% if current_user.free? %>
+          <span class="block mt-2 text-navy/55">Pro unlocks story, landscape, banner, and more square formats.</span>
+        <% end %>
       <% else %>
         Square, story, landscape, and banner — download the format that fits the channel.
       <% end %>

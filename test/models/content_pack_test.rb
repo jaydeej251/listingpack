@@ -1,9 +1,7 @@
 require "test_helper"
 
 class ContentPackTest < ActiveSupport::TestCase
-  test "poster_states only reports formats in the active set" do
-    previous = ENV["POSTER_FORMAT_SET"]
-    ENV["POSTER_FORMAT_SET"] = "demo"
+  test "poster_states only reports formats in the active set for free users" do
     listing = listings(:bgc_condo)
     pack = listing.content_packs.create!(status: "ready", facebook_caption: "Hi")
     pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
@@ -13,8 +11,6 @@ class ContentPackTest < ActiveSupport::TestCase
     refute pack.posters_complete?
     assert_equal 0, pack.poster_ready_count
     assert_equal 1, pack.poster_total_count
-  ensure
-    previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
   end
 
   test "poster_ready_count counts attached images even when status lags" do

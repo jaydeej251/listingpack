@@ -8,7 +8,7 @@
 # 4. Set SMTP_* for password reset; PAYMONGO_SECRET_KEY for GCash/Maya checkout
 # 5. Seed once: set SEED_ON_BOOT=true, redeploy once, then set it back to false
 #    (Free web has no Render Shell)
-# 6. For reliable Chromium posters, upgrade web to a plan with ≥1 GB RAM (Starter+)
+# 6. Poster PNGs use libvips — no Chromium required on Free tier
 
 databases:
   - name: listingpack-db
@@ -47,24 +47,10 @@ services:
         value: "1"
       - key: JOB_CONCURRENCY
         value: "1"
-      # Off on Render Free: Chromium OOMs the 512 MB dyno and 502s the site.
-      # Set true on Starter+ (or move to Hatchbox / a sized droplet).
-      - key: POSTER_RENDER_ENABLED
-        value: "false"
-      - key: POSTER_FORMAT_SET
-        value: "demo"
+      - key: POSTER_RENDERER
+        value: "vips"
       - key: POSTER_RENDER_MODE
         value: "sequential"
-      - key: POSTER_FIRST_WAIT_SECONDS
-        value: "2"
-      - key: POSTER_NEXT_WAIT_SECONDS
-        value: "3"
-      - key: CHROME_PROCESS_TIMEOUT
-        value: "90"
-      - key: CHROME_TIMEOUT
-        value: "60"
-      - key: CHROME_PATH
-        value: /usr/bin/chromium
       - key: APP_HOST
         sync: false
       - key: OPENAI_API_KEY

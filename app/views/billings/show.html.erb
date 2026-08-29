@@ -12,7 +12,7 @@
     <p class="mt-2 text-3xl text-navy">₱0</p>
     <ul class="mt-4 space-y-2 text-sm text-navy/70">
       <li><%= User::FREE_PACKS_PER_MONTH %> packs / month</li>
-      <li>Watermark on posters</li>
+      <li>1 square poster per pack (watermarked)</li>
       <li>Captions, seller recap, and This week</li>
       <li><%= current_user.pro? ? "Upgrade path if you pause Pro" : "#{current_user.remaining_packs} left this month" %></li>
     </ul>
@@ -26,8 +26,9 @@
     <p class="mt-2 text-3xl">₱499<span class="text-base font-sans opacity-70">/mo</span></p>
     <ul class="mt-4 space-y-2 text-sm text-paper/75">
       <li>Unlimited packs</li>
+      <li>All 6 poster formats — square, story, 16:9, banner</li>
       <li>No watermark on posters</li>
-      <li>Same posters, copy, and This week — without the cap</li>
+      <li>Same copy and This week — without the monthly cap</li>
       <li>Facebook Page publishing — Phase 9, after payers</li>
     </ul>
     <% if current_user.pro? %>

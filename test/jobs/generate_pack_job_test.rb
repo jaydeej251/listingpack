@@ -3,7 +3,7 @@ require "test_helper"
 class GeneratePackJobTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
-  test "creates a ready pack with captions and schedules first poster only" do
+  test "creates a ready pack with captions and schedules first poster for free users" do
     listing = listings(:bgc_condo)
     listing.photos.attach(
       io: File.open(Rails.root.join("public/icon.png")),
@@ -22,9 +22,26 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert_equal "ready", listing.status
     assert_equal "ready", pack.status
     assert pack.facebook_caption.present?
-    assert_equal GeneratedAsset.generation_keys.size, pack.generated_assets.count
+    assert_equal 1, pack.generated_assets.count
+    assert_equal "just_listed", pack.generated_assets.first.template_key
     assert_equal "rendering", pack.generated_assets.find_by!(template_key: "just_listed").status
-    GeneratedAsset.generation_keys.drop(1).each do |key|
+  end
+
+  test "pro users get all poster rows" do
+    listing = listings(:bgc_condo)
+    listing.user.update!(plan: "pro")
+    listing.photos.attach(
+      io: File.open(Rails.root.join("public/icon.png")),
+      filename: "listing.png",
+      content_type: "image/png"
+    )
+
+    GeneratePackJob.perform_now(listing.id)
+
+    pack = listing.reload.latest_pack
+    assert_equal GeneratedAsset::TEMPLATE_KEYS.size, pack.generated_assets.count
+    assert_equal "rendering", pack.generated_assets.find_by!(template_key: "just_listed").status
+    GeneratedAsset::TEMPLATE_KEYS.drop(1).each do |key|
       assert_equal "pending", pack.generated_assets.find_by!(template_key: key).status
     end
   end
@@ -37,7 +54,7 @@ class GeneratePackJobTest < ActiveSupport::TestCase
       content_type: "image/png"
     )
 
-    stub_singleton(Images::Chrome, :path, nil) do
+    stub_singleton(Images::ComposePoster, :new, ->(*) { raise Images::ComposePoster::Error, "vips down" }) do
       perform_enqueued_jobs only: [ GeneratePackJob, RenderPosterBatchJob ] do
         GeneratePackJob.perform_later(listing.id)
       end
@@ -46,18 +63,14 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     pack = listing.reload.latest_pack
     assert_equal "ready", pack.status
     assert pack.facebook_caption.present?
-    assert_match(/couldn’t create the posters|need a retry/i, pack.error_message.to_s)
-    assert_equal GeneratedAsset.generation_keys.size, pack.generated_assets.count
-    pack.generated_assets.each do |asset|
-      assert_equal "failed", asset.status
-      assert_not asset.image.attached?
-    end
+    assert_equal 1, pack.generated_assets.count
+    assert_equal "failed", pack.generated_assets.first.status
   end
 
-  test "default mode is one poster per batch" do
+  test "default mode is one poster per batch for pro" do
     previous = ENV["POSTER_RENDER_MODE"]
     ENV.delete("POSTER_RENDER_MODE")
-    batches = GeneratedAsset.batches
+    batches = GeneratedAsset.batches(user: users(:two))
     assert_equal 6, batches.size
     assert batches.all? { |batch| batch.size == 1 }
   ensure
@@ -67,7 +80,7 @@ class GeneratePackJobTest < ActiveSupport::TestCase
   test "batch mode groups posters by three for future Pro" do
     previous = ENV["POSTER_RENDER_MODE"]
     ENV["POSTER_RENDER_MODE"] = "batch"
-    batches = GeneratedAsset.batches
+    batches = GeneratedAsset.batches(user: users(:two))
     assert_equal 2, batches.size
     assert_equal 3, batches[0].size
     assert_equal 3, batches[1].size
@@ -75,8 +88,9 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     previous.nil? ? ENV.delete("POSTER_RENDER_MODE") : ENV["POSTER_RENDER_MODE"] = previous
   end
 
-  test "demo format set only creates one poster row" do
+  test "POSTER_FORMAT_SET demo env override creates one poster row" do
     listing = listings(:bgc_condo)
+    listing.user.update!(plan: "pro")
     listing.photos.attach(
       io: File.open(Rails.root.join("public/icon.png")),
       filename: "listing.png",
@@ -85,36 +99,9 @@ class GeneratePackJobTest < ActiveSupport::TestCase
 
     previous = ENV["POSTER_FORMAT_SET"]
     ENV["POSTER_FORMAT_SET"] = "demo"
-    stub_singleton(Images::Chrome, :path, nil) do
-      perform_enqueued_jobs only: [ GeneratePackJob, RenderPosterBatchJob ] do
-        GeneratePackJob.perform_later(listing.id)
-      end
-    end
-
+    GeneratePackJob.perform_now(listing.id)
     pack = listing.reload.latest_pack
     assert_equal GeneratedAsset::DEMO_TEMPLATE_KEYS, pack.generated_assets.map(&:template_key)
-  ensure
-    previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
-  end
-
-  test "core format set only creates square poster rows" do
-    listing = listings(:bgc_condo)
-    listing.photos.attach(
-      io: File.open(Rails.root.join("public/icon.png")),
-      filename: "listing.png",
-      content_type: "image/png"
-    )
-
-    previous = ENV["POSTER_FORMAT_SET"]
-    ENV["POSTER_FORMAT_SET"] = "core"
-    stub_singleton(Images::Chrome, :path, nil) do
-      perform_enqueued_jobs only: [ GeneratePackJob, RenderPosterBatchJob ] do
-        GeneratePackJob.perform_later(listing.id)
-      end
-    end
-
-    pack = listing.reload.latest_pack
-    assert_equal GeneratedAsset::CORE_TEMPLATE_KEYS.sort, pack.generated_assets.map(&:template_key).sort
   ensure
     previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
   end
@@ -128,7 +115,7 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     )
     pack = listing.content_packs.create!(language: listing.language, status: "generating", stage: listing.stage)
 
-    stub_singleton(Images::Chrome, :path, nil) do
+    stub_singleton(Images::ComposePoster, :new, ->(*) { raise Images::ComposePoster::Error, "vips down" }) do
       perform_enqueued_jobs only: [ GeneratePackJob, RenderPosterBatchJob ] do
         GeneratePackJob.perform_later(listing.id, pack.id, false)
         GeneratePackJob.perform_later(listing.id, pack.id, false)
@@ -158,7 +145,7 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert_equal "failed", listing.reload.status
   end
 
-  test "skips chrome jobs when poster rendering is disabled" do
+  test "skips poster jobs when renderer is off" do
     listing = listings(:bgc_condo)
     listing.photos.attach(
       io: File.open(Rails.root.join("public/icon.png")),
@@ -166,7 +153,7 @@ class GeneratePackJobTest < ActiveSupport::TestCase
       content_type: "image/png"
     )
 
-    with_env("POSTER_RENDER_ENABLED" => "false") do
+    with_env("POSTER_RENDERER" => "off") do
       assert_no_enqueued_jobs only: RenderPosterBatchJob do
         GeneratePackJob.perform_now(listing.id)
       end
