@@ -60,15 +60,19 @@ GeneratedAsset::TEMPLATE_KEYS.each do |key|
   pack.generated_assets.find_or_create_by!(template_key: key)
 end
 
-begin
-  GeneratedAsset::TEMPLATE_KEYS.each do |key|
-    asset = pack.generated_assets.find_by!(template_key: key)
-    next if asset.image.attached?
+if Images::PosterRender.enabled?
+  begin
+    GeneratedAsset::TEMPLATE_KEYS.each do |key|
+      asset = pack.generated_assets.find_by!(template_key: key)
+      next if asset.image.attached?
 
-    Images::RenderTemplate.new(pack, key, watermark: false).call
+      Images::RenderTemplate.new(pack, key, watermark: false).call
+    end
+  rescue Images::RenderTemplate::Error => e
+    puts "Poster PNGs skipped (Chrome missing or render failed): #{e.message}"
   end
-rescue Images::RenderTemplate::Error => e
-  puts "Poster PNGs skipped (Chrome missing or render failed): #{e.message}"
+else
+  puts "Poster PNGs skipped (Chrome is disabled on this host so the web process stays up)."
 end
 
 free = User.find_or_create_by!(email_address: "free@listingpack.local") do |user|

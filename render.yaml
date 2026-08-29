@@ -47,6 +47,10 @@ services:
         value: "1"
       - key: JOB_CONCURRENCY
         value: "1"
+      # Off on Render Free: Chromium OOMs the 512 MB dyno and 502s the site.
+      # Set true on Starter+ (or move to Hatchbox / a sized droplet).
+      - key: POSTER_RENDER_ENABLED
+        value: "false"
       - key: POSTER_FORMAT_SET
         value: "demo"
       - key: POSTER_RENDER_MODE

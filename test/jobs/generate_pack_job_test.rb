@@ -157,4 +157,29 @@ class GeneratePackJobTest < ActiveSupport::TestCase
     assert_equal 0, user.reload.packs_count_in_period
     assert_equal "failed", listing.reload.status
   end
+
+  test "skips chrome jobs when poster rendering is disabled" do
+    listing = listings(:bgc_condo)
+    listing.photos.attach(
+      io: File.open(Rails.root.join("public/icon.png")),
+      filename: "listing.png",
+      content_type: "image/png"
+    )
+
+    with_env("POSTER_RENDER_ENABLED" => "false") do
+      assert_no_enqueued_jobs only: RenderPosterBatchJob do
+        GeneratePackJob.perform_now(listing.id)
+      end
+    end
+
+    pack = listing.reload.latest_pack
+    assert_equal "ready", listing.status
+    assert_equal "ready", pack.status
+    assert pack.facebook_caption.present?
+    assert_match(/paused on this server/i, pack.error_message)
+    pack.generated_assets.each do |asset|
+      assert_equal "failed", asset.status
+      assert_not asset.image.attached?
+    end
+  end
 end

@@ -6,6 +6,11 @@ class RenderPosterBatchJob < ApplicationJob
 
   def perform(content_pack_id, batch_index = 0)
     pack = ContentPack.find(content_pack_id)
+    unless Images::PosterRender.enabled?
+      Images::PosterRender.disable_pack!(pack)
+      return
+    end
+
     batches = GeneratedAsset.batches(user: pack.listing.user)
     keys = batches[batch_index]
     return if keys.blank?

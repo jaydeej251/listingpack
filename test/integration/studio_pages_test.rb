@@ -1,6 +1,7 @@
 require "test_helper"
 
 class StudioPagesTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
   test "landing explains graphic seller recap and empty week" do
     get root_path
     assert_response :success
@@ -292,6 +293,43 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
       delete listing_path(listing)
     end
     assert_redirected_to listings_path
+  end
+
+  test "ready pack with a stuck poster shows captions when chrome is disabled" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
+    pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
+
+    with_env("POSTER_RENDER_ENABLED" => "false") do
+      get listing_path(listing)
+    end
+
+    assert_response :success
+    assert_select "h2", "Captions and follow-ups"
+    assert_match "Just listed sa BGC", response.body
+    assert_match(/paused on this server/i, response.body)
+    assert_no_match(/Creating poster/, response.body)
+    assert_select "h2", text: "Building this pack", count: 0
+  end
+
+  test "redraw does not launch a chrome job when poster rendering is disabled" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
+    asset = pack.generated_assets.create!(template_key: "just_listed", status: "failed")
+
+    with_env("POSTER_RENDER_ENABLED" => "false") do
+      assert_no_enqueued_jobs only: RenderAssetJob do
+        post regenerate_listing_content_pack_generated_asset_path(listing, pack, asset)
+      end
+    end
+
+    assert_redirected_to listing_path(listing)
+    assert_equal "failed", asset.reload.status
+    assert_match(/paused on this server/i, flash[:alert].to_s)
   end
 
   private

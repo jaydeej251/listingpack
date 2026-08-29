@@ -39,17 +39,10 @@ class GeneratePackJob < ApplicationJob
     )
 
     ensure_poster_rows!(pack)
-    first_key = GeneratedAsset.batches(user: listing.user).dig(0, 0)
-    if first_key
-      pack.generated_assets.where(template_key: first_key).update_all(status: "rendering", updated_at: Time.current)
-    end
-
     pack.update!(status: "ready", error_message: nil)
     listing.update!(status: "ready")
 
-    GC.start
-    # Captions are done. Poster #1 starts after a short pause; #2 only after #1's job finishes.
-    RenderPosterBatchJob.set(wait: FIRST_POSTER_WAIT).perform_later(pack.id, 0) if first_key
+    schedule_or_skip_posters!(pack, listing)
   rescue Ai::Client::Error
     raise
   rescue StandardError => e
@@ -66,5 +59,20 @@ class GeneratePackJob < ApplicationJob
         asset = pack.generated_assets.find_or_create_by!(template_key: key)
         asset.update!(status: "pending", error_message: nil)
       end
+    end
+
+    def schedule_or_skip_posters!(pack, listing)
+      unless Images::PosterRender.enabled?
+        Images::PosterRender.disable_pack!(pack)
+        return
+      end
+
+      first_key = GeneratedAsset.batches(user: listing.user).dig(0, 0)
+      return if first_key.blank?
+
+      pack.generated_assets.where(template_key: first_key).update_all(status: "rendering", updated_at: Time.current)
+      GC.start
+      # Captions are done. Poster #1 starts after a short pause; #2 only after #1's job finishes.
+      RenderPosterBatchJob.set(wait: FIRST_POSTER_WAIT).perform_later(pack.id, 0)
     end
 end

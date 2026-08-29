@@ -58,4 +58,21 @@ class RenderPosterBatchJobTest < ActiveSupport::TestCase
 
     assert_equal [ [ "just_listed" ] ], rendered
   end
+
+  test "disabled skips chrome and does not enqueue the next poster" do
+    chrome_opened = false
+    stub_singleton(Images::PosterBrowser, :open, ->(*) { chrome_opened = true }) do
+      with_env("POSTER_RENDER_ENABLED" => "false") do
+        assert_no_enqueued_jobs only: RenderPosterBatchJob do
+          RenderPosterBatchJob.perform_now(@pack.id, 0)
+        end
+      end
+    end
+
+    refute chrome_opened
+    @pack.generated_assets.each do |asset|
+      assert_equal "failed", asset.reload.status
+    end
+    assert_match(/paused on this server/i, @pack.reload.error_message)
+  end
 end

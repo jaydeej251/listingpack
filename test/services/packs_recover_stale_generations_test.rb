@@ -67,4 +67,63 @@ class PacksRecoverStaleGenerationsTest < ActiveSupport::TestCase
     assert_equal "failed", calendar.reload.status
     assert_match(/interrupted/i, calendar.error_message)
   end
+
+  test "unsticks rendering posters immediately when chrome is disabled" do
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(
+      language: listing.language,
+      status: "ready",
+      stage: listing.stage,
+      facebook_caption: "Ready copy"
+    )
+    pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
+
+    with_env("POSTER_RENDER_ENABLED" => "false") do
+      Packs::RecoverStaleGenerations.recover_listing_if_stale!(listing)
+    end
+
+    assert_equal "ready", listing.reload.status
+    assert_equal "failed", pack.generated_assets.find_by!(template_key: "just_listed").reload.status
+    assert_match(/paused on this server/i, pack.reload.error_message)
+  end
+
+  test "fails stale rendering posters on a ready pack when chrome is on" do
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(
+      language: listing.language,
+      status: "ready",
+      stage: listing.stage,
+      facebook_caption: "Ready copy"
+    )
+    asset = pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
+    asset.update_column(:updated_at, 20.minutes.ago)
+
+    without_env("POSTER_RENDER_ENABLED", "RENDER") do
+      Packs::RecoverStaleGenerations.recover_listing_if_stale!(listing, stale_after: 8.minutes)
+    end
+
+    assert_equal "ready", listing.reload.status
+    assert_equal "failed", asset.reload.status
+    assert_match(/interrupted/i, asset.error_message)
+  end
+
+  test "leaves fresh rendering posters alone when chrome is on" do
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(
+      language: listing.language,
+      status: "ready",
+      stage: listing.stage,
+      facebook_caption: "Ready copy"
+    )
+    pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
+
+    without_env("POSTER_RENDER_ENABLED", "RENDER") do
+      Packs::RecoverStaleGenerations.recover_listing_if_stale!(listing, stale_after: 8.minutes)
+    end
+
+    assert_equal "rendering", pack.generated_assets.find_by!(template_key: "just_listed").reload.status
+  end
 end
