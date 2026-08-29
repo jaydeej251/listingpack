@@ -53,6 +53,19 @@ class ContentPacksController < ApplicationController
   def posters
     Packs::RecoverStaleGenerations.recover_listing_if_stale!(@listing)
     @pack = load_latest_pack
+
+    unless turbo_frame_request?
+      redirect_to listing_path(@listing)
+      return
+    end
+
+    if @pack.blank?
+      render html: helpers.turbo_frame_tag("listing_posters") {
+        helpers.tag.p("No pack yet.", class: "mt-10 text-sm text-navy/70")
+      }.html_safe, layout: false
+      return
+    end
+
     render partial: "listings/posters_section", locals: { listing: @listing, pack: @pack }, layout: false
   end
 

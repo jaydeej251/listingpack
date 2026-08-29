@@ -32,14 +32,15 @@ module Images
       scaled.crop(left, top, target_width, target_height)
     end
 
-    def self.load_attachment(attachment)
+    def self.load_attachment(attachment, max_side: 2400)
       return nil if attachment.blank?
 
       blob = attachment
       blob = attachment.blob if attachment.respond_to?(:blob)
       return nil unless blob&.respond_to?(:download)
 
-      Vips::Image.new_from_buffer(blob.download, "")
+      # Shrink during decode — avoids loading multi-megapixel originals into RAM on small dynos.
+      Vips::Image.thumbnail_buffer(blob.download, max_side, size: :down)
     rescue Vips::Error, ActiveStorage::FileNotFoundError
       nil
     end

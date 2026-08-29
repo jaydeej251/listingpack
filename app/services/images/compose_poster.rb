@@ -29,6 +29,9 @@ module Images
       asset
     rescue Vips::Error, StandardError => e
       raise Error, e.message
+    ensure
+      release_memory!
+      GC.start
     end
 
     private
@@ -54,15 +57,23 @@ module Images
       end
 
       def photo_image
-        @photo_image ||= PosterCanvas.load_attachment(@listing.photos.first)
+        @photo_image ||= PosterCanvas.load_attachment(@listing.photos.first, max_side: photo_max_side)
       end
 
       def logo_image
-        @logo_image ||= PosterCanvas.load_attachment(@brand&.logo)
+        @logo_image ||= PosterCanvas.load_attachment(@brand&.logo, max_side: 512)
       end
 
       def headshot_image
-        @headshot_image ||= PosterCanvas.load_attachment(@brand&.headshot)
+        @headshot_image ||= PosterCanvas.load_attachment(@brand&.headshot, max_side: 512)
+      end
+
+      def photo_max_side
+        ENV.fetch("POSTER_PHOTO_MAX_PX", "2400").to_i
+      end
+
+      def release_memory!
+        @photo_image = @logo_image = @headshot_image = nil
       end
 
       def render_just_listed(width, height)
