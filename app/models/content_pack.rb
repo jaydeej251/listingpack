@@ -41,6 +41,14 @@ class ContentPack < ApplicationRecord
     active_poster_assets.any?(&:in_progress?)
   end
 
+  def poster_ready_count
+    active_poster_assets.count(&:ready?)
+  end
+
+  def poster_total_count
+    GeneratedAsset.display_keys.size
+  end
+
   def poster_states
     GeneratedAsset.display_keys.index_with do |key|
       asset = generated_assets.find { |row| row.template_key == key }

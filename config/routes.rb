@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     resources :content_packs, only: %i[ create ] do
       collection do
         get :status
+        get :posters
         post :retry
       end
       resources :captions, only: :update

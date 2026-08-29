@@ -9,13 +9,16 @@ export default class extends Controller {
     url: String,
     maxAttempts: { type: Number, default: 120 },
     until: { type: String, default: "pack_ready" }, // pack_ready | posters
-    frame: { type: String, default: "listing_posters" }
+    frame: { type: String, default: "listing_posters" },
+    frameUrl: String
   }
 
   connect() {
     this.attempts = 0
     this.lastPosters = null
     this.timer = setInterval(() => this.refresh(), this.intervalValue)
+    // Don't wait a full interval when the HTML may already be behind the worker.
+    if (this.untilValue === "posters") this.refresh()
   }
 
   disconnect() {
@@ -50,10 +53,13 @@ export default class extends Controller {
       }
 
       const snapshot = JSON.stringify(data.posters || {})
-      if (this.lastPosters === null) {
-        this.lastPosters = snapshot
-      } else if (snapshot !== this.lastPosters) {
-        this.lastPosters = snapshot
+      const isFirstPoll = this.lastPosters === null
+      const changed = this.lastPosters !== snapshot
+      this.lastPosters = snapshot
+
+      // First poll must refresh: page HTML is often stale (e.g. 0/6) while JSON
+      // already shows posters ready after the pack_ready reload.
+      if (isFirstPoll || changed) {
         await this.refreshPostersFrame()
       }
 
@@ -66,15 +72,24 @@ export default class extends Controller {
     }
   }
 
+  posterFrameUrl() {
+    if (this.hasFrameUrlValue) return this.frameUrlValue
+    if (this.hasUrlValue) return this.urlValue.replace(/status\.json$/, "posters")
+    return window.location.href
+  }
+
   async refreshPostersFrame() {
     const frame = document.getElementById(this.frameValue)
-    if (frame && typeof frame.reload === "function") {
-      frame.reload()
+    const url = this.posterFrameUrl()
+
+    if (frame && window.Turbo?.visit) {
+      await window.Turbo.visit(url, { frame: this.frameValue, action: "replace" })
       return
     }
 
-    if (frame && window.Turbo?.visit) {
-      await window.Turbo.visit(window.location.href, { frame: this.frameValue, action: "replace" })
+    if (frame && typeof frame.reload === "function") {
+      frame.src = url
+      frame.reload()
       return
     }
 
