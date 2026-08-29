@@ -34,6 +34,7 @@ module Images
     end
 
     def self.open(window_size: [ 1080, 1080 ])
+      raise Error, Images::PosterRender::DISABLED_MESSAGE unless Images::PosterRender.enabled?
       raise Error, "Google Chrome was not found" unless Images::Chrome.path
 
       attempts = 0

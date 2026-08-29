@@ -23,4 +23,22 @@ class ImagesPosterBrowserTest < ActiveSupport::TestCase
   ensure
     previous.each { |key, value| value.nil? ? ENV.delete(key) : ENV[key] = value }
   end
+
+  test "does not start ferrum when poster rendering is disabled" do
+    ferrum_called = false
+    original = Ferrum::Browser.method(:new)
+    Ferrum::Browser.define_singleton_method(:new) do |**|
+      ferrum_called = true
+      original.call
+    end
+
+    with_env("POSTER_RENDER_ENABLED" => "false") do
+      error = assert_raises(Images::PosterBrowser::Error) { Images::PosterBrowser.open }
+      assert_match(/paused on this server/i, error.message)
+    end
+
+    refute ferrum_called
+  ensure
+    Ferrum::Browser.define_singleton_method(:new, original) if defined?(original) && original
+  end
 end

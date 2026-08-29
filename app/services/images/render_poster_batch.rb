@@ -11,6 +11,11 @@ module Images
     def call
       return { errors: [], rendered: 0 } if @keys.empty?
 
+      unless Images::PosterRender.enabled?
+        fail_all!(Images::PosterRender::DISABLED_MESSAGE)
+        return { errors: @keys.map { |key| "#{key}: #{Images::PosterRender::DISABLED_MESSAGE}" }, rendered: 0 }
+      end
+
       watermark = @listing.user.free?
       photo_uri = Images::DataUri.from_attachment(@listing.photos.first)
       logo_uri = Images::DataUri.from_attachment(@listing.user.brand_kit&.logo)

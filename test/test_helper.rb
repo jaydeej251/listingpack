@@ -29,5 +29,13 @@ module ActiveSupport
     ensure
       previous.each { |key, value| value.nil? ? ENV.delete(key) : ENV[key] = value }
     end
+
+    def with_env(vars)
+      previous = vars.keys.index_with { |key| ENV[key] }
+      vars.each { |key, value| value.nil? ? ENV.delete(key) : ENV[key] = value.to_s }
+      yield
+    ensure
+      previous.each { |key, value| value.nil? ? ENV.delete(key) : ENV[key] = value }
+    end
   end
 end
