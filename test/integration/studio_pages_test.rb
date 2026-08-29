@@ -108,7 +108,43 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     body = JSON.parse(response.body)
     assert_equal "ready", body["status"]
     assert_equal false, body["posters_complete"]
+    assert_equal 0, body["ready_count"]
+    assert_equal GeneratedAsset.display_keys.size, body["total_count"]
     assert_equal "rendering", body["posters"]["just_listed"]
+  end
+
+  test "posters frame endpoint returns fresh ready count" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
+    ready = pack.generated_assets.create!(template_key: "just_listed", status: "ready")
+    ready.image.attach(
+      io: File.open(Rails.root.join("public/icon.png")),
+      filename: "poster.png",
+      content_type: "image/png"
+    )
+    pack.generated_assets.create!(template_key: "price_card", status: "ready")
+    pack.generated_assets.create!(template_key: "agent_card", status: "rendering")
+
+    get posters_listing_content_packs_path(listing)
+    assert_response :success
+    assert_select "turbo-frame#listing_posters"
+    assert_match(/2 of #{GeneratedAsset.display_keys.size} ready/, response.body)
+    assert_select "a", text: "Download PNG"
+    assert_match(/Generating/, response.body)
+  end
+
+  test "listing show wires poster poll to posters frame endpoint" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+    listing.update!(status: "ready")
+    pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
+    pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
+
+    get listing_path(listing)
+    assert_response :success
+    assert_select "[data-poll-frame-url-value=?]", posters_listing_content_packs_path(listing)
   end
 
   test "generating listing polls until pack is ready not until all posters finish" do

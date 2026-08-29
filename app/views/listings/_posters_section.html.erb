@@ -1,9 +1,8 @@
 <%# locals: listing:, pack: %>
 <% display_keys = GeneratedAsset.display_keys %>
 <% assets = pack.generated_assets.to_a %>
-<% scoped_assets = assets.select { |asset| display_keys.include?(asset.template_key) } %>
-<% ready_count = scoped_assets.count { |a| a.status == "ready" || a.image.attached? } %>
-<% total_count = display_keys.size %>
+<% ready_count = pack.poster_ready_count %>
+<% total_count = pack.poster_total_count %>
 <% in_progress = pack.posters_in_progress? %>
 <% single_poster = total_count == 1 %>
 

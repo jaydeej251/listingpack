@@ -16,7 +16,7 @@
 <% ratio = GeneratedAsset.aspect_ratio_css(key) %>
 <% label = GeneratedAsset.format_for(key).fetch(:label) %>
 
-<figure class="card p-3" data-controller="poster" data-poster-image-url-value="<%= image_url %>" data-poster-status="<%= status %>">
+<figure class="card p-3" data-controller="poster" data-poster-key="<%= key %>" data-poster-image-url-value="<%= image_url %>" data-poster-status="<%= status %>">
   <% if status == "ready" && attached %>
     <button type="button" class="poster-hit" data-action="poster#open" aria-haspopup="dialog" aria-controls="poster-dialog-<%= asset.id %>">
       <%= image_tag asset.image,

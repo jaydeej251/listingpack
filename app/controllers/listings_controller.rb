@@ -7,7 +7,10 @@ class ListingsController < ApplicationController
 
   def show
     Packs::RecoverStaleGenerations.recover_listing_if_stale!(@listing)
-    @pack = @listing.latest_pack
+    @pack = @listing.content_packs
+                    .includes(generated_assets: { image_attachment: :blob })
+                    .order(created_at: :desc)
+                    .first
     assign_poster_vars
   end
 

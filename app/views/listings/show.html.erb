@@ -40,6 +40,7 @@
     data-poll-url-value="<%= status_listing_content_packs_path(@listing, format: :json) %>"
     data-poll-until-value="posters"
     data-poll-frame-value="listing_posters"
+    data-poll-frame-url-value="<%= posters_listing_content_packs_path(@listing) %>"
     data-poll-max-attempts-value="120"
   >
     <%= render "listings/pack", listing: @listing, pack: @pack %>
