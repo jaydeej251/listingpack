@@ -1,7 +1,7 @@
 class RenderPosterBatchJob < ApplicationJob
   queue_as :default
 
-  # Pause between posters so Chromium RSS can be reclaimed between renders.
+  # Pause between posters so memory can be reclaimed between renders.
   NEXT_POSTER_WAIT = ENV.fetch("POSTER_NEXT_WAIT_SECONDS", "3").to_i.seconds
 
   def perform(content_pack_id, batch_index = 0)
@@ -15,7 +15,7 @@ class RenderPosterBatchJob < ApplicationJob
     keys = batches[batch_index]
     return if keys.blank?
 
-    # Strict 1-by-1: never open Chrome for more than one template in this job.
+    # Strict 1-by-1: one template per job.
     key = keys.first
     Images::RenderPosterBatch.new(pack, [ key ]).call
     Packs::UpdatePosterWarning.call(pack.reload)
@@ -33,7 +33,7 @@ class RenderPosterBatchJob < ApplicationJob
       pack.generated_assets.where(template_key: next_key).update_all(status: "rendering", updated_at: Time.current)
       Packs::UpdatePosterWarning.call(pack)
 
-      # Only after the previous Chrome process has quit — next job starts later.
+      # Next format starts after a short pause.
       self.class.set(wait: NEXT_POSTER_WAIT).perform_later(content_pack_id, next_index)
     end
 end

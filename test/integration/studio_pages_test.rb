@@ -101,7 +101,6 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     listing.update!(status: "ready")
     pack = listing.content_packs.create!(status: "ready", facebook_caption: "Hi")
     pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
-    pack.generated_assets.create!(template_key: "story", status: "pending")
 
     get status_listing_content_packs_path(listing, format: :json)
     assert_response :success
@@ -109,13 +108,14 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_equal "ready", body["status"]
     assert_equal false, body["posters_complete"]
     assert_equal 0, body["ready_count"]
-    assert_equal GeneratedAsset.display_keys.size, body["total_count"]
+    assert_equal GeneratedAsset.display_keys(user: listing.user).size, body["total_count"]
     assert_equal "rendering", body["posters"]["just_listed"]
   end
 
   test "posters frame endpoint returns fresh ready count" do
     sign_in users(:one)
     listing = listings(:bgc_condo)
+    listing.user.update!(plan: "pro")
     listing.update!(status: "ready")
     pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
     ready = pack.generated_assets.create!(template_key: "just_listed", status: "ready")
@@ -130,7 +130,7 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     get posters_listing_content_packs_path(listing)
     assert_response :success
     assert_select "turbo-frame#listing_posters"
-    assert_match(/2 of #{GeneratedAsset.display_keys.size} ready/, response.body)
+    assert_match(/2 of #{GeneratedAsset.display_keys(user: listing.user).size} ready/, response.body)
     assert_select "a", text: "Download PNG"
     assert_match(/Generating/, response.body)
   end
@@ -184,6 +184,7 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
   test "ready pack with pending posters shows generating and waiting cards" do
     sign_in users(:one)
     listing = listings(:bgc_condo)
+    listing.user.update!(plan: "pro")
     listing.update!(status: "ready")
     pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
     pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
@@ -206,6 +207,7 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
   test "ready pack uses copy tabs and download without a confirm step" do
     sign_in users(:one)
     listing = listings(:bgc_condo)
+    listing.user.update!(plan: "pro")
     listing.update!(status: "ready")
     pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
     GeneratedAsset::TEMPLATE_KEYS.each { |key| pack.generated_assets.create!(template_key: key) }
@@ -241,6 +243,7 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
   test "ready listing show renders the pack inline, not a loading placeholder" do
     sign_in users(:one)
     listing = listings(:bgc_condo)
+    listing.user.update!(plan: "pro")
     listing.update!(status: "ready")
     pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
     asset = pack.generated_assets.create!(template_key: "just_listed")
@@ -331,14 +334,14 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_redirected_to listings_path
   end
 
-  test "ready pack with a stuck poster shows captions when chrome is disabled" do
+  test "ready pack with a stuck poster shows captions when poster rendering is disabled" do
     sign_in users(:one)
     listing = listings(:bgc_condo)
     listing.update!(status: "ready")
     pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
     pack.generated_assets.create!(template_key: "just_listed", status: "rendering")
 
-    with_env("POSTER_RENDER_ENABLED" => "false") do
+    with_env("POSTER_RENDERER" => "off") do
       get listing_path(listing)
     end
 
@@ -350,14 +353,14 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Building this pack", count: 0
   end
 
-  test "redraw does not launch a chrome job when poster rendering is disabled" do
+  test "redraw does not launch a render job when poster rendering is disabled" do
     sign_in users(:one)
     listing = listings(:bgc_condo)
     listing.update!(status: "ready")
     pack = listing.content_packs.create!(status: "ready", facebook_caption: "Just listed sa BGC")
     asset = pack.generated_assets.create!(template_key: "just_listed", status: "failed")
 
-    with_env("POSTER_RENDER_ENABLED" => "false") do
+    with_env("POSTER_RENDERER" => "off") do
       assert_no_enqueued_jobs only: RenderAssetJob do
         post regenerate_listing_content_pack_generated_asset_path(listing, pack, asset)
       end

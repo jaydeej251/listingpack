@@ -1,31 +1,16 @@
 require "test_helper"
 
 class ImagesPosterRenderTest < ActiveSupport::TestCase
-  test "enabled by default off Render" do
-    without_env("POSTER_RENDER_ENABLED", "RENDER") do
+  test "defaults to vips renderer" do
+    without_env("POSTER_RENDERER") do
+      assert Images::PosterRender.vips?
       assert Images::PosterRender.enabled?
     end
   end
 
-  test "disabled on Render unless explicitly opted in" do
-    with_env("RENDER" => "true") do
-      without_env("POSTER_RENDER_ENABLED") do
-        refute Images::PosterRender.enabled?
-      end
-    end
-  end
-
-  test "POSTER_RENDER_ENABLED true wins on Render" do
-    with_env("RENDER" => "true", "POSTER_RENDER_ENABLED" => "true") do
-      assert Images::PosterRender.enabled?
-    end
-  end
-
-  test "POSTER_RENDER_ENABLED false wins off Render" do
-    with_env("POSTER_RENDER_ENABLED" => "false") do
-      without_env("RENDER") do
-        refute Images::PosterRender.enabled?
-      end
+  test "POSTER_RENDERER off disables rendering" do
+    with_env("POSTER_RENDERER" => "off") do
+      refute Images::PosterRender.enabled?
     end
   end
 

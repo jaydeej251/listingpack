@@ -1,24 +1,21 @@
 module Images
-  # Poster PNGs need Chromium. On Render Free (~512 MB) that OOM-kills Puma
-  # (web + Solid Queue share one process) and the site returns 502.
-  #
-  # Default: render posters, except on Render.com where Chromium must be
-  # opted in. Hatchbox / a sized droplet do not set RENDER, so posters stay on.
-  #
-  # POSTER_RENDER_ENABLED=true  — force Chrome (Render Starter+ or any host)
-  # POSTER_RENDER_ENABLED=false — never start Chrome
+  # Poster PNG rendering. Default is libvips (lightweight). Set POSTER_RENDERER=off to skip.
   class PosterRender
-    DISABLED_MESSAGE =
-      "Poster PNGs are paused on this server so captions can finish. This host does not have enough memory for Chrome."
-
     INTERRUPTED_MESSAGE =
       "Poster rendering was interrupted (the server ran out of memory or restarted). Captions are saved."
+    DISABLED_MESSAGE =
+      "Poster PNGs are paused on this server. Set POSTER_RENDERER=vips to enable rendering."
+
+    def self.renderer
+      ENV.fetch("POSTER_RENDERER", "vips").downcase
+    end
+
+    def self.vips?
+      renderer == "vips"
+    end
 
     def self.enabled?
-      flag = ENV["POSTER_RENDER_ENABLED"]
-      return ActiveModel::Type::Boolean.new.cast(flag) if flag.present?
-
-      ENV["RENDER"].blank?
+      !%w[off false none].include?(renderer)
     end
 
     def self.disable_pack!(pack)
@@ -27,13 +24,17 @@ module Images
       assets = pack.generated_assets.select(&:in_progress?)
       return pack if assets.empty?
 
-      assets.each { |asset| fail_asset!(asset, DISABLED_MESSAGE) }
-      pack.reload.update!(error_message: DISABLED_MESSAGE)
+      assets.each { |asset| fail_asset!(asset, disabled_message) }
+      pack.reload.update!(error_message: disabled_message)
       pack
     end
 
-    def self.fail_asset!(asset, message = DISABLED_MESSAGE)
+    def self.fail_asset!(asset, message = disabled_message)
       asset.update!(status: "failed", error_message: message)
+    end
+
+    def self.disabled_message
+      DISABLED_MESSAGE
     end
   end
 end

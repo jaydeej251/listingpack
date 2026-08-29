@@ -26,7 +26,7 @@ class ContentPack < ApplicationRecord
   end
 
   def active_poster_assets
-    keys = GeneratedAsset.display_keys
+    keys = GeneratedAsset.display_keys(user: listing.user)
     generated_assets.select { |asset| keys.include?(asset.template_key) }
   end
 
@@ -46,11 +46,11 @@ class ContentPack < ApplicationRecord
   end
 
   def poster_total_count
-    GeneratedAsset.display_keys.size
+    GeneratedAsset.display_keys(user: listing.user).size
   end
 
   def poster_states
-    GeneratedAsset.display_keys.index_with do |key|
+    GeneratedAsset.display_keys(user: listing.user).index_with do |key|
       asset = generated_assets.find { |row| row.template_key == key }
       next "missing" if asset.blank?
       next "ready" if asset.image.attached? || asset.status == "ready"

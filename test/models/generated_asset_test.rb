@@ -10,24 +10,36 @@ class GeneratedAssetTest < ActiveSupport::TestCase
     assert_equal "1080 / 1920", GeneratedAsset.aspect_ratio_css("story")
   end
 
-  test "sequential mode is one key per batch" do
+  test "free users get one square poster" do
+    without_env("POSTER_FORMAT_SET") do
+      assert_equal GeneratedAsset::FREE_POSTER_KEYS, GeneratedAsset.generation_keys(user: users(:one))
+    end
+  end
+
+  test "pro users get all poster formats" do
+    without_env("POSTER_FORMAT_SET") do
+      assert_equal GeneratedAsset::TEMPLATE_KEYS, GeneratedAsset.generation_keys(user: users(:two))
+    end
+  end
+
+  test "sequential mode is one key per batch for pro" do
     previous = ENV["POSTER_RENDER_MODE"]
     ENV["POSTER_RENDER_MODE"] = "sequential"
-    assert_equal GeneratedAsset::TEMPLATE_KEYS.map { |key| [ key ] }, GeneratedAsset.batches
+    assert_equal GeneratedAsset::TEMPLATE_KEYS.map { |key| [ key ] }, GeneratedAsset.batches(user: users(:two))
   ensure
     previous.nil? ? ENV.delete("POSTER_RENDER_MODE") : ENV["POSTER_RENDER_MODE"] = previous
   end
 
-  test "generation_keys respects POSTER_FORMAT_SET" do
+  test "generation_keys respects POSTER_FORMAT_SET env override" do
     previous = ENV["POSTER_FORMAT_SET"]
     ENV["POSTER_FORMAT_SET"] = "core"
-    assert_equal GeneratedAsset::CORE_TEMPLATE_KEYS, GeneratedAsset.generation_keys
+    assert_equal GeneratedAsset::CORE_TEMPLATE_KEYS, GeneratedAsset.generation_keys(user: users(:one))
 
     ENV["POSTER_FORMAT_SET"] = "demo"
-    assert_equal GeneratedAsset::DEMO_TEMPLATE_KEYS, GeneratedAsset.generation_keys
+    assert_equal GeneratedAsset::DEMO_TEMPLATE_KEYS, GeneratedAsset.generation_keys(user: users(:two))
 
     ENV["POSTER_FORMAT_SET"] = "all"
-    assert_equal GeneratedAsset::TEMPLATE_KEYS.sort, GeneratedAsset.generation_keys.sort
+    assert_equal GeneratedAsset::TEMPLATE_KEYS.sort, GeneratedAsset.generation_keys(user: users(:one)).sort
   ensure
     previous.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous
   end
@@ -37,7 +49,7 @@ class GeneratedAssetTest < ActiveSupport::TestCase
     previous_single = ENV["POSTER_SINGLE_FORMAT"]
     ENV["POSTER_FORMAT_SET"] = "demo"
     ENV["POSTER_SINGLE_FORMAT"] = "fb_banner"
-    assert_equal [ "fb_banner" ], GeneratedAsset.generation_keys
+    assert_equal [ "fb_banner" ], GeneratedAsset.generation_keys(user: users(:one))
   ensure
     previous_set.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous_set
     previous_single.nil? ? ENV.delete("POSTER_SINGLE_FORMAT") : ENV["POSTER_SINGLE_FORMAT"] = previous_single
@@ -48,7 +60,7 @@ class GeneratedAssetTest < ActiveSupport::TestCase
     previous_single = ENV["POSTER_SINGLE_FORMAT"]
     ENV["POSTER_FORMAT_SET"] = "demo"
     ENV["POSTER_SINGLE_FORMAT"] = "not_a_format"
-    assert_equal GeneratedAsset::DEMO_TEMPLATE_KEYS, GeneratedAsset.generation_keys
+    assert_equal GeneratedAsset::DEMO_TEMPLATE_KEYS, GeneratedAsset.generation_keys(user: users(:one))
   ensure
     previous_set.nil? ? ENV.delete("POSTER_FORMAT_SET") : ENV["POSTER_FORMAT_SET"] = previous_set
     previous_single.nil? ? ENV.delete("POSTER_SINGLE_FORMAT") : ENV["POSTER_SINGLE_FORMAT"] = previous_single

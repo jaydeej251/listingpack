@@ -1,7 +1,7 @@
 class GeneratePackJob < ApplicationJob
   queue_as :default
 
-  # Let the copy job finish and free memory before the first Chrome launch.
+  # Let the copy job finish before poster rendering starts.
   FIRST_POSTER_WAIT = ENV.fetch("POSTER_FIRST_WAIT_SECONDS", "2").to_i.seconds
 
   # Reuse the same pack row across retries. Refund Free credit only when retries are exhausted.
@@ -55,7 +55,8 @@ class GeneratePackJob < ApplicationJob
 
   private
     def ensure_poster_rows!(pack)
-      GeneratedAsset.generation_keys.each do |key|
+      user = pack.listing.user
+      GeneratedAsset.generation_keys(user: user).each do |key|
         asset = pack.generated_assets.find_or_create_by!(template_key: key)
         asset.update!(status: "pending", error_message: nil)
       end

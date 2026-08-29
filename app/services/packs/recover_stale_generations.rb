@@ -1,7 +1,7 @@
 # When Solid Queue prunes a dead worker (OOM / hibernate / SIGKILL), Active Job
 # never runs the job rescue — listings stay "generating" forever. Mark them failed
 # so the UI can Retry. Ready packs can also be left with posters stuck on
-# "rendering" after Chrome killed the dyno; unstick those too.
+# "rendering" after a worker restart; unstick those too.
 module Packs
   class RecoverStaleGenerations
     STALE_AFTER = 8.minutes

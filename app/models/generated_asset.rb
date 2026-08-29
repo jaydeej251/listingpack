@@ -1,5 +1,5 @@
 class GeneratedAsset < ApplicationRecord
-  # key => pixel size for Ferrum + display metadata
+  # key => pixel size for poster compositor + display metadata
   FORMATS = {
     "just_listed" => { width: 1080, height: 1080, label: "Square · Just listed", short: "Square" },
     "price_card" => { width: 1080, height: 1080, label: "Square · Price card", short: "Price" },
@@ -10,7 +10,8 @@ class GeneratedAsset < ApplicationRecord
   }.freeze
 
   TEMPLATE_KEYS = FORMATS.keys.freeze
-  DEMO_TEMPLATE_KEYS = %w[just_listed].freeze
+  FREE_POSTER_KEYS = %w[just_listed].freeze
+  DEMO_TEMPLATE_KEYS = FREE_POSTER_KEYS
   CORE_TEMPLATE_KEYS = %w[just_listed price_card agent_card].freeze
   EXTENDED_TEMPLATE_KEYS = %w[fb_banner story landscape].freeze
 
@@ -58,8 +59,41 @@ class GeneratedAsset < ApplicationRecord
     [ spec[:width], spec[:height] ]
   end
 
-  def self.generation_keys
-    case ENV.fetch("POSTER_FORMAT_SET", "all").downcase
+  def self.generation_keys(user: nil)
+    return keys_from_env if env_override_present?
+
+    user&.pro? ? TEMPLATE_KEYS : FREE_POSTER_KEYS
+  end
+
+  def self.display_keys(user: nil)
+    generation_keys(user: user)
+  end
+
+  def self.multi_format?(user: nil)
+    display_keys(user: user).size > 1
+  end
+
+  def self.render_mode(user: nil)
+    mode = ENV.fetch("POSTER_RENDER_MODE", "sequential").downcase
+    mode
+  end
+
+  def self.batches(user: nil)
+    keys = generation_keys(user: user)
+    case render_mode(user: user)
+    when "batch"
+      keys.each_slice(3).to_a
+    else
+      keys.map { |key| [ key ] }
+    end
+  end
+
+  def self.env_override_present?
+    ENV["POSTER_FORMAT_SET"].present?
+  end
+
+  def self.keys_from_env
+    case ENV.fetch("POSTER_FORMAT_SET").downcase
     when "demo", "single"
       key = ENV.fetch("POSTER_SINGLE_FORMAT", DEMO_TEMPLATE_KEYS.first)
       TEMPLATE_KEYS.include?(key) ? [ key ] : DEMO_TEMPLATE_KEYS
@@ -69,31 +103,5 @@ class GeneratedAsset < ApplicationRecord
       TEMPLATE_KEYS
     end
   end
-
-  def self.display_keys
-    generation_keys
-  end
-
-  def self.multi_format?
-    display_keys.size > 1
-  end
-
-  # sequential (default): exactly one Chrome process per job; next poster waits until this one finishes.
-  # batch: groups of 3 (future Pro / ≥1GB hosts). Set POSTER_RENDER_MODE=batch.
-  def self.render_mode(user: nil)
-    mode = ENV.fetch("POSTER_RENDER_MODE", "sequential").downcase
-    # Future: return "batch" if user&.pro? && ENV["POSTER_PRO_BATCH"] == "true"
-    mode
-  end
-
-  def self.batches(user: nil)
-    keys = generation_keys
-    case render_mode(user: user)
-    when "batch"
-      keys.each_slice(3).to_a
-    else
-      # One key per job — poster N+1 is only enqueued after poster N's job returns.
-      keys.map { |key| [ key ] }
-    end
-  end
+  private_class_method :keys_from_env
 end

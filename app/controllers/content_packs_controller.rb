@@ -73,7 +73,7 @@ class ContentPacksController < ApplicationController
         status: @listing.pack_status,
         posters_complete: pack.blank? || pack.posters_complete?,
         ready_count: pack&.poster_ready_count || 0,
-        total_count: pack&.poster_total_count || GeneratedAsset.display_keys.size,
+        total_count: pack&.poster_total_count || GeneratedAsset.display_keys(user: pack&.listing&.user).size,
         posters: pack&.poster_states || {}
       }
     end

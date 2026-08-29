@@ -24,14 +24,14 @@ Demo users after `bin/rails db:seed`:
 | Pro | `agent@listingpack.local` | `password123` | Ready listing pack (open Listings) |
 | Free | `free@listingpack.local` | `password123` | 1 of 3 packs used; watermark on new posters |
 
-Poster PNGs need Google Chrome or Chromium installed locally (Ferrum). Without it, copy still generates and packs can be ready with “PNG not ready” + Redraw.
+Poster PNGs use **libvips** (`brew install vips` on macOS). Without it, copy still generates and packs can be ready with “PNG not ready” + Redraw.
 
 Optional: set `OPENROUTER_API_KEY` or `OPENAI_API_KEY` for live copy/vision. OpenRouter keys (`sk-or-…`) are auto-detected even if you paste them into `OPENAI_API_KEY`. Without a key, packs use a Taglish template writer.
 
 ## Plans (honest)
 
-- **Free:** 3 packs/month, watermark on posters
-- **Pro:** unlimited packs, no watermark — ₱499/mo via PayMongo when `PAYMONGO_SECRET_KEY` is set
+- **Free:** 3 packs/month, 1 square poster per pack (watermarked)
+- **Pro:** unlimited packs, all 6 poster formats, no watermark — ₱499/mo via PayMongo when `PAYMONGO_SECRET_KEY` is set
 - Local Unlock Pro stub still works without a PayMongo key
 - Facebook Page auto-post is Phase 9 (gated until paying agents stick)
 
@@ -42,7 +42,7 @@ Before charging real agents, configure:
 | Concern | What to set |
 |---------|-------------|
 | Durable files | Cloudflare R2 or S3: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BUCKET`, `AWS_ENDPOINT` (R2), `ACTIVE_STORAGE_SERVICE=cloud`. R2 needs the checksum flags already in `config/storage.yml` (`when_required`) — otherwise listing create 500s with “one non-default checksum at a time.” |
-| Posters | Prefer a Render **Starter** (or larger) web instance — Free 512 MB often OOMs Chromium |
+| Posters | `POSTER_RENDERER=vips` (default). libvips is bundled in Docker; install locally with `brew install vips`. |
 | Postgres | Upgrade off Free DB (30-day expiry) before paying customers |
 | Mail | `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAILER_FROM`, `APP_HOST` |
 | PayMongo | `PAYMONGO_SECRET_KEY` + webhook URL `https://YOUR_HOST/paymongo/webhooks` for `checkout_session.payment.paid` |
@@ -52,7 +52,7 @@ Before charging real agents, configure:
 
 - [ ] Create listing → pack Ready → Download PNG → restart web service → same PNG still downloads (proves R2/S3)
 - [ ] Free watermark present; Pro (paid or local stub) has none
-- [ ] Kill Chrome / low RAM: captions still Ready with failure copy + Redraw
+- [ ] Poster rendering disabled (`POSTER_RENDERER=off`): captions still Ready with failure copy + Redraw
 - [ ] Forgot password email arrives when SMTP is configured
 - [ ] PayMongo test checkout upgrades plan after webhook (or local stub without key)
 - [ ] Cold start: first hit after idle may take ~1 minute on Free — landing copy mentions this
@@ -105,10 +105,10 @@ Already at `https://github.com/jaydeej251/listingpack` if you pushed earlier.
 | `RAILS_MAX_THREADS` | `2` |
 | `DB_POOL` | `10` (Solid Queue needs ≥5 even when threads are 2) |
 | `JOB_CONCURRENCY` | `1` |
-| `POSTER_FORMAT_SET` | `demo` (one square poster — Free default), `core` (three squares), or `all` (six formats) |
-| `POSTER_RENDER_MODE` | `sequential` (1 Chrome at a time — Free default); later `batch` for Pro |
-| `CHROME_PROCESS_TIMEOUT` | `90` — seconds to wait for Chromium WS URL on Free |
-| `CHROME_PATH` | `/usr/bin/chromium` |
+| `POSTER_RENDERER` | `vips` (default). Set `off` to skip poster PNGs. |
+| `POSTER_FORMAT_SET` | Optional dev override: `demo`, `core`, or `all`. Production leaves unset — Free gets 1 square, Pro gets all 6. |
+| `POSTER_RENDER_MODE` | `sequential` (one format per job; default) |
+| `POSTER_NEXT_WAIT_SECONDS` | `3` — pause between sequential poster jobs |
 | `APP_HOST` | Leave blank first deploy, then set to `YOUR-SERVICE.onrender.com` (no `https://`) |
 | `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | Optional. OpenRouter `sk-or-…` keys auto-route to OpenRouter. Blank → Taglish templates |
 | `OPENAI_MODEL` | Optional. Default `gpt-4o-mini` (OpenAI) or `openai/gpt-4o-mini` (OpenRouter) |
@@ -138,7 +138,7 @@ Demo logins (after seed): `agent@listingpack.local` / `password123` and `free@li
 - **No persistent disk:** uploads/posters are lost on restart/spin-down. Demo only until S3/R2.
 - **No Shell:** cannot `rails db:seed` from the dashboard — use `SEED_ON_BOOT`.
 - **Postgres 30-day expiry:** Free DB is deleted after grace unless you upgrade.
-- **Poster OOM:** Chromium may crash on Free 512 MB. App/copy can still work; PNG generation is the fragile part.
+- **Poster failures:** rare with libvips; use Redraw on a failed card. App/copy still work if rendering is off.
 - **Password reset email:** needs `SMTP_*` env vars (Resend SMTP works).
 - **Health check:** `/up`
 - **Recruiting agents:** send them `/guide` after signup; track failures at `/admin/failures` (admin users).
@@ -147,4 +147,4 @@ Optional: [`render.yaml`](render.yaml) is Free-plan Blueprint-compatible. Prefer
 
 ## Stack
 
-Rails 8, Hotwire, Tailwind, PostgreSQL, Solid Queue (production), Active Storage (Disk local / S3-compatible production), Ferrum (Chrome HTML → PNG), PayMongo checkout.
+Rails 8, Hotwire, Tailwind, PostgreSQL, Solid Queue (production), Active Storage (Disk local / S3-compatible production), libvips (poster PNGs), PayMongo checkout.
