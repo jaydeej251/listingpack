@@ -42,8 +42,8 @@ Before charging real agents, configure:
 | Concern | What to set |
 |---------|-------------|
 | Durable files | Cloudflare R2 or S3: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BUCKET`, `AWS_ENDPOINT` (R2), `ACTIVE_STORAGE_SERVICE=cloud`. R2 needs the checksum flags already in `config/storage.yml` (`when_required`) — otherwise listing create 500s with “one non-default checksum at a time.” |
-| Posters | `POSTER_RENDERER=vips` (default). libvips is bundled in Docker; install locally with `brew install vips`. |
-| Postgres | Upgrade off Free DB (30-day expiry) before paying customers |
+| Posters | `POSTER_RENDERER=vips` (default). libvips is bundled in Docker; on Hatchbox install `libvips42` if posters fail. Locally: `brew install vips`. |
+| Postgres | Hatchbox-managed Postgres on the droplet (always-on) |
 | Mail | `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAILER_FROM`, `APP_HOST` |
 | PayMongo | `PAYMONGO_SECRET_KEY` + webhook URL `https://YOUR_HOST/paymongo/webhooks` for `checkout_session.payment.paid` |
 | Admin | Seed Pro user is admin; open **/admin/failures** for failed packs / poster warnings |
@@ -55,95 +55,60 @@ Before charging real agents, configure:
 - [ ] Poster rendering disabled (`POSTER_RENDERER=off`): captions still Ready with failure copy + Redraw
 - [ ] Forgot password email arrives when SMTP is configured
 - [ ] PayMongo test checkout upgrades plan after webhook (or local stub without key)
-- [ ] Cold start: first hit after idle may take ~1 minute on Free — landing copy mentions this
 
-## Deploy on Render (Free)
+## Deploy on Hatchbox + DigitalOcean
 
-This app is a **Docker Rails** service (not Vercel). Use **manual Free** services — skip Blueprint if it asks you to pay.
+Hatchbox deploys this Rails app onto your droplet: it installs Ruby from `.ruby-version`, runs `assets:precompile` and `db:migrate`, starts Puma, and adds `bin/jobs` for Solid Queue. It does **not** use the Dockerfile or `bin/render-start`.
 
-### Why the first Blueprint looked paid
+### 1. Env vars in Hatchbox
 
-The first `render.yaml` used **Starter** web + **paid Postgres** + a **persistent disk** on purpose:
+Copy secrets from Render, then change the host-specific ones. Hatchbox usually sets `RAILS_ENV=production` and `DATABASE_URL` when you attach Postgres.
 
-| Need | Paid choice | Free reality |
-|------|-------------|--------------|
-| Chromium poster PNGs | More CPU/RAM headroom | 512 MB Free often OOMs during render |
-| Photo / PNG storage | R2/S3 (`AWS_*`) | Free has **no disks**; without R2/S3 files wipe on spin-down |
-| Seed / debug | Render Shell | Free has **no Shell** — use `SEED_ON_BOOT` |
-| Postgres | Always-on Basic | Free DB **expires after 30 days** |
-
-Free is fine for a demo; paid + object storage is what you’d want for a reliable agent product.
-
-### 1. Push the repo to GitHub
-
-Already at `https://github.com/jaydeej251/listingpack` if you pushed earlier.
-
-### 2. Create Free Postgres (do this first)
-
-1. Open [https://dashboard.render.com](https://dashboard.render.com)
-2. **New → Postgres**
-3. Instance type: **Free**
-4. Region: **Singapore** (or same region you pick for the web service)
-5. Create. Copy the **Internal Database URL** (or External if Internal is unavailable to Free web).
-
-### 3. Create Free Web Service (manual — not Blueprint)
-
-1. **New → Web Service** → connect the ListingPack repo → branch `main`
-2. Runtime: **Docker** (Render should detect `Dockerfile`)
-3. Instance type: **Free**
-4. Docker Command: `./bin/render-start` (override if blank)
-5. Health Check Path: `/up`
-6. Add env vars:
+**Must change (do not keep the Render hostname):**
 
 | Key | Value |
 |-----|--------|
-| `RAILS_ENV` | `production` |
+| `APP_HOST` | Public hostname only, no `https://` — e.g. `listingpack.com` or the Hatchbox preview host |
+| `ADDITIONAL_HOSTS` | Optional comma list: `www.listingpack.com` or a Hatchbox preview host |
 | `RAILS_MASTER_KEY` | Contents of local `config/master.key` (one line). **Never commit this file.** |
-| `DATABASE_URL` | Paste from the Free Postgres service |
-| `SOLID_QUEUE_IN_PUMA` | `true` |
-| `WEB_CONCURRENCY` | `1` |
-| `RAILS_MAX_THREADS` | `2` |
-| `DB_POOL` | `10` (Solid Queue needs ≥5 even when threads are 2) |
-| `JOB_CONCURRENCY` | `1` |
-| `POSTER_RENDERER` | `vips` (default). Set `off` to skip poster PNGs. |
-| `POSTER_FORMAT_SET` | Optional dev override: `demo`, `core`, or `all`. Production leaves unset — Free gets 1 square, Pro gets all 6. |
-| `POSTER_RENDER_MODE` | `sequential` (one format per job; default) |
-| `POSTER_NEXT_WAIT_SECONDS` | `3` — pause between sequential poster jobs |
-| `APP_HOST` | Leave blank first deploy, then set to `YOUR-SERVICE.onrender.com` (no `https://`) |
-| `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | Optional. OpenRouter `sk-or-…` keys auto-route to OpenRouter. Blank → Taglish templates |
-| `OPENAI_MODEL` | Optional. Default `gpt-4o-mini` (OpenAI) or `openai/gpt-4o-mini` (OpenRouter) |
-| `OPENAI_API_URL` | Optional override. Leave blank unless you must pin a custom endpoint |
-| `ACTIVE_STORAGE_SERVICE` | `cloud` when using R2/S3 |
+| `DATABASE_URL` | Hatchbox Postgres URL (auto if you attached the DB) |
+
+**Copy as-is from Render:**
+
+| Key | Notes |
+|-----|--------|
+| `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | Blank → Taglish templates |
+| `OPENAI_MODEL` | Optional. Default `gpt-4o-mini` / `openai/gpt-4o-mini` |
+| `ACTIVE_STORAGE_SERVICE` | `cloud` |
 | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_BUCKET` | Object storage |
-| `AWS_ENDPOINT` | R2 endpoint URL (skip for AWS S3) |
-| `AWS_REGION` | `auto` for R2; real region for S3 |
-| `SMTP_ADDRESS` / `SMTP_USERNAME` / `SMTP_PASSWORD` / `MAILER_FROM` | Password reset + receipts |
-| `PAYMONGO_SECRET_KEY` | Enables GCash/Maya checkout |
-| `SEED_ON_BOOT` | `true` for **one** deploy only (Free has no Shell) |
+| `AWS_ENDPOINT` | R2 endpoint (skip for AWS S3) |
+| `AWS_REGION` | `auto` for R2 |
+| `AWS_FORCE_PATH_STYLE` | `true` for R2 |
+| `SMTP_ADDRESS` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD` / `MAILER_FROM` | Password reset |
+| `PAYMONGO_SECRET_KEY` | GCash/Maya checkout |
+| `POSTER_RENDERER` | `vips` |
+| `POSTER_RENDER_MODE` | `sequential` (default) |
 
-7. Create Web Service and wait for the build.
+**Do not copy from Render:**
 
-### 4. After first successful deploy
+| Key | Why |
+|-----|-----|
+| `SOLID_QUEUE_IN_PUMA` | Hatchbox already runs `bin/jobs`. Setting this true would run workers twice. |
+| `SEED_ON_BOOT` | Hatchbox has SSH. Seed once with `bin/rails db:seed` if you need demo users. |
+| `SECRET_KEY_BASE` | Optional. Rails 8 can derive it from `RAILS_MASTER_KEY`. |
 
-1. Note the URL (`https://….onrender.com`).
-2. Set `APP_HOST` to that hostname (no scheme).
-3. If you used `SEED_ON_BOOT=true`, set it back to `false` and redeploy so seeds don’t re-run forever.
-4. Open the site. First hit after idle can take ~1 minute (Free spin-up).
+**Safe to raise on a droplet (optional):** `WEB_CONCURRENCY=2`, `RAILS_MAX_THREADS=5`, `DB_POOL=10`, `JOB_CONCURRENCY=1`.
+
+### 2. After first deploy
+
+1. Set `APP_HOST` to the live hostname and redeploy (or restart) so cookies, mailer links, and PayMongo return URLs match.
+2. Point PayMongo’s webhook at `https://YOUR_HOST/paymongo/webhooks` (`checkout_session.payment.paid`). The old `*.onrender.com` webhook will miss payments.
+3. If poster PNGs fail, SSH in and install libvips: `sudo apt-get install -y libvips42 libvips-dev fonts-liberation`.
+4. Hatchbox `db:migrate` now also loads Solid Queue/Cache/Cable schemas (they share `DATABASE_URL` unless you set `QUEUE_DATABASE_URL` / `CACHE_DATABASE_URL` / `CABLE_DATABASE_URL`).
 
 Demo logins (after seed): `agent@listingpack.local` / `password123` and `free@listingpack.local` / `password123`.
 
-### 5. Free-tier gotchas
-
-- **Cold starts:** spins down after ~15 min idle; next request wakes it (~1 min).
-- **No persistent disk:** uploads/posters are lost on restart/spin-down. Demo only until S3/R2.
-- **No Shell:** cannot `rails db:seed` from the dashboard — use `SEED_ON_BOOT`.
-- **Postgres 30-day expiry:** Free DB is deleted after grace unless you upgrade.
-- **Poster failures:** rare with libvips; use Redraw on a failed card. App/copy still work if rendering is off.
-- **Password reset email:** needs `SMTP_*` env vars (Resend SMTP works).
-- **Health check:** `/up`
-- **Recruiting agents:** send them `/guide` after signup; track failures at `/admin/failures` (admin users).
-
-Optional: [`render.yaml`](render.yaml) is Free-plan Blueprint-compatible. Prefer the manual steps above if Blueprint still prompts for billing.
+Health check: `/up`. Failures: `/admin/failures` (admin users). Agent onboarding: `/guide`.
 
 ## Stack
 

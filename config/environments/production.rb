@@ -18,7 +18,7 @@ Rails.application.configure do
   # Cache assets for far-future expiry since they are all digest stamped.
   config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
 
-  # Prefer R2/S3 when AWS_BUCKET is set; Disk is ephemeral on Render Free.
+  # Prefer R2/S3 when AWS_BUCKET is set; Disk works on a droplet but is not backed up.
   require_relative "../storage_resolver"
   config.active_storage.service = StorageResolver.call
 
@@ -51,9 +51,10 @@ Rails.application.configure do
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
-  # Host used by mailer links and URL helpers. Set APP_HOST to your Render URL
-  # (e.g. listingpack.onrender.com) or custom domain.
-  app_host = ENV.fetch("APP_HOST", "example.com")
+  # Host used by mailer links and URL helpers. Set APP_HOST to the Hatchbox /
+  # DigitalOcean hostname (e.g. listingpack.com) with no https:// prefix.
+  require_relative "../../lib/app_host"
+  app_host = AppHost.host(default: "example.com")
   config.action_mailer.default_url_options = { host: app_host, protocol: "https" }
   Rails.application.routes.default_url_options = { host: app_host, protocol: "https" }
 
@@ -90,9 +91,7 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  config.hosts = [
-    app_host,
-    /.*\.onrender\.com/
-  ]
+  # ADDITIONAL_HOSTS is a comma-separated list (www, Hatchbox preview host, etc).
+  config.hosts = AppHost.allowed(default: "example.com")
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end

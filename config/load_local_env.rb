@@ -1,4 +1,4 @@
-# Load gitignored `.env` in development so local Rails matches Render env vars.
+# Load gitignored `.env` in development so local Rails matches production env vars.
 # Does not override variables already set (shell, process supervisor).
 # Skips test: `bin/rails test` requires boot.rb *before* RAILS_ENV=test is set, so also
 # detect the test command via ARGV. Live API keys must not leak into fallback tests.

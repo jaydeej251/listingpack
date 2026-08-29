@@ -62,7 +62,7 @@ test:
   <<: *default
   database: listingpack_test
 
-# Render / Fly / Railway: one Postgres URL for primary + Solid Cache/Queue/Cable.
+# Hatchbox / one Postgres URL for primary + Solid Cache/Queue/Cable.
 # Optional overrides: CACHE_DATABASE_URL, QUEUE_DATABASE_URL, CABLE_DATABASE_URL.
 production:
   primary: &primary_production
