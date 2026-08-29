@@ -76,13 +76,30 @@ module Images
 
       alpha = block[3]
       rgb_layer = solid_rgb(block.width, block.height, *rgb)
-      rgb_layer.bandjoin(alpha)
+      trim_alpha(rgb_layer.bandjoin(alpha))
+    end
+
+    def self.trim_alpha(image)
+      return image if image.bands < 4
+
+      alpha = image[3]
+      left, top, width, height = alpha.find_trim(threshold: 1)
+      image.crop(left, top, width, height)
+    rescue Vips::Error
+      image
     end
 
     def self.rounded_image(source, size, radius: 12)
-      mask = Vips::Image.black(size, size) + 255
-      mask = mask.draw_rect([ 255 ], 0, 0, size, size, fill: true, radius: radius)
       resized = cover_crop(source, size, size)
+      return resized if radius.to_i <= 0
+
+      mask = Vips::Image.black(size, size) + 255
+      begin
+        mask = mask.draw_rect([ 255 ], 0, 0, size, size, fill: true, radius: radius)
+      rescue Vips::Error
+        return resized
+      end
+
       resized.bandjoin(mask)
     end
 
