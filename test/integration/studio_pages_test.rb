@@ -112,6 +112,14 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_equal "rendering", body["posters"]["just_listed"]
   end
 
+  test "posters endpoint redirects to listing when opened outside a turbo frame" do
+    sign_in users(:one)
+    listing = listings(:bgc_condo)
+
+    get posters_listing_content_packs_path(listing)
+    assert_redirected_to listing_path(listing)
+  end
+
   test "posters frame endpoint returns fresh ready count" do
     sign_in users(:one)
     listing = listings(:bgc_condo)
@@ -127,7 +135,7 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     pack.generated_assets.create!(template_key: "price_card", status: "ready")
     pack.generated_assets.create!(template_key: "agent_card", status: "rendering")
 
-    get posters_listing_content_packs_path(listing)
+    get posters_listing_content_packs_path(listing), headers: { "Turbo-Frame" => "listing_posters" }
     assert_response :success
     assert_select "turbo-frame#listing_posters"
     assert_match(/2 of #{GeneratedAsset.display_keys(user: listing.user).size} ready/, response.body)

@@ -21,6 +21,8 @@ class RenderPosterBatchJob < ApplicationJob
     Packs::UpdatePosterWarning.call(pack.reload)
 
     enqueue_next!(content_pack_id, pack, batches, batch_index)
+  ensure
+    GC.start
   end
 
   private
