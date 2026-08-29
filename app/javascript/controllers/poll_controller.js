@@ -75,26 +75,45 @@ export default class extends Controller {
   posterFrameUrl() {
     if (this.hasFrameUrlValue) return this.frameUrlValue
     if (this.hasUrlValue) return this.urlValue.replace(/status\.json$/, "posters")
-    return window.location.href
+    return null
+  }
+
+  listingPageUrl() {
+    const match = window.location.pathname.match(/^(\/listings\/\d+)/)
+    return match ? match[1] : window.location.pathname
   }
 
   async refreshPostersFrame() {
     const frame = document.getElementById(this.frameValue)
     const url = this.posterFrameUrl()
 
-    if (frame && window.Turbo?.visit) {
-      await window.Turbo.visit(url, { frame: this.frameValue, action: "replace" })
+    if (!frame || !url) {
+      this.reloadPage()
       return
     }
 
-    if (frame && typeof frame.reload === "function") {
-      frame.src = url
-      frame.reload()
+    try {
+      const response = await fetch(url, {
+        headers: {
+          Accept: "text/vnd.turbo-frame.html, text/html",
+          "Turbo-Frame": this.frameValue
+        },
+        credentials: "same-origin"
+      })
+      if (!response.ok) return
+
+      const html = await response.text()
+      const doc = new DOMParser().parseFromString(html, "text/html")
+      const newFrame =
+        doc.getElementById(this.frameValue) || doc.querySelector("turbo-frame")
+
+      if (!newFrame) return
+
+      frame.innerHTML = newFrame.innerHTML
+      frame.dispatchEvent(new Event("turbo:frame-load", { bubbles: true }))
+    } catch (_error) {
       return
     }
-
-    // Last resort — full reload (may jump scroll).
-    this.reloadPage()
   }
 
   showStuckHint() {
@@ -113,10 +132,12 @@ export default class extends Controller {
   }
 
   reloadPage() {
+    const url = this.listingPageUrl()
+
     if (window.Turbo?.visit) {
-      window.Turbo.visit(window.location.href, { action: "replace" })
+      window.Turbo.visit(url, { action: "replace" })
     } else {
-      window.location.reload()
+      window.location.assign(url)
     }
   }
 }
