@@ -23,3 +23,11 @@ namespace :db do
     ActiveRecord::Base.establish_connection(primary) if primary
   end
 end
+
+# Hatchbox runs `db:migrate`, not `db:prepare`. Attach Solid schemas so queue/cache/cable
+# tables exist when they share DATABASE_URL (the usual single-Postgres setup).
+if Rake::Task.task_defined?("db:migrate")
+  Rake::Task["db:migrate"].enhance do
+    Rake::Task["db:prepare_solid"].invoke
+  end
+end

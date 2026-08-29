@@ -87,20 +87,12 @@ module Billing
         ENV.fetch("PAYMONGO_SECRET_KEY")
       end
 
-      def app_host
-        ENV.fetch("APP_HOST", "localhost:3000")
-      end
-
       def success_url
-        host = app_host
-        scheme = host.include?("localhost") ? "http" : "https"
-        "#{scheme}://#{host}/billing?paid=1"
+        "#{AppHost.origin}/billing?paid=1"
       end
 
       def cancel_url
-        host = app_host
-        scheme = host.include?("localhost") ? "http" : "https"
-        "#{scheme}://#{host}/billing?canceled=1"
+        "#{AppHost.origin}/billing?canceled=1"
       end
   end
 end

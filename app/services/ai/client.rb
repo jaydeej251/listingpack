@@ -110,10 +110,7 @@ module Ai
       end
 
       def app_referer
-        host = ENV["APP_HOST"].presence || "localhost:3000"
-        return host if host.match?(/\Ahttps?:\/\//i)
-
-        host.include?("localhost") ? "http://#{host}" : "https://#{host}"
+        AppHost.origin
       end
   end
 end
