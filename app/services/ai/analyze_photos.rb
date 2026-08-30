@@ -6,6 +6,7 @@ module Ai
     end
 
     def call
+      return disabled_result unless PhotoVision.enabled?
       return { text: nil, model: "none", input_tokens: nil, output_tokens: nil } unless @client.configured?
       return { text: nil, model: "none", input_tokens: nil, output_tokens: nil } unless @listing.photos.attached?
 
@@ -26,5 +27,10 @@ module Ai
     rescue Ai::Client::Error, JSON::ParserError => e
       { text: nil, model: "error", input_tokens: nil, output_tokens: nil, error: e.message }
     end
+
+    private
+      def disabled_result
+        { text: nil, model: "disabled", input_tokens: nil, output_tokens: nil }
+      end
   end
 end

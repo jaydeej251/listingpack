@@ -26,7 +26,18 @@ Demo users after `bin/rails db:seed`:
 
 Poster PNGs use **libvips** (`brew install vips` on macOS). Without it, copy still generates and packs can be ready with “PNG not ready” + Redraw.
 
-Optional: set `OPENROUTER_API_KEY` or `OPENAI_API_KEY` for live copy/vision. OpenRouter keys (`sk-or-…`) are auto-detected even if you paste them into `OPENAI_API_KEY`. Without a key, packs use a Taglish template writer.
+Optional: set `OPENROUTER_API_KEY` or `OPENAI_API_KEY` for live AI captions. OpenRouter keys (`sk-or-…`) are auto-detected even if you paste them into `OPENAI_API_KEY`. Without a key, packs use a Taglish template writer.
+
+### AI (optional)
+
+| Key | Default | Notes |
+|-----|---------|-------|
+| `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | — | Live captions; blank → Taglish templates |
+| `AI_PHOTO_VISION` | `on` | Set `off` to skip sending the first listing photo to vision (cheaper; captions use form fields only) |
+| `AI_MAX_OUTPUT_TOKENS` | model default | e.g. `2048` — lowers OpenRouter’s max completion ceiling (helps thin credit balances) |
+| `OPENAI_MODEL` | `gpt-4o-mini` / `openai/gpt-4o-mini` | OpenRouter model id when using OpenRouter |
+
+Photo vision analyzes **`photos.first`** only for caption hints. Poster PNGs never use AI (`POSTER_RENDERER=vips` uses libvips locally).
 
 ## Plans (honest)
 
@@ -78,6 +89,8 @@ Copy secrets from Render, then change the host-specific ones. Hatchbox usually s
 | Key | Notes |
 |-----|--------|
 | `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | Blank → Taglish templates |
+| `AI_PHOTO_VISION` | `off` on thin OpenRouter balances; `on` sends first photo for caption hints |
+| `AI_MAX_OUTPUT_TOKENS` | Optional e.g. `2048` — avoids OpenRouter 402 on low credits |
 | `OPENAI_MODEL` | Optional. Default `gpt-4o-mini` / `openai/gpt-4o-mini` |
 | `ACTIVE_STORAGE_SERVICE` | `cloud` |
 | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_BUCKET` | Object storage |
