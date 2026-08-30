@@ -39,6 +39,7 @@ module Ai
         response_format: { type: "json_object" },
         messages: content
       }
+      body[:max_tokens] = max_output_tokens if max_output_tokens
 
       uri = URI(chat_url)
       http = Net::HTTP.new(uri.host, uri.port)
@@ -111,6 +112,14 @@ module Ai
 
       def app_referer
         AppHost.origin
+      end
+
+      def max_output_tokens
+        value = ENV["AI_MAX_OUTPUT_TOKENS"].presence
+        return nil if value.blank?
+
+        parsed = value.to_i
+        parsed.positive? ? parsed : nil
       end
   end
 end

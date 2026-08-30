@@ -3,7 +3,7 @@ require "test_helper"
 class AiClientTest < ActiveSupport::TestCase
   setup do
     @client = Ai::Client.new
-    @saved = %w[OPENAI_API_KEY OPENROUTER_API_KEY OPENAI_API_URL OPENAI_MODEL APP_HOST].index_with { |key| ENV[key] }
+    @saved = %w[OPENAI_API_KEY OPENROUTER_API_KEY OPENAI_API_URL OPENAI_MODEL APP_HOST AI_MAX_OUTPUT_TOKENS].index_with { |key| ENV[key] }
   end
 
   teardown do
@@ -67,5 +67,16 @@ class AiClientTest < ActiveSupport::TestCase
     ENV["OPENAI_MODEL"] = "google/gemini-2.0-flash-001"
 
     assert_equal "google/gemini-2.0-flash-001", @client.send(:model)
+  end
+
+  test "AI_MAX_OUTPUT_TOKENS caps completion size when set" do
+    ENV.delete("AI_MAX_OUTPUT_TOKENS")
+    assert_nil @client.send(:max_output_tokens)
+
+    ENV["AI_MAX_OUTPUT_TOKENS"] = "2048"
+    assert_equal 2048, @client.send(:max_output_tokens)
+
+    ENV["AI_MAX_OUTPUT_TOKENS"] = "0"
+    assert_nil @client.send(:max_output_tokens)
   end
 end
