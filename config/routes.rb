@@ -4,7 +4,10 @@ Rails.application.routes.draw do
   resource :registration, only: %i[ new create ]
   resource :brand_kit, only: %i[ edit update ]
   resource :billing, only: %i[ show update ]
+  post "billing", to: "billings#update"
   post "paymongo/webhooks", to: "paymongo_webhooks#create", as: :paymongo_webhooks
+
+  get "l/:share_token", to: "public_listings#show", as: :public_listing, constraints: { share_token: /[A-Za-z0-9_-]+/ }
 
   resources :listings do
     member do

@@ -4,7 +4,7 @@ Rails 8 app for Philippine real-estate agents: listing photos in, multi-format b
 
 ## Where we are
 
-**Phase 8 (first agents / ops).** Phases 0–7 are in code; Phase 9 (multi-format layouts, more vision, Facebook publish) is deferred furnishing. Full map: [docs/ROADMAP.md](docs/ROADMAP.md). First-agent checklist: [docs/FIRST_AGENTS.md](docs/FIRST_AGENTS.md).
+**Phase 8 (first agents / ops).** Phases 0–7 are in code; Phase 9 (format selector, more vision, Pro Plus auto-publish) is deferred furnishing. Pro one-tap Facebook share from Listings is in product. Full map: [docs/ROADMAP.md](docs/ROADMAP.md). First-agent checklist: [docs/FIRST_AGENTS.md](docs/FIRST_AGENTS.md).
 
 ## Run locally
 
@@ -41,10 +41,10 @@ Photo vision analyzes **`photos.first`** only for caption hints. Poster PNGs nev
 
 ## Plans (honest)
 
-- **Free:** 3 packs/month, 1 square poster per pack (watermarked)
-- **Pro:** unlimited packs, all 6 poster formats, no watermark — ₱499/mo via PayMongo when `PAYMONGO_SECRET_KEY` is set
+- **Free:** 3 packs/month, 1 square poster per pack (watermarked). No Facebook share from Listings.
+- **Pro:** unlimited packs, all 6 poster formats, no watermark, one-tap Facebook / WhatsApp / copy share — ₱499/mo via PayMongo when `PAYMONGO_SECRET_KEY` is set
+- **Pro Plus (later):** optional auto-share to Facebook Page and other social apps — ₱799/mo introductory, not for sale yet
 - Local Unlock Pro stub still works without a PayMongo key
-- Facebook Page auto-post is Phase 9 (gated until paying agents stick)
 
 ## Phase 6 — production hardening
 
@@ -56,7 +56,7 @@ Before charging real agents, configure:
 | Posters | `POSTER_RENDERER=vips` (default). libvips is bundled in Docker; on Hatchbox install `libvips42` if posters fail. Locally: `brew install vips`. |
 | Postgres | Hatchbox-managed Postgres on the droplet (always-on) |
 | Mail | `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAILER_FROM`, `APP_HOST` |
-| PayMongo | `PAYMONGO_SECRET_KEY` + webhook URL `https://YOUR_HOST/paymongo/webhooks` for `checkout_session.payment.paid` |
+| PayMongo | `PAYMONGO_SECRET_KEY` (secret key from the PayMongo dashboard). Hosted checkout talks to PayMongo’s `/v2/checkout_sessions` API — there is no extra GCash/Maya URL to put in env. After payment, set webhook `https://YOUR_HOST/paymongo/webhooks` for `checkout_session.payment.paid` (POST only; opening that URL in a browser is a 404). |
 | Admin | Seed Pro user is admin; open **/admin/failures** for failed packs / poster warnings |
 
 ### Phase 6 QA checklist

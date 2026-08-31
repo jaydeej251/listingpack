@@ -16,7 +16,8 @@ class Phase6PagesTest < ActionDispatch::IntegrationTest
 
     get publishing_path
     assert_response :success
-    assert_match(/Phase 9|Not unlocked/i, response.body)
+    assert_match(/Share from Listings/i, response.body)
+    assert_match(/Pro Plus/i, response.body)
   end
 
   test "admin failures requires admin" do

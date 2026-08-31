@@ -84,6 +84,24 @@ class TrustFlowsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "upgrade post redirects to the paymongo checkout url" do
+    user = users(:one)
+    sign_in user
+    checkout = Object.new
+    checkout.define_singleton_method(:call) do
+      user.update!(paymongo_checkout_session_id: "cs_1")
+      { id: "cs_1", checkout_url: "https://checkout.paymongo.com/cs_1" }
+    end
+
+    with_env("PAYMONGO_SECRET_KEY" => "sk_test_x") do
+      stub_singleton(Billing::Checkout, :new, ->(**) { checkout }) do
+        post billing_path
+        assert_redirected_to "https://checkout.paymongo.com/cs_1"
+        assert_equal "cs_1", user.reload.paymongo_checkout_session_id
+      end
+    end
+  end
+
   test "calendar retry does not consume quota" do
     user = users(:one)
     user.update!(quota_period_start: Time.zone.today.beginning_of_month, packs_count_in_period: 2)

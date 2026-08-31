@@ -1,5 +1,7 @@
 class User < ApplicationRecord
   FREE_PACKS_PER_MONTH = 3
+  PRO_PRICE_PHP = 499
+  PRO_PLUS_INTRO_PRICE_PHP = 799
   PLANS = %w[free pro].freeze
 
   has_secure_password
@@ -21,6 +23,11 @@ class User < ApplicationRecord
 
   def free?
     !pro?
+  end
+
+  # One-tap Facebook / WhatsApp / copy share. Auto-post is a later Pro Plus feature.
+  def can_share_listing?
+    pro?
   end
 
   def admin?

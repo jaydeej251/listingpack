@@ -9,8 +9,8 @@
 <% if @listings.any? %>
   <ul class="mt-10 grid gap-4 sm:grid-cols-2">
     <% @listings.each do |listing| %>
-      <li>
-        <%= link_to listing, class: "card group flex h-full overflow-hidden hover:border-clay" do %>
+      <li class="card flex h-full flex-col overflow-hidden">
+        <%= link_to listing, class: "group flex min-w-0 flex-1 overflow-hidden hover:bg-sand/40" do %>
           <div class="h-32 w-32 shrink-0 bg-sand">
             <% if listing.photos.attached? %>
               <%= image_tag listing.photos.first, class: "h-full w-full object-cover", alt: listing.title %>
@@ -24,7 +24,7 @@
                 <%= render "shared/status_pill", listing: listing, kind: "stage" %>
                 <%= render "shared/status_pill", listing: listing, kind: "pack" %>
               </div>
-              <p class="mt-2 truncate font-serif text-xl text-navy"><%= listing.title %></p>
+              <p class="mt-2 truncate font-serif text-xl text-navy group-hover:text-clay"><%= listing.title %></p>
               <p class="truncate text-sm text-navy/60"><%= listing.location %></p>
             </div>
             <p class="mt-2 text-sm font-semibold text-navy">
@@ -35,6 +35,9 @@
             </p>
           </div>
         <% end %>
+        <div class="border-t border-navy/10 px-4 py-3">
+          <%= render "listings/share", listing: listing, compact: true %>
+        </div>
       </li>
     <% end %>
   </ul>

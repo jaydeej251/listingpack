@@ -193,6 +193,32 @@
     color: var(--color-navy);
   }
 
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, var(--color-navy) 18%, transparent);
+    background: var(--color-surface);
+    color: var(--color-navy);
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  }
+
+  .share-btn:hover {
+    border-color: var(--color-clay);
+    color: var(--color-clay);
+  }
+
+  .share-btn-locked {
+    color: var(--color-navy);
+    opacity: 0.85;
+  }
+
   .flash {
     border-radius: 1rem;
     padding: 0.75rem 1rem;

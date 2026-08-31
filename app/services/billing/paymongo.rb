@@ -24,7 +24,7 @@ module Billing
             send_email_receipt: true,
             show_description: true,
             show_line_items: true,
-            description: "ListingPack Pro — unlimited packs, no watermark",
+            description: "ListingPack Pro — unlimited packs, no watermark, Facebook share",
             line_items: [
               {
                 currency: "PHP",
@@ -45,16 +45,19 @@ module Billing
         }
       }
 
-      payload = request(:post, "/v1/checkout_sessions", body)
+      payload = request(:post, "/v2/checkout_sessions", body)
       data = payload.fetch("data")
+      checkout_url = data.dig("attributes", "checkout_url")
+      raise Error, "PayMongo did not return a checkout URL." if checkout_url.blank?
+
       {
         id: data.fetch("id"),
-        checkout_url: data.dig("attributes", "checkout_url")
+        checkout_url: checkout_url
       }
     end
 
     def retrieve_checkout_session(session_id)
-      request(:get, "/v1/checkout_sessions/#{session_id}").fetch("data")
+      request(:get, "/v2/checkout_sessions/#{session_id}").fetch("data")
     end
 
     private
@@ -73,7 +76,7 @@ module Billing
         request.body = JSON.generate(body) if body
 
         response = http.request(request)
-        payload = JSON.parse(response.body)
+        payload = parse_json(response.body)
 
         unless response.is_a?(Net::HTTPSuccess)
           message = payload.dig("errors", 0, "detail") || "PayMongo request failed (#{response.code})"
@@ -81,6 +84,12 @@ module Billing
         end
 
         payload
+      end
+
+      def parse_json(body)
+        JSON.parse(body.to_s)
+      rescue JSON::ParserError
+        {}
       end
 
       def secret_key

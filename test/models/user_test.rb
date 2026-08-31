@@ -33,4 +33,9 @@ class UserTest < ActiveSupport::TestCase
     user = User.create!(email_address: "new@example.com", password: "password123")
     assert user.brand_kit.present?
   end
+
+  test "only pro can share listings" do
+    refute users(:one).can_share_listing?
+    assert users(:two).can_share_listing?
+  end
 end

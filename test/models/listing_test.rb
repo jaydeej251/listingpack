@@ -23,6 +23,29 @@ class ListingTest < ActiveSupport::TestCase
     assert_equal "Ready", listing.pack_status_label
   end
 
+  test "creates a share token" do
+    listing = users(:one).listings.new(
+      title: "Studio in Makati",
+      location: "Makati",
+      language: "taglish",
+      stage: "listed",
+      listing_type: "for_sale",
+      financing: "negotiable"
+    )
+    listing.photos.attach(io: File.open(Rails.root.join("public/icon.png")), filename: "x.png", content_type: "image/png")
+
+    assert listing.save
+    assert_match(/\A[A-Za-z0-9]+\z/, listing.share_token)
+    assert_equal 16, listing.share_token.length
+  end
+
+  test "share text includes title price and location" do
+    listing = listings(:bgc_condo)
+    assert_includes listing.share_text, listing.title
+    assert_includes listing.share_text, "BGC, Taguig"
+    assert_includes listing.share_text, "₱12,500,000"
+  end
+
   test "price reduced requires previous price" do
     listing = listings(:bgc_condo)
     listing.stage = "price_reduced"

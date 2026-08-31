@@ -35,4 +35,10 @@ class ApplicationHelperTest < ActionView::TestCase
     listing.status = "ready"
     assert_equal "pill pill-ready", pack_pill_class(listing)
   end
+
+  test "facebook sharer encodes the listing url" do
+    url = facebook_sharer_url("https://listingpack.test/l/abc")
+    assert_includes url, "https://www.facebook.com/sharer/sharer.php?u="
+    assert_includes url, "https%3A%2F%2Flistingpack.test%2Fl%2Fabc"
+  end
 end

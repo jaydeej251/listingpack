@@ -1,25 +1,41 @@
 <% content_for :title, "Publishing — ListingPack" %>
 
 <%= render "shared/page_header",
-      kicker: "Phase 9",
+      kicker: "Plans",
       title: "Channel publishing",
-      description: "Gated until Pro payers prove posters are the reason they stay." %>
+      description: "One-tap Share is on Pro. Automatic posting is a later Pro Plus feature." %>
 
-<div class="card mt-10 max-w-2xl p-6">
-  <p class="kicker">Not unlocked yet</p>
-  <h2 class="mt-2 font-serif text-2xl text-navy">Facebook Page schedule</h2>
-  <p class="mt-3 text-sm text-navy/70">
-    Official Meta APIs allow posting to a Facebook Page (and linked Instagram Business), not to personal timelines,
-    joined groups, or Marketplace listings. ListingPack will connect Page publishing only after paying agents
-    confirm the download-and-paste workflow is solid.
-  </p>
-  <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-navy/70">
-    <li>More poster templates / carousel set</li>
-    <li>Vision notes across multiple listing photos</li>
-    <li>Optional Facebook Page one-tap publish</li>
-  </ul>
-  <p class="mt-6 text-sm text-navy/60">Until then: download the PNG, attach it, paste the caption.</p>
-  <% if authenticated? %>
-    <%= link_to "Back to listings", listings_path, class: "btn btn-secondary mt-4" %>
-  <% end %>
+<div class="mt-10 grid gap-6 md:grid-cols-2">
+  <div class="card p-6">
+    <p class="kicker">Pro · ₱<%= User::PRO_PRICE_PHP %>/mo</p>
+    <h2 class="mt-2 font-serif text-2xl text-navy">Share from Listings</h2>
+    <p class="mt-3 text-sm text-navy/70">
+      Pro agents get Facebook, WhatsApp, and Copy link on each listing — the same pattern as a public listing page.
+      Facebook opens its share dialog with your public listing URL so the post can show the photo, price, and facts.
+    </p>
+    <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-navy/70">
+      <li>Free accounts see Share on Pro and are sent to Plan</li>
+      <li>You still attach the branded PNG if you want that graphic in the post</li>
+    </ul>
+    <% if authenticated? %>
+      <%= link_to current_user.can_share_listing? ? "Open listings" : "See Pro on Plan",
+            current_user.can_share_listing? ? listings_path : billing_path,
+            class: "btn btn-secondary mt-6" %>
+    <% end %>
+  </div>
+
+  <div class="card p-6">
+    <p class="kicker">Pro Plus · ₱<%= User::PRO_PLUS_INTRO_PRICE_PHP %>/mo intro</p>
+    <h2 class="mt-2 font-serif text-2xl text-navy">Optional auto-share</h2>
+    <p class="mt-3 text-sm text-navy/70">
+      Official Meta APIs allow posting to a Facebook Page (and linked Instagram Business), not to personal timelines,
+      joined groups, or Marketplace listings. That connect-and-publish flow is the Pro Plus plan — introductory ₱<%= User::PRO_PLUS_INTRO_PRICE_PHP %>/mo —
+      and it stays off until you opt in.
+    </p>
+    <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-navy/70">
+      <li>Optional Facebook Page publish when a pack is ready</li>
+      <li>Same optional path for other social channels later</li>
+      <li>Not for sale yet</li>
+    </ul>
+  </div>
 </div>

@@ -27,7 +27,10 @@ class Listing < ApplicationRecord
   has_many :content_packs, dependent: :destroy
   has_many_attached :photos
 
+  before_validation :ensure_share_token
+
   validates :title, :location, presence: true
+  validates :share_token, presence: true, uniqueness: true
   validates :language, inclusion: { in: LANGUAGES.keys }
   validates :status, inclusion: { in: STATUSES }
   validates :stage, inclusion: { in: STAGES.keys }
@@ -97,7 +100,30 @@ class Listing < ApplicationRecord
     { "generating" => "Generating", "failed" => "Failed", "ready" => "Ready", "draft" => "Draft" }.fetch(pack_status)
   end
 
+  def share_text
+    [ title, peso_label, location ].compact.join(" — ")
+  end
+
+  def share_blurb
+    pack = latest_pack
+    return pack.facebook_caption if pack&.ready? && pack.facebook_caption.present?
+
+    [ peso_label, facts_line.presence, location ].compact.join(" · ")
+  end
+
   private
+    def ensure_share_token
+      return if share_token.present?
+
+      loop do
+        token = SecureRandom.base58(16)
+        unless self.class.unscoped.exists?(share_token: token)
+          self.share_token = token
+          break
+        end
+      end
+    end
+
     def photos_present
       errors.add(:photos, "add at least one listing photo") unless photos.attached?
     end

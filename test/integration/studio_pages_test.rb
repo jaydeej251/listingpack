@@ -60,6 +60,11 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
 
     assert_select "h3", "Free"
     assert_select "h3", "Pro"
+    assert_select "h3", "Pro Plus"
+    assert_match(/₱#{User::PRO_PRICE_PHP}/, response.body)
+    assert_match(/₱#{User::PRO_PLUS_INTRO_PRICE_PHP}/, response.body)
+    assert_match(/Share to Facebook/, response.body)
+    assert_no_match(/Facebook auto-post — coming later/, response.body)
     assert_select "a[href=?]", new_registration_path, minimum: 3
     assert_select "details summary", minimum: 3
     assert_match(/Pay with GCash/, response.body)
@@ -74,6 +79,8 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     assert_select "span", "Just listed"
     assert_select "span", "Draft"
     assert_select "a", "New listing"
+    assert_select "a", "Share on Pro"
+    assert_no_match "facebook.com/sharer", response.body
   end
 
   test "empty listings shows first-pack empty state" do

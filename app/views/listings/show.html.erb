@@ -25,6 +25,8 @@
   <% end %>
 </div>
 
+<%= render "listings/share", listing: @listing %>
+
 <% if @listing.generating? %>
   <div
     data-controller="poll"

@@ -1,0 +1,52 @@
+<%# locals: (listing:, compact: false) %>
+<% share_url = listing_public_url(listing) %>
+<% if current_user.can_share_listing? %>
+  <div
+    class="<%= compact ? "" : "mt-8 border-t border-navy/10 pt-8" %>"
+    data-controller="share-listing"
+    data-share-listing-url-value="<%= share_url %>"
+    data-share-listing-title-value="<%= listing.title %>"
+    data-share-listing-text-value="<%= listing.share_text %>"
+  >
+    <% unless compact %>
+      <h2 class="font-serif text-2xl text-navy">Share</h2>
+      <p class="mt-2 text-sm text-navy/60">Opens Facebook with this listing link. Attach the downloaded PNG on Facebook if you want the branded poster in the post.</p>
+    <% end %>
+    <div class="<%= compact ? "flex flex-wrap gap-2" : "mt-4 flex flex-wrap gap-2" %>">
+      <%= link_to facebook_sharer_url(share_url),
+            target: "_blank",
+            rel: "noopener noreferrer",
+            class: "share-btn" do %>
+        Facebook
+      <% end %>
+      <%= link_to whatsapp_share_url(listing_whatsapp_message(listing)),
+            target: "_blank",
+            rel: "noopener noreferrer",
+            class: "share-btn" do %>
+        WhatsApp
+      <% end %>
+      <button type="button"
+              data-action="click->share-listing#copyLink"
+              class="share-btn cursor-pointer">
+        Copy link
+      </button>
+      <button type="button"
+              data-action="click->share-listing#nativeShare"
+              data-share-listing-target="nativeButton"
+              class="share-btn hidden cursor-pointer">
+        Share…
+      </button>
+    </div>
+    <p data-share-listing-target="feedback" class="mt-2 hidden text-sm text-sage"><%= compact ? "" : "Link copied." %></p>
+  </div>
+<% else %>
+  <div class="<%= compact ? "" : "mt-8 border-t border-navy/10 pt-8" %>">
+    <% unless compact %>
+      <h2 class="font-serif text-2xl text-navy">Share</h2>
+      <p class="mt-2 text-sm text-navy/60">Posting this listing to Facebook from ListingPack is a Pro feature.</p>
+    <% end %>
+    <%= link_to billing_path, class: "share-btn share-btn-locked #{compact ? "" : "mt-4"}", title: "Share to Facebook is on Pro (₱#{User::PRO_PRICE_PHP}/mo)" do %>
+      Share on Pro
+    <% end %>
+  </div>
+<% end %>

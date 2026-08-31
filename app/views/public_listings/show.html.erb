@@ -1,0 +1,54 @@
+<% content_for :title, "#{@listing.title} — #{@brand&.name || "ListingPack"}" %>
+<% og_image = @listing.photos.attached? ? rails_blob_url(@listing.photos.first) : nil %>
+<% content_for :head do %>
+  <meta name="description" content="<%= truncate(@listing.share_blurb, length: 180) %>">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<%= @listing.title %>">
+  <meta property="og:description" content="<%= truncate(@listing.share_blurb, length: 180) %>">
+  <meta property="og:url" content="<%= public_listing_url(@listing.share_token) %>">
+  <% if og_image.present? %>
+    <meta property="og:image" content="<%= og_image %>">
+  <% end %>
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= @listing.title %>">
+  <meta name="twitter:description" content="<%= truncate(@listing.share_blurb, length: 180) %>">
+<% end %>
+
+<article class="mx-auto max-w-3xl">
+  <p class="kicker"><%= @listing.stage_label %> · <%= @listing.location %></p>
+  <h1 class="mt-2 font-serif text-4xl text-navy"><%= @listing.title %></h1>
+  <p class="mt-3 text-xl font-semibold text-navy"><%= @listing.peso_label %></p>
+  <% if @listing.facts_line.present? %>
+    <p class="mt-1 text-navy/70"><%= @listing.facts_line %></p>
+  <% end %>
+
+  <div class="mt-4 flex flex-wrap gap-2">
+    <% @listing.ph_badges.each do |badge| %>
+      <span class="pill pill-fact"><%= badge %></span>
+    <% end %>
+  </div>
+
+  <% if @listing.photos.attached? %>
+    <div class="mt-8 overflow-hidden rounded-[1.25rem] bg-sand">
+      <%= image_tag @listing.photos.first, class: "w-full object-cover", alt: @listing.title %>
+    </div>
+  <% end %>
+
+  <% if @pack&.ready? && @pack.facebook_caption.present? %>
+    <section class="card mt-8 p-6">
+      <p class="kicker">About this listing</p>
+      <p class="mt-3 whitespace-pre-wrap text-navy/80"><%= @pack.facebook_caption %></p>
+    </section>
+  <% end %>
+
+  <section class="card mt-8 p-6">
+    <p class="kicker">Agent</p>
+    <h2 class="mt-2 font-serif text-2xl text-navy"><%= @brand&.name || "ListingPack agent" %></h2>
+    <% if @brand&.phone.present? %>
+      <p class="mt-2 text-navy/70">
+        <%= link_to @brand.phone, "tel:#{@brand.phone}", class: "underline hover:text-clay" %>
+      </p>
+    <% end %>
+    <p class="mt-4 text-sm text-navy/60">Message the agent to book a viewing. This page was shared from ListingPack.</p>
+  </section>
+</article>

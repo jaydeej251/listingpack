@@ -66,4 +66,20 @@ module ApplicationHelper
   def nav_link_class(active)
     active ? "text-clay" : "text-navy/80 hover:text-clay"
   end
+
+  def listing_public_url(listing)
+    public_listing_url(listing.share_token)
+  end
+
+  def facebook_sharer_url(url)
+    "https://www.facebook.com/sharer/sharer.php?u=#{ERB::Util.url_encode(url)}"
+  end
+
+  def whatsapp_share_url(message)
+    "https://wa.me/?text=#{ERB::Util.url_encode(message)}"
+  end
+
+  def listing_whatsapp_message(listing)
+    "#{listing.share_text}. #{listing_public_url(listing)}"
+  end
 end

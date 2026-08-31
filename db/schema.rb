@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_26_175244) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_01_015200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -132,6 +132,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_26_175244) do
     t.string "association_dues"
     t.string "near_transit"
     t.boolean "parking", default: false, null: false
+    t.string "share_token", null: false
+    t.index ["share_token"], name: "index_listings_on_share_token", unique: true
     t.index ["stage"], name: "index_listings_on_stage"
     t.index ["user_id", "created_at"], name: "index_listings_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_listings_on_user_id"

@@ -18,3 +18,4 @@ bgc_condo:
   association_dues: "₱8,500 / mo"
   near_transit: BGC Bus
   price_confirmed: false
+  share_token: bgcShareToken12ab
