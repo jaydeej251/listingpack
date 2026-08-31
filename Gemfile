@@ -23,7 +23,7 @@ gem "jbuilder"
 gem "bcrypt", "~> 3.1.7"
 
 # libvips compositing for poster PNGs (lightweight; no Chromium)
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.0"
 
 # S3-compatible object storage (Cloudflare R2 / AWS S3) for Active Storage in production
 gem "aws-sdk-s3", require: false
