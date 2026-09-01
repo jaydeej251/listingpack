@@ -79,8 +79,8 @@ module Images
       solid_rgb(1, 1, *color, alpha: 0)
     end
 
-    def self.tinted_text(text, width:, size:, rgb:, font: "Sans")
-      block = text_block(text, width: width, size: size, color: rgb, font: font)
+    def self.tinted_text(text, width:, size:, rgb:, font: "Sans", dpi: TEXT_DPI)
+      block = text_block(text, width: width, size: size, color: rgb, font: font, dpi: dpi)
       return block if block.bands < 4
 
       alpha = block[3]
