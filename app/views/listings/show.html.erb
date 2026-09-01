@@ -1,21 +1,33 @@
 <% content_for :title, "#{@listing.title} — ListingPack" %>
 
-<% if current_user.brand_kit&.display_name.blank? %>
+<% if listing_owner?(@listing) && current_user.brand_kit&.display_name.blank? %>
   <div class="flash flash-alert mb-6">
     Posts will use your email until you set a name in <%= link_to "Brand kit", edit_brand_kit_path, class: "underline" %>.
   </div>
 <% end %>
 
+<% listing_actions = [
+  link_to("Seller report", seller_report_listing_path(@listing), class: "btn btn-secondary")
+]
+if listing_owner?(@listing)
+  listing_actions += [
+    link_to("Edit facts", edit_listing_path(@listing), class: "btn btn-secondary"),
+    button_to("Generate again", listing_content_packs_path(@listing), method: :post, class: "btn btn-primary", data: { turbo_frame: "_top", turbo_confirm: current_user.free? ? (pack_credit_confirm(current_user) || "You have 0 of #{User::FREE_PACKS_PER_MONTH} free packs left this month. Continue to Plan?") : "Generate a new pack for this stage?" }),
+    button_to("Delete", listing_path(@listing), method: :delete, class: "btn btn-danger", data: { turbo_confirm: "Delete “#{@listing.title}”? This cannot be undone." })
+  ]
+elsif viewing_as_admin?(@listing.user)
+  listing_actions << link_to("Open agent", admin_user_path(@listing.user), class: "btn btn-secondary")
+end %>
+
 <%= render "shared/page_header",
       kicker: "#{@listing.stage_label} · #{@listing.location}",
       title: @listing.title,
       description: "#{@listing.peso_label} · #{@listing.facts_line}",
-      actions: safe_join([
-        link_to("Seller report", seller_report_listing_path(@listing), class: "btn btn-secondary"),
-        link_to("Edit facts", edit_listing_path(@listing), class: "btn btn-secondary"),
-        button_to("Generate again", listing_content_packs_path(@listing), method: :post, class: "btn btn-primary", data: { turbo_frame: "_top", turbo_confirm: current_user.free? ? (pack_credit_confirm(current_user) || "You have 0 of #{User::FREE_PACKS_PER_MONTH} free packs left this month. Continue to Plan?") : "Generate a new pack for this stage?" }),
-        button_to("Delete", listing_path(@listing), method: :delete, class: "btn btn-danger", data: { turbo_confirm: "Delete “#{@listing.title}”? This cannot be undone." })
-      ], " ") %>
+      actions: safe_join(listing_actions, " ") %>
+
+<% if viewing_as_admin?(@listing.user) %>
+  <p class="mt-4 text-sm text-navy/65">Viewing as admin · <%= @listing.user.email_address %> · <%= plan_badge(@listing.user) %>. Retry is OK; generate/edit/delete stay with the agent.</p>
+<% end %>
 
 <div class="mt-4 flex flex-wrap gap-2">
   <%= render "shared/status_pill", listing: @listing, kind: "stage" %>

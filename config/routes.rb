@@ -35,7 +35,16 @@ Rails.application.routes.draw do
   end
 
   namespace :admin do
+    get "login", to: "sessions#new", as: :login
+    resource :session, only: %i[ new create destroy ]
     resources :failures, only: :index
+    resources :users, only: %i[ index show ] do
+      member do
+        post :grant_pro
+        post :revert_free
+        post :reset_quota
+      end
+    end
   end
 
   get "privacy", to: "pages#privacy"

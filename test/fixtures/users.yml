@@ -11,3 +11,10 @@ two:
   password_digest: <%= password_digest %>
   plan: pro
   packs_count_in_period: 0
+
+operator:
+  email_address: admin@example.com
+  password_digest: <%= password_digest %>
+  plan: pro
+  admin: true
+  packs_count_in_period: 0

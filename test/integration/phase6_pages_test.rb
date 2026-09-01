@@ -27,22 +27,17 @@ class Phase6PagesTest < ActionDispatch::IntegrationTest
   end
 
   test "admin can open failures" do
-    user = users(:two)
-    user.update!(admin: true)
-    sign_in user
+    sign_in_operator users(:operator)
     get admin_failures_path
     assert_response :success
     assert_select "h1", "Failures"
   end
 
   test "admin can open another users listing from failures" do
-    owner = users(:one)
-    admin = users(:two)
-    admin.update!(admin: true)
     listing = listings(:bgc_condo)
     listing.update!(status: "failed")
 
-    sign_in admin
+    sign_in_operator users(:operator)
     get listing_path(listing)
     assert_response :success
     assert_match listing.title, response.body
@@ -77,6 +72,11 @@ class Phase6PagesTest < ActionDispatch::IntegrationTest
   private
     def sign_in(user)
       post session_url, params: { email_address: user.email_address, password: "password" }
+      follow_redirect!
+    end
+
+    def sign_in_operator(user)
+      post admin_session_url, params: { email_address: user.email_address, password: "password" }
       follow_redirect!
     end
 end

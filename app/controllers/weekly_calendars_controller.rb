@@ -1,4 +1,5 @@
 class WeeklyCalendarsController < ApplicationController
+  before_action :require_agent!, only: %i[ index create ]
   before_action :set_calendar, only: %i[ show retry ]
 
   def index

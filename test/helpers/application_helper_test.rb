@@ -36,6 +36,13 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "pill pill-ready", pack_pill_class(listing)
   end
 
+  test "admin quota summary is packs used not remaining" do
+    free = users(:one)
+    free.update!(quota_period_start: Time.zone.today.beginning_of_month, packs_count_in_period: 1)
+    assert_equal "1 of 3 packs used", admin_quota_summary(free)
+    assert_equal "unlimited packs", admin_quota_summary(users(:two))
+  end
+
   test "facebook sharer encodes the listing url" do
     url = facebook_sharer_url("https://listingpack.test/l/abc")
     assert_includes url, "https://www.facebook.com/sharer/sharer.php?u="

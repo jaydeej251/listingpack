@@ -60,11 +60,29 @@ module ApplicationHelper
   end
 
   def studio_home_path
+    return admin_users_path if current_user&.admin?
+
     authenticated? ? listings_path : root_path
   end
 
   def nav_link_class(active)
     active ? "text-clay" : "text-navy/80 hover:text-clay"
+  end
+
+  def listing_owner?(listing)
+    current_user&.id == listing.user_id
+  end
+
+  def viewing_as_admin?(owner)
+    current_user&.admin? && current_user.id != owner.id
+  end
+
+  def admin_quota_summary(user)
+    if user.pro?
+      "unlimited packs"
+    else
+      "#{user.packs_count_in_period} of #{User::FREE_PACKS_PER_MONTH} packs used"
+    end
   end
 
   def listing_public_url(listing)

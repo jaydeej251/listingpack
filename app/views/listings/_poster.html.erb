@@ -72,7 +72,7 @@
         <button type="button" class="text-navy underline" data-action="poster#open">View</button>
         <%= link_to "Download PNG", download_url, class: "btn btn-primary py-1 text-sm", data: { turbo: false } %>
       <% end %>
-      <% if asset&.persisted? && status != "generating" %>
+      <% if asset&.persisted? && status != "generating" && listing_owner?(listing) %>
         <%= button_to "Redraw", regenerate_listing_content_pack_generated_asset_path(listing, pack, asset), method: :post, class: "text-clay" %>
       <% end %>
     </span>

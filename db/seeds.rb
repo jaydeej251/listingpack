@@ -2,8 +2,14 @@ pro = User.find_or_create_by!(email_address: "agent@listingpack.local") do |user
   user.password = "password123"
   user.plan = "pro"
 end
-pro.update!(password: "password123", plan: "pro", admin: true) unless pro.pro?
-pro.update!(admin: true)
+pro.update!(password: "password123", plan: "pro", admin: false)
+
+operator = User.find_or_create_by!(email_address: "admin@listingpack.local") do |user|
+  user.password = "password123"
+  user.plan = "pro"
+  user.admin = true
+end
+operator.update!(password: "password123", plan: "pro", admin: true)
 
 pro.brand_kit.update!(
   display_name: "Maria Santos",
@@ -93,7 +99,8 @@ free.brand_kit.update!(
 )
 
 puts "Demo logins:"
-puts "  Pro:  agent@listingpack.local / password123  (ready pack on Listings; admin Failures)"
-puts "  Free: free@listingpack.local / password123  (1 of 3 packs used — watermark path)"
+puts "  Operator: admin@listingpack.local / password123  (log in at /admin/login — Users + Failures)"
+puts "  Pro:      agent@listingpack.local / password123  (studio Listings — not admin)"
+puts "  Free:     free@listingpack.local / password123  (1 of 3 packs used — watermark path)"
 puts "Posters render with libvips (POSTER_RENDERER=vips)."
 puts "Recruiting tip: walk 5–10 agents through /guide after Brand kit + one listing pack."

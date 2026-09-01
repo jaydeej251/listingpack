@@ -1,5 +1,7 @@
 class ListingsController < ApplicationController
   before_action :set_listing, only: %i[ show edit update destroy seller_report ]
+  before_action :require_listing_owner!, only: %i[ edit update destroy ]
+  before_action :require_agent!, only: %i[ index new create ]
 
   def index
     @listings = Current.user.listings.with_attached_photos.includes(:content_packs).order(created_at: :desc)
@@ -60,6 +62,12 @@ class ListingsController < ApplicationController
         end
     end
 
+    def require_listing_owner!
+      return if @listing.user_id == Current.user.id
+
+      redirect_to listing_path(@listing), alert: "View only. Use Retry on Failures, or reset the agent’s quota — do not edit another agent’s listing."
+    end
+
     def listing_params
       params.require(:listing).permit(
         :title, :location, :price_amount, :previous_price_amount, :bedrooms, :bathrooms, :floor_area,
@@ -73,7 +81,7 @@ class ListingsController < ApplicationController
       @photo_uri = @listing.photos.attached? ? url_for(@listing.photos.first) : nil
       @logo_uri = @brand&.logo&.attached? ? url_for(@brand.logo) : nil
       @headshot_uri = @brand&.headshot&.attached? ? url_for(@brand.headshot) : nil
-      @watermark = current_user.free?
+      @watermark = @listing.user.free?
     end
 
     def start_generation(listing)

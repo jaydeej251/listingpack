@@ -34,6 +34,12 @@ class UserTest < ActiveSupport::TestCase
     assert user.brand_kit.present?
   end
 
+  test "operators do not get a brand kit" do
+    user = User.create!(email_address: "ops@example.com", password: "password123", admin: true)
+    assert user.admin?
+    refute user.brand_kit.present?
+  end
+
   test "only pro can share listings" do
     refute users(:one).can_share_listing?
     assert users(:two).can_share_listing?
