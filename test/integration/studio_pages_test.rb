@@ -6,11 +6,15 @@ class StudioPagesTest < ActionDispatch::IntegrationTest
     get root_path
     assert_response :success
     assert_select "h1", /Upload a listing/
+    assert_select "h1", /publish/
+    assert_select ".hero-kicker", text: "ListingPack"
+    assert_select ".hero-speed-mark", /in seconds/i
+    assert_match(/Upload photos/, response.body)
+    assert_match(/Pack generates/, response.body)
     assert_match(/The graphic/i, response.body)
     assert_match(/The seller recap/i, response.body)
     assert_match(/The empty week/i, response.body)
     assert_select "footer", /Log in/
-    assert_select ".hero-brand", text: "ListingPack"
   end
 
   test "landing shows format showcase in the hero" do
