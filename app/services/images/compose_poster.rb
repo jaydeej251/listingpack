@@ -5,6 +5,7 @@ module Images
     class Error < StandardError; end
 
     WHITE = [ 255, 255, 255 ].freeze
+    CREAM = [ 243, 238, 228 ].freeze
     TITLE_LINE_HEIGHT = 1.28
 
     def initialize(content_pack, template_key, watermark: false)
@@ -84,130 +85,113 @@ module Images
         if photo_image
           canvas.composite(PosterCanvas.cover_crop(photo_image, width, height), x: 0, y: 0)
         end
-
-        overlay_h = (height * 0.55).round
-        canvas.composite(PosterCanvas.solid_rgb(width, overlay_h, *ink_rgb, alpha: 220), x: 0, y: height - overlay_h)
+        canvas.composite(PosterCanvas.solid_rgb(width, height, *ink_rgb, alpha: 36), x: 0, y: 0)
+        fade_h = (height * 0.46).round
+        canvas.composite(PosterCanvas.bottom_fade(width, fade_h, ink_rgb, alpha: 226), x: 0, y: height - fade_h)
         apply_watermark(canvas, width, height)
 
-        badge = PosterCanvas.tinted_text(@listing.stage_banner, width: 420, size: 22, rgb: WHITE, font: "Sans Bold")
-        badge_bg = PosterCanvas.solid_rgb(badge.width + 44, badge.height + 28, *accent_rgb)
-        canvas.composite(badge_bg, x: 56, y: 56)
-        canvas.composite(badge, x: 78, y: 70)
-        badge_bottom = 56 + badge_bg.height
+        badge_bottom = draw_stage_badge(canvas, x: 56, y: 56, size: 22, pad_x: 44, pad_y: 28)
 
         y = height - 56
         y = paint_brand_row(canvas, x: 56, y_bottom: y, width: 968, logo_size: 56, size: 22)
         y = stack_up(canvas, @listing.ph_badges.join(" · "), width: 968, size: 20, x: 56, y: y, gap: 14) if @listing.ph_badges.any?
         y = stack_up(canvas, @listing.facts_line, width: 968, size: 24, x: 56, y: y, gap: 12) if @listing.facts_line.present?
-        y = stack_up(canvas, @listing.peso_label, width: 968, size: 42, x: 56, y: y, gap: 10, font: "Sans Bold")
+        y = stack_up(canvas, @listing.peso_label, width: 968, size: 42, x: 56, y: y, gap: 12, font: "Sans Bold", rgb: accent_rgb)
         if @listing.stage == "price_reduced" && @listing.previous_price_amount.present?
           y = stack_up(canvas, @listing.previous_peso_label, width: 968, size: 24, x: 56, y: y, gap: 6)
         end
 
-        location_h = block_height(@listing.location, width: 968, size: 28)
+        location_h = block_height(@listing.location.to_s.upcase, width: 968, size: 20)
         title_budget = y - badge_bottom - 28 - location_h
         title_budget = [ title_budget, lines_height(72, 2) ].min
-        y = stack_up(canvas, @listing.title, width: 968, size: 72, x: 56, y: y, gap: 18, font: "Serif Bold", max_height: title_budget)
-        stack_up(canvas, @listing.location, width: 968, size: 28, x: 56, y: y, gap: 0, max_height: 40)
+        y = stack_up(canvas, @listing.title, width: 968, size: 72, x: 56, y: y, gap: 14, font: "Serif Bold", max_height: title_budget)
+        stack_up(canvas, @listing.location.to_s.upcase, width: 968, size: 20, x: 56, y: y, gap: 0, rgb: CREAM, max_height: 36)
 
         canvas.to_png_bytes
       end
 
       def render_price_card(width, height)
-        canvas = PosterCanvas.new(width, height, background: [ 243, 238, 228 ])
-        photo_h = 620
+        canvas = PosterCanvas.new(width, height, background: CREAM)
+        layout = price_card_layout(width, height)
+
         if photo_image
-          canvas.composite(PosterCanvas.cover_crop(photo_image, width, photo_h), x: 0, y: 0)
+          canvas.composite(PosterCanvas.cover_crop(photo_image, width, layout[:photo_h]), x: 0, y: 0)
         else
-          canvas.composite(PosterCanvas.solid_rgb(width, photo_h, *ink_rgb), x: 0, y: 0)
+          canvas.composite(PosterCanvas.solid_rgb(width, layout[:photo_h], *ink_rgb), x: 0, y: 0)
         end
         apply_watermark(canvas, width, height)
 
-        facts = @listing.facts_line.presence || "Ask for the full spec sheet"
-        badges = @listing.ph_badges.join(" · ")
-        peso_h = block_height(@listing.peso_label, width: 520, size: 40, font: "Sans Bold")
-        facts_h = block_height(facts, width: 520, size: 20)
-        badges_h = badges.present? ? block_height(badges, width: 520, size: 16) : 0
-        footer_h = peso_h + 8 + facts_h + (badges_h > 0 ? 8 + badges_h : 0)
-
-        brand_h = block_height(@brand.name.to_s, width: 300, size: 20, font: "Sans Bold")
-        phone_h = @brand&.phone.present? ? block_height(@brand.phone.to_s, width: 300, size: 18) : 0
-        logo_h = logo_image ? 58 : 0
-        brand_col_h = logo_h + brand_h + (phone_h > 0 ? 6 + phone_h : 0)
-
-        footer_top = height - 40 - [ footer_h, brand_col_h ].max
-        header_y = photo_h + 40
-        location_h = block_height(@listing.location, width: 968, size: 22)
-        title_budget = footer_top - header_y - 28 - location_h
-        title_budget = [ title_budget, lines_height(48, 2) ].min
-        title_budget = [ title_budget, 36 ].max
-
-        y = header_y
-        y = stack_down(canvas, @listing.stage_banner, width: 968, size: 18, x: 56, y: y, gap: 8, rgb: accent_rgb, font: "Sans Bold")
-        y = stack_down(canvas, @listing.title, width: 968, size: 48, x: 56, y: y, gap: 12, font: "Serif Bold", rgb: ink_rgb, max_height: title_budget)
-        stack_down(canvas, @listing.location, width: 968, size: 22, x: 56, y: y, gap: 0, rgb: ink_rgb, max_height: 40)
-
-        y = height - 40
-        y = stack_up(canvas, badges, width: 600, size: 15, x: 56, y: y, gap: 8, rgb: ink_rgb, max_height: 38) if badges.present?
-        y = stack_up(canvas, facts, width: 560, size: 20, x: 56, y: y, gap: 8, rgb: ink_rgb, max_height: 28)
-        stack_up(canvas, @listing.peso_label, width: 520, size: 40, x: 56, y: y, gap: 0, font: "Sans Bold", rgb: ink_rgb)
-
-        right_x = width - 356
-        brand_y = height - 40 - brand_col_h
-        if logo_image
-          composite_logo(canvas, x: width - 104, y: brand_y, size: 48)
-          brand_y += 58
+        y = layout[:body_y]
+        max_y = layout[:max_y]
+        y = stack_down(canvas, @listing.stage_banner, width: 968, size: 16, x: 56, y: y, gap: 8, rgb: accent_rgb, font: "Sans Bold", max_y: max_y)
+        y = stack_down(canvas, @listing.title, width: 968, size: 42, x: 56, y: y, gap: 8, font: "Serif Bold", rgb: ink_rgb, max_height: layout[:title_budget], max_y: max_y)
+        y = stack_down(canvas, @listing.location, width: 968, size: 20, x: 56, y: y, gap: 16, rgb: ink_rgb, max_height: 32, max_y: max_y)
+        if y + 4 <= max_y
+          canvas.composite(PosterCanvas.solid_rgb(88, 4, *accent_rgb), x: 56, y: y)
+          y += 18
         end
-        brand_y = stack_down(canvas, @brand.name.to_s, width: 300, size: 20, x: right_x, y: brand_y, gap: 6, rgb: ink_rgb, font: "Sans Bold")
-        stack_down(canvas, @brand.phone.to_s, width: 300, size: 18, x: right_x, y: brand_y, gap: 0, rgb: ink_rgb) if @brand&.phone.present?
+        y = stack_down(canvas, @listing.peso_label, width: 968, size: 40, x: 56, y: y, gap: 10, font: "Sans Bold", rgb: accent_rgb, max_y: max_y)
+        y = stack_down(canvas, @listing.facts_line, width: 968, size: 20, x: 56, y: y, gap: 6, rgb: ink_rgb, max_height: 28, max_y: max_y) if @listing.facts_line.present?
+        if layout[:include_badges]
+          stack_down(canvas, @listing.ph_badges.first(2).join(" · "), width: 968, size: 16, x: 56, y: y, gap: 0, rgb: ink_rgb, max_height: 24, max_y: max_y)
+        end
 
+        footer_h = layout[:footer_h]
+        canvas.composite(PosterCanvas.solid_rgb(width, footer_h, *ink_rgb), x: 0, y: height - footer_h)
+        draw_price_card_footer(canvas, width, height, footer_h)
         canvas.to_png_bytes
       end
 
       def render_agent_card(width, height)
         canvas = PosterCanvas.new(width, height, background: ink_rgb)
-        inset = 36
+        inset = 32
         inner_w = width - (inset * 2)
         inner_h = height - (inset * 2)
-        photo_h = (inner_h * 0.64).round
-        copy_width = inner_w - 72
+        avatar_size = 120
+        band_pad = 32
+        text_w = inner_w - 64 - avatar_size - 20
 
-        title_budget = lines_height(48, 2)
-        title_block = copy_block(@listing.title, width: copy_width, size: 48, font: "Serif Bold", max_height: title_budget)
-        label_block = copy_block("YOUR AGENT", width: copy_width, size: 20, rgb: accent_rgb, font: "Sans Bold")
-        title_gap = 10
-        copy_h = (label_block&.height || 0) + (title_block ? title_gap + title_block.height : 0)
-        copy_top = inset + photo_h - 24 - copy_h
-        overlay_h = copy_h + 56
+        name_h = block_height(@brand.name.to_s, width: text_w, size: 30, font: "Serif Bold")
+        price_h = block_height(@listing.peso_label, width: text_w, size: 26, font: "Sans Bold")
+        cta = "DM for viewing#{@brand&.phone.present? ? " · #{@brand.phone}" : ""}"
+        cta_h = block_height(cta, width: text_w, size: 16)
+        identity_h = name_h + 6 + price_h + 8 + cta_h
+        band_h = [ avatar_size, identity_h ].max + (band_pad * 2)
+        photo_h = inner_h - band_h
+        copy_width = inner_w - 56
 
         if photo_image
           canvas.composite(PosterCanvas.cover_crop(photo_image, inner_w, photo_h), x: inset, y: inset)
         end
-        canvas.composite(PosterCanvas.solid_rgb(inner_w, overlay_h, *ink_rgb, alpha: 200), x: inset, y: inset + photo_h - overlay_h)
+        fade_h = [ 220, (photo_h * 0.36).round ].max
+        canvas.composite(PosterCanvas.bottom_fade(inner_w, fade_h, ink_rgb, alpha: 230), x: inset, y: inset + photo_h - fade_h)
         apply_watermark(canvas, width, height)
+        draw_stage_badge(canvas, x: inset + 32, y: inset + 32, size: 18, pad_x: 44, pad_y: 28, label: "YOUR AGENT")
 
-        y = copy_top
-        if label_block
-          canvas.composite(label_block, x: inset + 36, y: y)
-          y += label_block.height + title_gap
-        end
-        canvas.composite(title_block, x: inset + 36, y: y) if title_block
+        title_budget = lines_height(42, 2)
+        title_bottom = inset + photo_h - 32
+        title_bottom = stack_up(canvas, @listing.title, width: copy_width, size: 42, x: inset + 28, y: title_bottom, gap: 10, font: "Serif Bold", max_height: title_budget)
+        stack_up(canvas, @listing.location.to_s.upcase, width: copy_width, size: 16, x: inset + 28, y: title_bottom, gap: 0, rgb: CREAM, max_height: 28)
 
-        footer_y = inset + photo_h + 36
+        band_y = inset + photo_h
+        content_h = [ avatar_size, identity_h ].max
+        content_y = band_y + ((band_h - content_h) / 2.0)
+        avatar_x = inset + 28
         if headshot_image
-          canvas.composite(PosterCanvas.rounded_image(headshot_image, 148, radius: 74), x: inset + 40, y: footer_y)
+          canvas.composite(PosterCanvas.rounded_image(headshot_image, avatar_size, radius: avatar_size / 2), x: avatar_x, y: content_y)
         else
-          initial = PosterCanvas.tinted_text(@brand.name.to_s.first.to_s, width: 80, size: 42, rgb: WHITE, font: "Serif Bold")
-          badge = PosterCanvas.filled_circle(148, accent_rgb)
-          canvas.composite(badge, x: inset + 40, y: footer_y)
-          canvas.composite(initial, x: inset + 40 + ((148 - initial.width) / 2.0), y: footer_y + ((148 - initial.height) / 2.0))
+          letter = @brand.name.to_s.gsub(/[^A-Za-z]/, "").first.presence || @brand.name.to_s.first.to_s
+          initial = PosterCanvas.tinted_text(letter.to_s.upcase, width: avatar_size, size: 42, rgb: WHITE, font: "Serif Bold")
+          badge = PosterCanvas.filled_circle(avatar_size, accent_rgb)
+          canvas.composite(badge, x: avatar_x, y: content_y)
+          canvas.composite(initial, x: avatar_x + ((avatar_size - initial.width) / 2.0), y: content_y + ((avatar_size - initial.height) / 2.0)) if initial
         end
 
-        text_x = inset + 210
-        y = footer_y + 8
-        y = stack_down(canvas, @brand.name.to_s, width: inner_w - 250, size: 34, x: text_x, y: y, gap: 8, font: "Serif Bold", max_height: lines_height(34, 2))
-        y = stack_down(canvas, "#{@listing.location} · #{@listing.peso_label}", width: inner_w - 250, size: 22, x: text_x, y: y, gap: 8, max_height: 48)
-        stack_down(canvas, "DM for viewing#{@brand&.phone.present? ? " · #{@brand.phone}" : ""}", width: inner_w - 250, size: 22, x: text_x, y: y, gap: 0, max_height: 48)
+        text_x = avatar_x + avatar_size + 20
+        text_y = content_y + ((content_h - identity_h) / 2.0)
+        text_y = stack_down(canvas, @brand.name.to_s, width: text_w, size: 30, x: text_x, y: text_y, gap: 6, font: "Serif Bold", max_height: lines_height(30, 2))
+        text_y = stack_down(canvas, @listing.peso_label, width: text_w, size: 26, x: text_x, y: text_y, gap: 8, font: "Sans Bold", rgb: accent_rgb)
+        stack_down(canvas, cta, width: text_w, size: 16, x: text_x, y: text_y, gap: 0, max_height: 28)
         canvas.to_png_bytes
       end
 
@@ -280,6 +264,66 @@ module Images
         canvas.to_png_bytes
       end
 
+      def draw_stage_badge(canvas, x:, y:, size: 20, pad_x: 44, pad_y: 28, label: nil)
+        text = label || @listing.stage_banner
+        badge = PosterCanvas.tinted_text(text.to_s.upcase, width: 420, size: size, rgb: WHITE, font: "Sans Bold")
+        return y if badge.nil?
+
+        bg = PosterCanvas.rounded_fill(badge.width + pad_x, badge.height + pad_y, accent_rgb, radius: 10)
+        canvas.composite(bg, x: x, y: y)
+        canvas.composite(badge, x: x + (pad_x / 2.0), y: y + (pad_y / 2.0))
+        y + bg.height
+      end
+
+      def price_card_layout(_width, height)
+        footer_h = 88
+        pad_top = 36
+        pad_bottom = 24
+        text_w = 968
+        title_budget = lines_height(42, 2)
+        badges = @listing.ph_badges.first(2).join(" · ")
+
+        stage_h = block_height(@listing.stage_banner, width: text_w, size: 16, font: "Sans Bold")
+        title_h = copy_block(@listing.title, width: text_w, size: 42, font: "Serif Bold", rgb: ink_rgb, max_height: title_budget)&.height || 0
+        location_h = block_height(@listing.location, width: text_w, size: 20)
+        peso_h = block_height(@listing.peso_label, width: text_w, size: 40, font: "Sans Bold")
+        facts_h = @listing.facts_line.present? ? block_height(@listing.facts_line, width: text_w, size: 20) : 0
+        badges_h = badges.present? ? block_height(badges, width: text_w, size: 16) : 0
+
+        required = stage_h + 8 + title_h + 8 + location_h + 16 + 4 + 14 + peso_h
+        required += 10 + facts_h if facts_h.positive?
+        with_badges = required + (badges_h.positive? ? 6 + badges_h : 0)
+        include_badges = badges.present? && (with_badges + pad_top + pad_bottom) <= (height * 0.38).round
+        body_h = include_badges ? with_badges : required
+        photo_h = height - footer_h - pad_top - pad_bottom - body_h
+
+        {
+          photo_h: photo_h,
+          footer_h: footer_h,
+          body_y: photo_h + pad_top,
+          max_y: height - footer_h - pad_bottom,
+          title_budget: title_budget,
+          include_badges: include_badges
+        }
+      end
+
+      def draw_price_card_footer(canvas, width, height, footer_h)
+        footer_y = height - footer_h
+        text_x = 56
+        logo_size = 48
+        if logo_image
+          composite_logo(canvas, x: 56, y: footer_y + ((footer_h - logo_size) / 2.0), size: logo_size)
+          text_x = 56 + logo_size + 16
+        end
+
+        name_h = block_height(@brand.name.to_s, width: 480, size: 20, font: "Sans Bold")
+        phone_h = @brand&.phone.present? ? block_height(@brand.phone.to_s, width: 480, size: 16) : 0
+        block_h = name_h + (phone_h.positive? ? 4 + phone_h : 0)
+        text_y = footer_y + ((footer_h - block_h) / 2.0)
+        text_y = stack_down(canvas, @brand.name.to_s, width: width - text_x - 56, size: 20, x: text_x, y: text_y, gap: 4, font: "Sans Bold", max_height: 28)
+        stack_down(canvas, @brand.phone.to_s, width: width - text_x - 56, size: 16, x: text_x, y: text_y, gap: 0) if @brand&.phone.present?
+      end
+
       def stack_text(canvas, text, width:, size:, x:, y:, rgb: WHITE, font: "Sans", max_height: nil)
         block = copy_block(text, width: width, size: size, rgb: rgb, font: font, max_height: max_height)
         return y if block.nil?
@@ -288,9 +332,10 @@ module Images
         y + block.height
       end
 
-      def stack_down(canvas, text, width:, size:, x:, y:, gap: 12, rgb: WHITE, font: "Sans", max_height: nil)
+      def stack_down(canvas, text, width:, size:, x:, y:, gap: 12, rgb: WHITE, font: "Sans", max_height: nil, max_y: nil)
         block = copy_block(text, width: width, size: size, rgb: rgb, font: font, max_height: max_height)
         return y if block.nil?
+        return y if max_y && y + block.height > max_y
 
         canvas.composite(block, x: x, y: y)
         y + block.height + gap
