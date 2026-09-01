@@ -1,6 +1,15 @@
 require "test_helper"
 
 class ApplicationHelperTest < ActionView::TestCase
+  test "app brand renders a fixed-size icon and wordmark" do
+    html = app_brand(variant: :header)
+    assert_match(/logo-icon\.png/, html)
+    assert_match(/width="32"/, html)
+    assert_match(/height="32"/, html)
+    assert_match(/width:32px/, html)
+    assert_match(/ListingPack/, html)
+  end
+
   test "quota copy for free vs pro" do
     free = users(:one)
     free.update!(quota_period_start: Time.zone.today.beginning_of_month, packs_count_in_period: 1)

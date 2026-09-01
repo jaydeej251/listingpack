@@ -1,7 +1,8 @@
 <% content_for :title, "Log in — ListingPack" %>
 
 <div class="mx-auto max-w-md">
-  <p class="kicker">Studio</p>
+  <%= app_brand variant: :auth, class: "mx-auto" %>
+  <p class="kicker mt-6">Studio</p>
   <h1 class="mt-2 font-serif text-4xl text-navy">Log in</h1>
 
   <%= form_with url: session_url, class: "mt-8 space-y-5" do |form| %>
