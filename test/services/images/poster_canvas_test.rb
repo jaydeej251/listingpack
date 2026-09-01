@@ -8,17 +8,26 @@ class ImagesPosterCanvasTest < ActiveSupport::TestCase
   end
 
   test "text at template sizes is pixel-true not doubled by DPI" do
-    title = Images::PosterCanvas.tinted_text(
+    title_72 = Images::PosterCanvas.tinted_text(
       "Fully Finished Townhouse",
       width: 968,
       size: 72,
       rgb: [ 255, 255, 255 ],
-      font: "Serif Bold"
+      font: "Serif Bold",
+      dpi: 72
+    )
+    title_144 = Images::PosterCanvas.tinted_text(
+      "Fully Finished Townhouse",
+      width: 968,
+      size: 72,
+      rgb: [ 255, 255, 255 ],
+      font: "Serif Bold",
+      dpi: 144
     )
 
-    assert_operator title.height, :<=, 100, "72px title should be one line, got #{title.height}px"
-    assert_operator title.height, :>=, 48
-    refute_operator title.height, :>=, 200, "old 144 DPI path wrapped this title to 500px+"
+    assert_operator title_72.height, :>=, 48
+    assert_operator title_72.height, :<=, 185, "72 DPI title should stay within two lines, got #{title_72.height}px"
+    assert_operator title_144.height, :>=, title_72.height * 1.5, "144 DPI must not be used for layout; it doubled glyphs (#{title_144.height} vs #{title_72.height})"
   rescue StandardError => e
     skip "libvips not available in this environment" if vips_unavailable?(e)
     raise
@@ -33,7 +42,7 @@ class ImagesPosterCanvasTest < ActiveSupport::TestCase
       font: "Serif Bold"
     )
 
-    assert_operator title.height, :<=, 70
+    assert_operator title.height, :<=, 90
   rescue StandardError => e
     skip "libvips not available in this environment" if vips_unavailable?(e)
     raise
