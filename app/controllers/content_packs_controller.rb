@@ -2,6 +2,11 @@ class ContentPacksController < ApplicationController
   before_action :set_listing
 
   def create
+    unless @listing.user_id == Current.user.id
+      redirect_to @listing, alert: "View only. Use Retry (no credit) or reset the agent’s quota."
+      return
+    end
+
     if @listing.generating?
       redirect_to @listing, alert: "This listing is already generating a pack."
       return
@@ -71,7 +76,12 @@ class ContentPacksController < ApplicationController
 
   private
     def set_listing
-      @listing = Current.user.listings.find(params[:listing_id] || params[:id])
+      @listing =
+        if Current.user.admin?
+          Listing.find(params[:listing_id] || params[:id])
+        else
+          Current.user.listings.find(params[:listing_id] || params[:id])
+        end
     end
 
     def load_latest_pack
@@ -96,6 +106,6 @@ class ContentPacksController < ApplicationController
       @photo_uri = @listing.photos.attached? ? url_for(@listing.photos.first) : nil
       @logo_uri = @brand&.logo&.attached? ? url_for(@brand.logo) : nil
       @headshot_uri = @brand&.headshot&.attached? ? url_for(@brand.headshot) : nil
-      @watermark = current_user.free?
+      @watermark = @listing.user.free?
     end
 end

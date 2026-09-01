@@ -1,4 +1,5 @@
 class BrandKitsController < ApplicationController
+  before_action :require_agent!
   before_action :set_brand_kit
 
   def edit

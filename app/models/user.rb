@@ -9,13 +9,17 @@ class User < ApplicationRecord
   has_one :brand_kit, dependent: :destroy
   has_many :listings, dependent: :destroy
   has_many :weekly_calendars, dependent: :destroy
+  has_many :billing_events, dependent: :nullify
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
   validates :email_address, presence: true, uniqueness: true
   validates :plan, inclusion: { in: PLANS }
 
-  after_create :ensure_brand_kit
+  after_create :ensure_brand_kit, unless: :admin?
+
+  scope :agents, -> { where(admin: false) }
+  scope :operators, -> { where(admin: true) }
 
   def pro?
     plan == "pro"

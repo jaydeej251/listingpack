@@ -1,0 +1,89 @@
+<% content_for :title, "#{@user.email_address} — Admin" %>
+
+<%= render "shared/page_header",
+      kicker: "Admin",
+      title: @user.email_address,
+      description: "#{plan_badge(@user)} · #{admin_quota_summary(@user)}",
+      actions: safe_join([
+        link_to("All users", admin_users_path, class: "btn btn-secondary"),
+        link_to("Failures", admin_failures_path, class: "btn btn-secondary")
+      ], " ") %>
+
+<% if @user.admin? %>
+  <p class="mt-4 text-sm text-navy/60">This account is an operator. The admin flag cannot be changed here.</p>
+<% end %>
+
+<section class="mt-10 grid gap-6 lg:grid-cols-2">
+  <div class="card p-5">
+    <h2 class="font-serif text-2xl text-navy">Account</h2>
+    <dl class="mt-4 space-y-2 text-sm">
+      <div class="flex justify-between gap-4"><dt class="text-navy/60">Plan</dt><dd class="font-medium text-navy"><%= plan_badge(@user) %></dd></div>
+      <div class="flex justify-between gap-4"><dt class="text-navy/60">Packs used this month</dt><dd class="font-medium text-navy"><%= @user.pro? ? "Unlimited" : "#{@user.packs_count_in_period} / #{User::FREE_PACKS_PER_MONTH}" %></dd></div>
+      <div class="flex justify-between gap-4"><dt class="text-navy/60">Quota period</dt><dd class="font-medium text-navy"><%= @user.quota_period_start.presence || "—" %></dd></div>
+      <div class="flex justify-between gap-4"><dt class="text-navy/60">Joined</dt><dd class="font-medium text-navy"><%= @user.created_at.to_date %></dd></div>
+      <div class="flex justify-between gap-4 break-all"><dt class="text-navy/60">PayMongo checkout</dt><dd class="font-medium text-navy"><%= @user.paymongo_checkout_session_id.presence || "—" %></dd></div>
+      <div class="flex justify-between gap-4 break-all"><dt class="text-navy/60">PayMongo customer</dt><dd class="font-medium text-navy"><%= @user.paymongo_customer_id.presence || "—" %></dd></div>
+    </dl>
+  </div>
+
+  <div class="card p-5">
+    <h2 class="font-serif text-2xl text-navy">Overrides</h2>
+    <p class="mt-2 text-sm text-navy/65">Every action needs a reason and writes a billing event with provider <code>admin</code>. This does not replay a PayMongo webhook.</p>
+
+    <%= form_with url: grant_pro_admin_user_path(@user), class: "mt-6 space-y-3" do |form| %>
+      <%= form.label :reason, "Reason", class: "label" %>
+      <%= form.text_area :reason, required: true, minlength: 3, rows: 2, class: "field", placeholder: "PayMongo paid on cs_…, webhook missing. Checked dashboard." %>
+      <%= form.submit "Grant Pro", class: "btn btn-primary", disabled: @user.pro? %>
+    <% end %>
+
+    <%= form_with url: revert_free_admin_user_path(@user), class: "mt-8 space-y-3" do |form| %>
+      <%= form.label :reason, "Reason", class: "label" %>
+      <%= form.text_area :reason, required: true, minlength: 3, rows: 2, class: "field", placeholder: "Refunded in PayMongo / test account." %>
+      <%= form.submit "Revert to Free", class: "btn btn-secondary", disabled: @user.free? %>
+    <% end %>
+
+    <%= form_with url: reset_quota_admin_user_path(@user), class: "mt-8 space-y-3" do |form| %>
+      <%= form.label :reason, "Reason", class: "label" %>
+      <%= form.text_area :reason, required: true, minlength: 3, rows: 2, class: "field", placeholder: "Failed pack ate a Free credit; retry not enough." %>
+      <%= form.submit "Reset quota", class: "btn btn-secondary" %>
+    <% end %>
+  </div>
+</section>
+
+<section class="mt-12">
+  <h2 class="font-serif text-2xl text-navy">Billing events</h2>
+  <p class="mt-2 text-sm text-navy/60">PayMongo webhooks and admin overrides. If they paid and this list is empty, the webhook never arrived.</p>
+  <% if @billing_events.any? %>
+    <ul class="mt-4 space-y-3">
+      <% @billing_events.each do |event| %>
+        <li class="card p-4 text-sm">
+          <p class="font-medium text-navy"><%= event.provider %> · <%= event.event_type %></p>
+          <p class="mt-1 text-navy/65"><%= event.created_at %></p>
+          <% if event.payload.is_a?(Hash) && event.payload["reason"].present? %>
+            <p class="mt-1 text-navy/70"><%= event.payload["reason"] %> · <%= event.payload["actor_email"] %></p>
+          <% end %>
+          <p class="mt-1 break-all text-xs text-navy/50"><%= event.event_id %></p>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-3 text-sm text-navy/60">No billing events. If GCash succeeded, check the PayMongo webhook URL and APP_HOST.</p>
+  <% end %>
+</section>
+
+<section class="mt-12">
+  <h2 class="font-serif text-2xl text-navy">Listings</h2>
+  <% if @listings.any? %>
+    <ul class="mt-4 space-y-3">
+      <% @listings.each do |listing| %>
+        <li class="card p-4 text-sm">
+          <p class="font-medium text-navy"><%= listing.title %> · <%= listing.pack_status_label %></p>
+          <p class="mt-1 text-navy/65"><%= listing.latest_pack&.error_message.presence || listing.location %></p>
+          <p class="mt-2"><%= link_to "Open listing", listing_path(listing), class: "underline text-clay" %></p>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-3 text-sm text-navy/60">No listings yet.</p>
+  <% end %>
+</section>

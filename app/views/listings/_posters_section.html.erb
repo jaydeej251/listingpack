@@ -43,13 +43,13 @@
     <p class="mt-2 text-sm text-navy/60">
       <% if single_poster %>
         Branded square graphic for Facebook, Instagram, and Marketplace — attach it to your post, then paste the caption.
-        <% if current_user.free? %>
+        <% if listing.user.free? %>
           <span class="block mt-2 text-navy/55">Pro unlocks story, landscape, banner, and more square formats.</span>
         <% end %>
       <% else %>
         Square, story, landscape, and banner — download the format that fits the channel.
       <% end %>
-      <% if current_user.free? %> Free plans include a watermark.<% end %>
+      <% if listing.user.free? %> Free plans include a watermark.<% end %>
     </p>
     <div class="mt-6 grid gap-6 <%= single_poster ? "max-w-md" : "sm:grid-cols-2 xl:grid-cols-3" %>">
       <% display_keys.each do |key| %>

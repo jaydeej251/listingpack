@@ -1,16 +1,7 @@
-class Admin::FailuresController < ApplicationController
-  before_action :require_admin
-
+class Admin::FailuresController < Admin::BaseController
   def index
     @failed_listings = Listing.where(status: "failed").includes(:user, :content_packs).order(updated_at: :desc).limit(50)
     @failed_calendars = WeeklyCalendar.where(status: "failed").includes(:user).order(updated_at: :desc).limit(50)
     @poster_warnings = ContentPack.where(status: "ready").where.not(error_message: [ nil, "" ]).includes(listing: :user).order(updated_at: :desc).limit(50)
   end
-
-  private
-    def require_admin
-      return if Current.user&.admin?
-
-      redirect_to listings_path, alert: "Admin only."
-    end
 end

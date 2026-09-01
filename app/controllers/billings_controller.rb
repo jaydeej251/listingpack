@@ -1,4 +1,5 @@
 class BillingsController < ApplicationController
+  before_action :require_agent!
   def show
     Current.user.reset_quota_if_needed!
 

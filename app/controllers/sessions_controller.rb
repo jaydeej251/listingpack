@@ -7,6 +7,11 @@ class SessionsController < ApplicationController
 
   def create
     if user = User.authenticate_by(params.permit(:email_address, :password))
+      if user.admin?
+        redirect_to admin_login_path, alert: "Operator accounts use the admin login."
+        return
+      end
+
       start_new_session_for user
       redirect_to after_authentication_url
     else

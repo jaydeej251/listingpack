@@ -1,6 +1,13 @@
 <%# locals: (listing:, compact: false) %>
 <% share_url = listing_public_url(listing) %>
-<% if current_user.can_share_listing? %>
+<% if viewing_as_admin?(listing.user) && !listing.user.can_share_listing? %>
+  <div class="<%= compact ? "" : "mt-8 border-t border-navy/10 pt-8" %>">
+    <% unless compact %>
+      <h2 class="font-serif text-2xl text-navy">Share</h2>
+      <p class="mt-2 text-sm text-navy/60">This agent is on Free — share from Listings is locked for them. Grant Pro on their account if they paid.</p>
+    <% end %>
+  </div>
+<% elsif listing.user.can_share_listing? %>
   <div
     class="<%= compact ? "" : "mt-8 border-t border-navy/10 pt-8" %>"
     data-controller="share-listing"

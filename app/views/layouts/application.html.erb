@@ -25,16 +25,20 @@
           ListingPack
         <% end %>
 
-        <% if authenticated? %>
+        <% if authenticated? && current_user.admin? %>
+          <nav class="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="Operator">
+            <%= link_to "Users", admin_users_path, class: nav_link_class(controller_path == "admin/users") %>
+            <%= link_to "Failures", admin_failures_path, class: nav_link_class(controller_path == "admin/failures") %>
+            <%= button_to "Log out", admin_session_path, method: :delete, class: "btn-ghost cursor-pointer" %>
+          </nav>
+          <button type="button" class="btn btn-secondary md:hidden" data-nav-target="button" data-action="nav#toggle" aria-expanded="false" aria-controls="mobile-nav">Menu</button>
+        <% elsif authenticated? %>
           <nav class="hidden items-center gap-5 text-sm font-medium md:flex" aria-label="Studio">
             <%= link_to "Listings", listings_path, class: nav_link_class(current_page?(listings_path) || controller_name == "listings") %>
             <%= link_to "This week", weekly_calendars_path, class: nav_link_class(controller_name == "weekly_calendars") %>
             <%= link_to "Brand kit", edit_brand_kit_path, class: nav_link_class(controller_name == "brand_kits") %>
             <%= link_to "Guide", guide_path, class: nav_link_class(controller_name == "pages" && action_name == "guide") %>
             <%= link_to "Plan (#{plan_badge(current_user)})", billing_path, class: nav_link_class(controller_name == "billings") %>
-            <% if current_user.admin? %>
-              <%= link_to "Failures", admin_failures_path, class: nav_link_class(controller_name == "failures") %>
-            <% end %>
             <%= button_to "Log out", session_path, method: :delete, class: "btn-ghost cursor-pointer" %>
           </nav>
           <button type="button" class="btn btn-secondary md:hidden" data-nav-target="button" data-action="nav#toggle" aria-expanded="false" aria-controls="mobile-nav">Menu</button>
@@ -46,7 +50,15 @@
         <% end %>
       </div>
 
-      <% if authenticated? %>
+      <% if authenticated? && current_user.admin? %>
+        <nav id="mobile-nav" class="hidden border-t border-navy/10 px-5 py-3 md:hidden" data-nav-target="menu" aria-label="Mobile">
+          <div class="flex flex-col gap-3 text-sm font-medium">
+            <%= link_to "Users", admin_users_path %>
+            <%= link_to "Failures", admin_failures_path %>
+            <%= button_to "Log out", admin_session_path, method: :delete, class: "btn-ghost cursor-pointer text-left" %>
+          </div>
+        </nav>
+      <% elsif authenticated? %>
         <nav id="mobile-nav" class="hidden border-t border-navy/10 px-5 py-3 md:hidden" data-nav-target="menu" aria-label="Mobile">
           <div class="flex flex-col gap-3 text-sm font-medium">
             <%= link_to "Listings", listings_path %>
@@ -55,9 +67,6 @@
             <%= link_to "Brand kit", edit_brand_kit_path %>
             <%= link_to "Guide", guide_path %>
             <%= link_to "Plan (#{plan_badge(current_user)})", billing_path %>
-            <% if current_user.admin? %>
-              <%= link_to "Failures", admin_failures_path %>
-            <% end %>
             <%= button_to "Log out", session_path, method: :delete, class: "btn-ghost cursor-pointer text-left" %>
           </div>
         </nav>

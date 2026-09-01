@@ -77,12 +77,18 @@
               <h3 class="font-medium text-navy"><%= label %></h3>
               <div class="flex gap-2">
                 <button type="button" class="btn btn-secondary py-1 text-sm" data-clipboard-target="button" data-action="clipboard#copy">Copy</button>
-                <%= button_to "Rewrite", listing_content_pack_caption_path(listing, pack, field), method: :patch, class: "btn-ghost text-sm text-clay" %>
+                <% if listing_owner?(listing) %>
+                  <%= button_to "Rewrite", listing_content_pack_caption_path(listing, pack, field), method: :patch, class: "btn-ghost text-sm text-clay" %>
+                <% end %>
               </div>
             </div>
-            <%= form_with model: pack, url: listing_content_pack_caption_path(listing, pack, field), method: :patch do |form| %>
-              <%= form.text_area field, rows: (field == "seller_report" ? 10 : 7), data: { clipboard_target: "source" }, class: "field bg-paper" %>
-              <%= form.submit "Save edits", class: "mt-3 cursor-pointer text-sm text-navy underline" %>
+            <% if listing_owner?(listing) %>
+              <%= form_with model: pack, url: listing_content_pack_caption_path(listing, pack, field), method: :patch do |form| %>
+                <%= form.text_area field, rows: (field == "seller_report" ? 10 : 7), data: { clipboard_target: "source" }, class: "field bg-paper" %>
+                <%= form.submit "Save edits", class: "mt-3 cursor-pointer text-sm text-navy underline" %>
+              <% end %>
+            <% else %>
+              <textarea rows="<%= field == "seller_report" ? 10 : 7 %>" readonly data-clipboard-target="source" class="field bg-paper"><%= pack.public_send(field) %></textarea>
             <% end %>
           </div>
         <% end %>
@@ -93,8 +99,14 @@
     <% end %>
   </section>
 <% else %>
-  <%= render "shared/empty_state",
-        title: "No pack yet",
-        body: "Generate captions, a seller recap, and posters for this listing.",
-        action: button_to("Generate pack", listing_content_packs_path(listing), method: :post, class: "btn btn-primary") %>
+  <% if listing_owner?(listing) %>
+    <%= render "shared/empty_state",
+          title: "No pack yet",
+          body: "Generate captions, a seller recap, and posters for this listing.",
+          action: button_to("Generate pack", listing_content_packs_path(listing), method: :post, class: "btn btn-primary") %>
+  <% else %>
+    <%= render "shared/empty_state",
+          title: "No pack yet",
+          body: "This listing has no pack. Reset the agent’s quota if they need to generate; do not generate as admin." %>
+  <% end %>
 <% end %>

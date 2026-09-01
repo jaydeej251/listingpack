@@ -19,10 +19,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Demo users after `bin/rails db:seed`:
 
-| Plan | Email | Password | Notes |
+| Role | Email | Password | Notes |
 |------|-------|----------|--------|
-| Pro | `agent@listingpack.local` | `password123` | Ready listing pack (open Listings) |
-| Free | `free@listingpack.local` | `password123` | 1 of 3 packs used; watermark on new posters |
+| Operator | `admin@listingpack.local` | `password123` | Log in at `/admin/login` — Users + Failures only |
+| Pro agent | `agent@listingpack.local` | `password123` | Studio Listings — not admin |
+| Free agent | `free@listingpack.local` | `password123` | 1 of 3 packs used; watermark on new posters |
 
 Poster PNGs use **libvips** (`brew install vips` on macOS). Without it, copy still generates and packs can be ready with “PNG not ready” + Redraw.
 
@@ -57,7 +58,7 @@ Before charging real agents, configure:
 | Postgres | Hatchbox-managed Postgres on the droplet (always-on) |
 | Mail | `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAILER_FROM`, `APP_HOST` |
 | PayMongo | `PAYMONGO_SECRET_KEY` (secret key from the PayMongo dashboard). Hosted checkout talks to PayMongo’s `/v2/checkout_sessions` API — there is no extra GCash/Maya URL to put in env. After payment, set webhook `https://YOUR_HOST/paymongo/webhooks` for `checkout_session.payment.paid` (POST only; opening that URL in a browser is a 404). |
-| Admin | Seed Pro user is admin; open **/admin/failures** for failed packs / poster warnings |
+| Admin | Dedicated operator at `/admin/login`. Seed `admin@listingpack.local`. Open **/admin/users** and **/admin/failures**. Do not flag agent accounts as admin. |
 
 ### Phase 6 QA checklist
 
@@ -119,9 +120,9 @@ Copy secrets from Render, then change the host-specific ones. Hatchbox usually s
 3. If poster PNGs fail, SSH in and install libvips: `sudo apt-get install -y libvips42 libvips-dev fonts-liberation`.
 4. Hatchbox `db:migrate` now also loads Solid Queue/Cache/Cable schemas (they share `DATABASE_URL` unless you set `QUEUE_DATABASE_URL` / `CACHE_DATABASE_URL` / `CABLE_DATABASE_URL`).
 
-Demo logins (after seed): `agent@listingpack.local` / `password123` and `free@listingpack.local` / `password123`.
+Demo logins (after seed): operator `admin@listingpack.local` at `/admin/login`; agents `agent@listingpack.local` and `free@listingpack.local` at the studio login.
 
-Health check: `/up`. Failures: `/admin/failures` (admin users). Agent onboarding: `/guide`.
+Health check: `/up`. Operator console: `/admin/login`. Agent onboarding: `/guide`.
 
 ## Stack
 

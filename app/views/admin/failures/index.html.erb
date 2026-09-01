@@ -3,7 +3,8 @@
 <%= render "shared/page_header",
       kicker: "Admin",
       title: "Failures",
-      description: "Failed packs, weekly calendars, and ready packs with poster warnings." %>
+      description: "Failed packs, weekly calendars, and ready packs with poster warnings. Retry does not use a Free credit.",
+      actions: link_to("Users", admin_users_path, class: "btn btn-secondary") %>
 
 <section class="mt-10">
   <h2 class="font-serif text-2xl text-navy">Failed listings</h2>
@@ -11,9 +12,12 @@
     <ul class="mt-4 space-y-3">
       <% @failed_listings.each do |listing| %>
         <li class="card p-4 text-sm">
-          <p class="font-medium text-navy"><%= listing.title %> · <%= listing.user.email_address %></p>
+          <p class="font-medium text-navy"><%= listing.title %> · <%= link_to listing.user.email_address, admin_user_path(listing.user), class: "underline text-clay" %></p>
           <p class="mt-1 text-navy/65"><%= listing.latest_pack&.error_message || "No pack error recorded" %></p>
-          <p class="mt-2"><%= link_to "Open listing", listing_path(listing), class: "underline text-clay" %></p>
+          <div class="mt-2 flex flex-wrap gap-3">
+            <%= link_to "Open listing", listing_path(listing), class: "underline text-clay" %>
+            <%= button_to "Retry", retry_listing_content_packs_path(listing), method: :post, class: "underline text-clay cursor-pointer" %>
+          </div>
         </li>
       <% end %>
     </ul>
@@ -28,9 +32,12 @@
     <ul class="mt-4 space-y-3">
       <% @failed_calendars.each do |calendar| %>
         <li class="card p-4 text-sm">
-          <p class="font-medium text-navy"><%= calendar.week_label %> · <%= calendar.user.email_address %></p>
+          <p class="font-medium text-navy"><%= calendar.week_label %> · <%= link_to calendar.user.email_address, admin_user_path(calendar.user), class: "underline text-clay" %></p>
           <p class="mt-1 text-navy/65"><%= calendar.error_message %></p>
-          <p class="mt-2"><%= link_to "Open week", weekly_calendar_path(calendar), class: "underline text-clay" %></p>
+          <div class="mt-2 flex flex-wrap gap-3">
+            <%= link_to "Open week", weekly_calendar_path(calendar), class: "underline text-clay" %>
+            <%= button_to "Retry", retry_weekly_calendar_path(calendar), method: :post, class: "underline text-clay cursor-pointer" %>
+          </div>
         </li>
       <% end %>
     </ul>
@@ -45,7 +52,7 @@
     <ul class="mt-4 space-y-3">
       <% @poster_warnings.each do |pack| %>
         <li class="card p-4 text-sm">
-          <p class="font-medium text-navy"><%= pack.listing.title %> · <%= pack.listing.user.email_address %></p>
+          <p class="font-medium text-navy"><%= pack.listing.title %> · <%= link_to pack.listing.user.email_address, admin_user_path(pack.listing.user), class: "underline text-clay" %></p>
           <p class="mt-1 text-navy/65"><%= pack.error_message %></p>
           <p class="mt-2"><%= link_to "Open listing", listing_path(pack.listing), class: "underline text-clay" %></p>
         </li>
