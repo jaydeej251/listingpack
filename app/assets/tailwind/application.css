@@ -311,6 +311,79 @@
     color: white;
   }
 
+  .hero-speed {
+    font-family: var(--font-sans);
+    font-size: 1.15em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #5eead4;
+  }
+
+  .brand-lockup {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    text-decoration: none;
+  }
+
+  .brand-mark {
+    display: block;
+    flex: none;
+    object-fit: contain;
+  }
+
+  .brand-wordmark {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .brand-lockup--header {
+    gap: 0.5rem;
+  }
+
+  .brand-lockup--header .brand-mark {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .brand-lockup--header .brand-wordmark {
+    font-size: 1.25rem;
+    color: var(--color-navy);
+  }
+
+  .brand-lockup--hero {
+    gap: 0.75rem;
+  }
+
+  .brand-lockup--hero .brand-mark {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .brand-lockup--hero .brand-wordmark {
+    font-size: 1.75rem;
+    color: white;
+  }
+
+  .brand-lockup--auth {
+    gap: 0.625rem;
+    justify-content: center;
+  }
+
+  .brand-lockup--auth .brand-mark {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .brand-lockup--auth .brand-wordmark {
+    font-size: 1.5rem;
+    color: var(--color-navy);
+  }
+
   .grain::after {
     content: "";
     position: absolute;

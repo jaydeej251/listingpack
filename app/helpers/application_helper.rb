@@ -1,4 +1,37 @@
 module ApplicationHelper
+  BRAND_SIZES = {
+    header: { px: 32, wrap: "inline-flex shrink-0 items-center gap-2 no-underline", word: "font-serif text-xl leading-none tracking-tight text-navy" },
+    hero: { px: 40, wrap: "inline-flex items-center gap-3", word: "font-serif text-2xl leading-none tracking-tight text-white" },
+    auth: { px: 40, wrap: "inline-flex items-center justify-center gap-2.5", word: "font-serif text-2xl leading-none tracking-tight text-navy" }
+  }.freeze
+
+  def app_brand(variant: :header, href: nil, **options)
+    spec = BRAND_SIZES.fetch(variant)
+    px = spec[:px]
+    extra = options.delete(:class)
+    wrap_class = [ spec[:wrap], extra ].compact.join(" ")
+    px_style = "width:#{px}px;height:#{px}px;max-width:#{px}px;max-height:#{px}px;object-fit:contain;flex-shrink:0"
+
+    content = safe_join([
+      image_tag(
+        "/logo-icon.png?v=3",
+        alt: "",
+        width: px,
+        height: px,
+        class: "shrink-0 object-contain",
+        style: px_style,
+        aria: { hidden: true }
+      ),
+      content_tag(:span, "ListingPack", class: spec[:word])
+    ])
+
+    if href
+      link_to(content, href, class: wrap_class)
+    else
+      content_tag(:span, content, class: wrap_class)
+    end
+  end
+
   def peso(amount)
     return "Price on request" if amount.blank?
 
