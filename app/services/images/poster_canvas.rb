@@ -141,6 +141,40 @@ module Images
       solid_rgb(size, size, *rgb)
     end
 
+    def self.rounded_fill(width, height, rgb, radius: 12, alpha: 255)
+      rgb_layer = Vips::Image.black(width, height).new_from_image(rgb).copy(interpretation: :srgb)
+      rgb_layer.bandjoin(rounded_mask(width, height, radius: radius, alpha: alpha))
+    end
+
+    def self.rounded_mask(width, height, radius:, alpha: 255)
+      corner = [ radius.to_i, width / 2, height / 2 ].min
+      mask = Vips::Image.black(width, height)
+      if corner <= 0
+        mask += 255
+      else
+        mask = mask.draw_rect([ 255 ], corner, 0, [ width - (corner * 2), 1 ].max, height, fill: true)
+        mask = mask.draw_rect([ 255 ], 0, corner, width, [ height - (corner * 2), 1 ].max, fill: true)
+        [
+          [ corner, corner ],
+          [ width - corner - 1, corner ],
+          [ corner, height - corner - 1 ],
+          [ width - corner - 1, height - corner - 1 ]
+        ].each do |cx, cy|
+          mask = mask.draw_circle([ 255 ], cx, cy, corner, fill: true)
+        end
+      end
+      alpha < 255 ? mask.linear(alpha / 255.0, 0) : mask
+    rescue Vips::Error
+      solid = Vips::Image.black(width, height) + 255
+      alpha < 255 ? solid.linear(alpha / 255.0, 0) : solid
+    end
+
+    def self.bottom_fade(width, height, rgb, alpha: 180)
+      t = Vips::Image.xyz(width, height)[1] / [ height - 1, 1 ].max.to_f
+      rgb_layer = Vips::Image.black(width, height).new_from_image(rgb).copy(interpretation: :srgb)
+      rgb_layer.bandjoin((t * alpha).cast(:uchar))
+    end
+
     def self.watermark(width, height, label: "LISTINGPACK FREE")
       size = [ WATERMARK_SIZE, ([ width, height ].min / 20.0).round ].max
       text = tinted_text(label, width: (width * 0.88).round, size: size, rgb: [ 255, 255, 255 ], font: "Sans Bold")

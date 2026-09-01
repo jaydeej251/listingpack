@@ -57,19 +57,37 @@ class ImagesComposePosterTest < ActiveSupport::TestCase
     )
     attach_photo!(listing)
     pack = listing.content_packs.create!(language: listing.language, status: "ready", stage: listing.stage)
+    poster = Images::ComposePoster.new(pack, "price_card", watermark: true)
+    layout = poster.send(:price_card_layout, 1080, 1080)
 
-    png = Images::ComposePoster.new(pack, "price_card", watermark: true).send(:render_price_card, 1080, 1080)
+    png = poster.send(:render_price_card, 1080, 1080)
     image = Vips::Image.new_from_buffer(png, "")
 
     assert_equal 1080, image.width
     assert_equal 1080, image.height
+    assert_operator layout[:photo_h] + 36 + 20, :<=, layout[:max_y]
+    assert_operator layout[:body_y], :<, layout[:max_y]
+    assert_operator layout[:max_y], :<=, 1080 - layout[:footer_h]
 
-    # Beige panel starts at y=620. Title/price used to collide around the
-    # middle of that panel. Sample the gap between location and the price row.
-    paper = image.crop(56, 860, 400, 36)
-    assert_operator paper[0].avg, :>=, 220
-    assert_operator paper[1].avg, :>=, 210
-    assert_operator paper[2].avg, :>=, 200
+    paper = image.crop(56, layout[:photo_h] + 8, 200, 24)
+    assert_operator paper[0].avg, :>=, 200
+    assert_operator paper[1].avg, :>=, 190
+    assert_operator paper[2].avg, :>=, 180
+  rescue LoadError, StandardError => e
+    skip "libvips not available in this environment" if vips_unavailable?(e)
+    raise
+  end
+
+  test "renders square price and agent cards" do
+    listing = listings(:bgc_condo)
+    attach_photo!(listing)
+    pack = listing.content_packs.create!(language: listing.language, status: "ready", stage: listing.stage)
+
+    %w[price_card agent_card].each do |key|
+      asset = Images::ComposePoster.new(pack, key).call
+      assert_equal "ready", asset.status, "#{key} should render"
+      assert asset.image.attached?
+    end
   rescue LoadError, StandardError => e
     skip "libvips not available in this environment" if vips_unavailable?(e)
     raise

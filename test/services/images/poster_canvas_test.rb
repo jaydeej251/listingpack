@@ -74,6 +74,17 @@ class ImagesPosterCanvasTest < ActiveSupport::TestCase
     raise
   end
 
+  test "rounded fill keeps an alpha mask" do
+    fill = Images::PosterCanvas.rounded_fill(120, 48, [ 196, 92, 38 ], radius: 10)
+
+    assert_equal 4, fill.bands
+    assert_equal 120, fill.width
+    assert_equal 48, fill.height
+  rescue StandardError => e
+    skip "libvips not available in this environment" if vips_unavailable?(e)
+    raise
+  end
+
   private
     def vips_unavailable?(error)
       error.is_a?(LoadError) || error.class.name == "Vips::Error"
