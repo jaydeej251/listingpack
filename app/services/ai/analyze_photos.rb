@@ -20,7 +20,8 @@ module Ai
         ],
         image_urls: [ data_uri ]
       )
-      notes = JSON.parse(result[:text]).fetch("photo_notes") { result[:text] }
+      parsed = Ai::JsonResponse.parse(result[:text])
+      notes = parsed.is_a?(Hash) ? (parsed["photo_notes"] || result[:text]) : result[:text]
       result.merge(text: notes)
     rescue ActiveStorage::FileNotFoundError => e
       { text: nil, model: "error", input_tokens: nil, output_tokens: nil, error: e.message }

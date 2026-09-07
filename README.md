@@ -29,16 +29,18 @@ Demo users after `bin/rails db:seed`:
 
 Poster PNGs use **libvips** (`brew install vips` on macOS). Without it, copy still generates and packs can be ready with “PNG not ready” + Redraw.
 
-Optional: set `OPENROUTER_API_KEY` or `OPENAI_API_KEY` for live AI captions. OpenRouter keys (`sk-or-…`) are auto-detected even if you paste them into `OPENAI_API_KEY`. Without a key, packs use a Taglish template writer.
+Optional: set `OLLAMA_API_KEY`, `OPENROUTER_API_KEY`, or `OPENAI_API_KEY` for live AI captions. Priority is Ollama → OpenRouter → OpenAI. A leftover `OPENROUTER_API_KEY` will keep calling OpenRouter even if you only meant to use Ollama. Without a key, packs use a Taglish template writer.
 
 ### AI (optional)
 
 | Key | Default | Notes |
 |-----|---------|-------|
+| `OLLAMA_API_KEY` | — | Ollama Cloud; wins over OpenRouter if both set |
 | `OPENROUTER_API_KEY` or `OPENAI_API_KEY` | — | Live captions; blank → Taglish templates |
-| `AI_PHOTO_VISION` | `on` | Set `off` to skip sending the first listing photo to vision (cheaper; captions use form fields only) |
-| `AI_MAX_OUTPUT_TOKENS` | model default | e.g. `2048` — lowers OpenRouter’s max completion ceiling (helps thin credit balances) |
-| `OPENAI_MODEL` | `gpt-4o-mini` / `openai/gpt-4o-mini` | OpenRouter model id when using OpenRouter |
+| `AI_PHOTO_VISION` | `on` (OpenAI/OpenRouter); `off` (Ollama) | Set `on`/`off` explicitly; Ollama defaults off because gpt-oss is not reliable for vision |
+| `AI_MAX_OUTPUT_TOKENS` | model default | e.g. `2048` — completion ceiling (keep ≥1500 for full pack JSON) |
+| `AI_JSON_OBJECT` | `on` except Ollama | Ollama defaults off — gpt-oss often returns blank content with `response_format` |
+| `OPENAI_MODEL` | provider default | e.g. `gpt-oss:20b` (Ollama), `openai/gpt-4o-mini` (OpenRouter) |
 
 Photo vision analyzes **`photos.first`** only for caption hints. Poster PNGs never use AI (`POSTER_RENDERER=vips` uses libvips locally).
 

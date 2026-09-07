@@ -1,5 +1,7 @@
 module Ai
   class WriteCalendar
+    RECOVERABLE_AI_ERROR = /empty content|non-JSON body|unexpected end of input|calendar JSON/i
+
     def initialize(calendar)
       @calendar = calendar
       @user = calendar.user
@@ -22,14 +24,23 @@ module Ai
             { role: "user", content: ::Prompts::WeeklyCalendar.user_prompt(user: @user, focus_area: @calendar.focus_area, language: "taglish") }
           ]
         )
-        payload = JSON.parse(result[:text])
+        payload = Ai::JsonResponse.parse(result[:text])
+        posts = payload.is_a?(Hash) ? payload["posts"] : nil
+        raise JSON::ParserError, "calendar JSON missing posts array" unless posts.is_a?(Array) && posts.any?
+
         {
-          posts: payload["posts"],
+          posts: posts,
           model: result[:model],
           input_tokens: result[:input_tokens],
           output_tokens: result[:output_tokens],
           prompt_version: ::Prompts::WeeklyCalendar::VERSION
         }
+      rescue JSON::ParserError
+        { posts: fallback_posts, model: "template_fallback", prompt_version: ::Prompts::WeeklyCalendar::VERSION }
+      rescue Ai::Client::Error => e
+        raise unless e.message.to_s.match?(RECOVERABLE_AI_ERROR)
+
+        { posts: fallback_posts, model: "template_fallback", prompt_version: ::Prompts::WeeklyCalendar::VERSION }
       end
 
       def fallback_posts
