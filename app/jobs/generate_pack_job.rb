@@ -35,7 +35,7 @@ class GeneratePackJob < ApplicationJob
       model: copy[:model],
       input_tokens: copy[:input_tokens],
       output_tokens: copy[:output_tokens],
-      error_message: photo_result[:error]
+      error_message: [ photo_result[:error], copy[:error_message] ].compact.join("; ").presence
     )
 
     ensure_poster_rows!(pack)

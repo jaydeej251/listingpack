@@ -1,6 +1,9 @@
 module Ai
   class WritePack
     COPY_KEYS = ContentPack::CAPTION_FIELDS.map(&:to_sym).freeze
+    # Below this many non-blank caption fields, treat the model payload as unusable.
+    MIN_USABLE_FIELDS = 3
+    RECOVERABLE_AI_ERROR = /empty content|non-JSON body|unexpected end of input|pack JSON/i
 
     def initialize(listing:, photo_notes: nil)
       @listing = listing
@@ -13,7 +16,7 @@ module Ai
       if @client.configured?
         from_openai
       else
-        from_template.merge(model: "template_fallback", prompt_version: ::Prompts::ListingPack::VERSION)
+        template_result("template_fallback")
       end
     end
 
@@ -25,13 +28,37 @@ module Ai
             { role: "user", content: ::Prompts::ListingPack.user_prompt(listing: @listing, photo_notes: @photo_notes, brand: @brand) }
           ]
         )
-        copy = JSON.parse(result[:text])
-        COPY_KEYS.index_with { |key| copy[key.to_s] }.merge(
+        copy = Ai::JsonResponse.parse(result[:text])
+        raise JSON::ParserError, "pack JSON must be an object" unless copy.is_a?(Hash)
+
+        present = COPY_KEYS.count { |key| copy[key.to_s].to_s.strip.present? }
+        raise JSON::ParserError, "pack JSON missing caption fields (#{present}/#{COPY_KEYS.size})" if present < MIN_USABLE_FIELDS
+
+        template = from_template
+        COPY_KEYS.index_with { |key|
+          value = copy[key.to_s].to_s.strip
+          value.present? ? copy[key.to_s] : template[key]
+        }.merge(
           model: result[:model],
           input_tokens: result[:input_tokens],
           output_tokens: result[:output_tokens],
           prompt_version: ::Prompts::ListingPack::VERSION
         )
+      rescue JSON::ParserError => e
+        template_result("template_fallback").merge(error_message: e.message)
+      rescue Ai::Client::Error => e
+        # Keep GeneratePackJob retry_on for auth/rate-limit/network failures.
+        raise unless recoverable_ai_error?(e)
+
+        template_result("template_fallback").merge(error_message: e.message)
+      end
+
+      def recoverable_ai_error?(error)
+        error.message.to_s.match?(RECOVERABLE_AI_ERROR)
+      end
+
+      def template_result(model_name)
+        from_template.merge(model: model_name, prompt_version: ::Prompts::ListingPack::VERSION)
       end
 
       def from_template
