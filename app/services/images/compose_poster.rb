@@ -1,4 +1,5 @@
 require "stringio"
+require "vips"
 
 module Images
   class ComposePoster
