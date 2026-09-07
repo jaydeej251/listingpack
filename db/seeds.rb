@@ -101,6 +101,6 @@ free.brand_kit.update!(
 puts "Demo logins:"
 puts "  Operator: admin@listingpack.local / password123  (log in at /admin/login — Users + Failures)"
 puts "  Pro:      agent@listingpack.local / password123  (studio Listings — not admin)"
-puts "  Free:     free@listingpack.local / password123  (1 of 3 packs used — watermark path)"
+puts "  Free:     free@listingpack.local / password123  (1 of 3 packs used — soft corner credit path)"
 puts "Posters render with libvips (POSTER_RENDERER=vips)."
 puts "Recruiting tip: walk 5–10 agents through /guide after Brand kit + one listing pack."

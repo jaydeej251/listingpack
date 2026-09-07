@@ -17,6 +17,26 @@ class ImagesComposePosterTest < ActiveSupport::TestCase
     raise
   end
 
+  test "free corner credit sits on top in the bottom-right of just_listed" do
+    listing = listings(:bgc_condo)
+    attach_photo!(listing)
+    pack = listing.content_packs.create!(language: listing.language, status: "ready", stage: listing.stage)
+
+    with_mark = Images::ComposePoster.new(pack, "just_listed", watermark: true)
+    without_mark = Images::ComposePoster.new(pack, "just_listed", watermark: false)
+    marked = Vips::Image.new_from_buffer(with_mark.send(:render_just_listed, 1080, 1080), "")
+    clean = Vips::Image.new_from_buffer(without_mark.send(:render_just_listed, 1080, 1080), "")
+
+    # Sample a bottom-right patch where the soft credit should live.
+    patch = marked.crop(980, 1040, 70, 24)
+    clean_patch = clean.crop(980, 1040, 70, 24)
+    delta = (patch.avg - clean_patch.avg).abs
+    assert_operator delta, :>, 0.5, "corner credit should change bottom-right pixels vs no-watermark render"
+  rescue LoadError, StandardError => e
+    skip "libvips not available in this environment" if vips_unavailable?(e)
+    raise
+  end
+
   test "stack_down leaves space between lines" do
     renderer = Images::ComposePoster.allocate
     canvas = Images::PosterCanvas.new(400, 400, background: [ 255, 255, 255 ])

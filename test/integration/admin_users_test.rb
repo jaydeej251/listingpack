@@ -93,7 +93,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     get listing_path(listing)
     assert_response :success
     assert_match "Viewing as admin", response.body
-    assert_match "Free plans include a watermark", response.body
+    assert_match "Free plans include a small ListingPack credit", response.body
     assert_no_match "Generate again", response.body
     assert_match "share from Listings is locked", response.body
     assert_select "a", text: "Listings", count: 0

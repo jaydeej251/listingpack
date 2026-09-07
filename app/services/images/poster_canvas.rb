@@ -8,8 +8,10 @@ module Images
     # template pixel sizes. 144 DPI doubled every glyph, which overflowed the
     # 1080px cards and stacked titles over price/facts.
     TEXT_DPI = 72
-    WATERMARK_OPACITY = 0.08
-    WATERMARK_SIZE = 46
+    # Soft corner credit for Free (not a diagonal banner). Small + readable.
+    WATERMARK_OPACITY = 0.55
+    WATERMARK_SIZE = 18
+    WATERMARK_CORNER_INSET = 24
 
     def initialize(width, height, background: [ 20, 33, 61 ])
       @width = width
@@ -175,15 +177,27 @@ module Images
       rgb_layer.bandjoin((t * alpha).cast(:uchar))
     end
 
-    def self.watermark(width, height, label: "LISTINGPACK FREE")
-      size = [ WATERMARK_SIZE, ([ width, height ].min / 20.0).round ].max
-      text = tinted_text(label, width: (width * 0.88).round, size: size, rgb: [ 255, 255, 255 ], font: "Sans Bold")
+    # Soft brand credit for Free posters — bottom-right corner, no rotation.
+    def self.watermark(width, height, label: "ListingPack")
+      short_side = [ width, height ].min
+      size = [ WATERMARK_SIZE, (short_side / 55.0).round ].max.clamp(14, 22)
+      text = tinted_text(
+        label,
+        width: (width * 0.42).round,
+        size: size,
+        rgb: [ 255, 255, 255 ],
+        font: "Sans"
+      )
       return nil if text.nil? || text.width <= 1
 
-      faded = with_opacity(text, WATERMARK_OPACITY)
-      faded.rotate(-18, background: [ 0, 0, 0, 0 ])
+      with_opacity(text, WATERMARK_OPACITY)
     rescue Vips::Error
       nil
+    end
+
+    def self.watermark_corner_inset(width, height)
+      short_side = [ width, height ].min
+      [ WATERMARK_CORNER_INSET, (short_side / 45.0).round ].max
     end
   end
 end
