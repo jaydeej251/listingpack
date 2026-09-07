@@ -49,7 +49,7 @@
       <% else %>
         Square, story, landscape, and banner — download the format that fits the channel.
       <% end %>
-      <% if listing.user.free? %> Free plans include a watermark.<% end %>
+      <% if listing.user.free? %> Free plans include a small ListingPack credit in the corner.<% end %>
     </p>
     <div class="mt-6 grid gap-6 <%= single_poster ? "max-w-md" : "sm:grid-cols-2 xl:grid-cols-3" %>">
       <% display_keys.each do |key| %>

@@ -1,5 +1,7 @@
 # ListingPack roadmap
 
+**Living status (focus, issues, beta):** see **[MASTER_PLAN.md](MASTER_PLAN.md)** — update that file when anything changes across chats.
+
 **Current phase: 8 (first agents / ops), with Phase 9 multi-format layouts started.** Product code for Phases 0–7 is in the repo. Packs now ship six formats (square trio + story + 16:9 + banner). Pro one-tap Facebook share from Listings is in product. Remaining Phase 9 items (format selector, more variants, multi-photo vision, Pro Plus auto-publish) stay gated.
 
 ## Phase map

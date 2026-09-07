@@ -48,17 +48,22 @@ class ImagesPosterCanvasTest < ActiveSupport::TestCase
     raise
   end
 
-  test "watermark is light and translucent instead of solid black" do
+  test "watermark is a soft corner credit not a diagonal banner" do
     mark = Images::PosterCanvas.watermark(1080, 1080)
     assert mark
     assert_equal 4, mark.bands
+    assert_operator mark.width, :<=, 280, "corner credit should stay compact, got #{mark.width}px"
+    assert_operator mark.height, :<=, 40, "corner credit should be a single small line, got #{mark.height}px"
 
     max_alpha = mark[3].max
-    assert_operator max_alpha, :<=, (255 * 0.16).ceil, "watermark alpha should stay faint, got #{max_alpha}"
-    assert_operator max_alpha, :>=, 10, "watermark should still be visible"
+    assert_operator max_alpha, :<=, (255 * 0.65).ceil, "corner credit alpha should stay soft, got #{max_alpha}"
+    assert_operator max_alpha, :>=, 80, "corner credit should still be readable"
     assert_operator mark[0].max, :>=, 200, "watermark should be white, not black"
     assert_operator mark[1].max, :>=, 200
     assert_operator mark[2].max, :>=, 200
+
+    inset = Images::PosterCanvas.watermark_corner_inset(1080, 1080)
+    assert_operator inset, :>=, 20
   rescue StandardError => e
     skip "libvips not available in this environment" if vips_unavailable?(e)
     raise

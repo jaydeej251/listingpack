@@ -1,0 +1,27 @@
+---
+description: Always read ListingPack Master Plan before planning or coding
+alwaysApply: true
+---
+
+# ListingPack Master Plan (source of truth)
+
+Before planning work, changing focus, or claiming what’s “current,” read:
+
+**`docs/MASTER_PLAN.md`**
+
+That file tracks:
+
+- Current focus / next focus
+- Roadmap snapshot (detail stays in `docs/ROADMAP.md`)
+- Open + resolved issues (`LP-###`)
+- Beta reviewers + beta reviews (`BR-###`)
+- Decisions log
+
+## Rules
+
+1. Prefer Master Plan §1 over chat memory for “what should we do now?”
+2. When focus, issues, or beta feedback change, **update `docs/MASTER_PLAN.md`** in the same session (bump Last updated).
+3. After editing the markdown, sync the canvas `listingpack-master-guide.canvas.tsx` if the visual guide would be stale.
+4. Do not invent a competing roadmap. Product phase detail: `docs/ROADMAP.md` / `docs/PHASE9_BACKLOG.md`.
+5. Do not expand Free-tier poster formats or start Phase 9 build work unless Master Plan §1 / §2 says the gate is met.
+6. Ignore discarded GPT experiment plans (enums/RSpec/ViewComponents as a master track) unless the user explicitly revives a single cherry-picked item.

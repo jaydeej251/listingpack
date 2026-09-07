@@ -24,7 +24,7 @@ module Billing
             send_email_receipt: true,
             show_description: true,
             show_line_items: true,
-            description: "ListingPack Pro — unlimited packs, no watermark, Facebook share",
+            description: "ListingPack Pro — unlimited packs, no corner credit, Facebook share",
             line_items: [
               {
                 currency: "PHP",

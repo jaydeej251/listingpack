@@ -4,7 +4,9 @@ Rails 8 app for Philippine real-estate agents: listing photos in, multi-format b
 
 ## Where we are
 
-**Phase 8 (first agents / ops).** Phases 0–7 are in code; Phase 9 (format selector, more vision, Pro Plus auto-publish) is deferred furnishing. Pro one-tap Facebook share from Listings is in product. Full map: [docs/ROADMAP.md](docs/ROADMAP.md). First-agent checklist: [docs/FIRST_AGENTS.md](docs/FIRST_AGENTS.md).
+**Phase 8 (first agents / ops).** Phases 0–7 are in code; Phase 9 (format selector, more vision, Pro Plus auto-publish) is deferred furnishing. Pro one-tap Facebook share from Listings is in product.
+
+**Source of truth (focus, issues, beta):** [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md). Phase map: [docs/ROADMAP.md](docs/ROADMAP.md). First-agent checklist: [docs/FIRST_AGENTS.md](docs/FIRST_AGENTS.md).
 
 ## Run locally
 
@@ -23,7 +25,7 @@ Demo users after `bin/rails db:seed`:
 |------|-------|----------|--------|
 | Operator | `admin@listingpack.local` | `password123` | Log in at `/admin/login` — Users + Failures only |
 | Pro agent | `agent@listingpack.local` | `password123` | Studio Listings — not admin |
-| Free agent | `free@listingpack.local` | `password123` | 1 of 3 packs used; watermark on new posters |
+| Free agent | `free@listingpack.local` | `password123` | 1 of 3 packs used; soft corner credit on new posters |
 
 Poster PNGs use **libvips** (`brew install vips` on macOS). Without it, copy still generates and packs can be ready with “PNG not ready” + Redraw.
 
@@ -42,7 +44,7 @@ Photo vision analyzes **`photos.first`** only for caption hints. Poster PNGs nev
 
 ## Plans (honest)
 
-- **Free:** 3 packs/month, 1 square poster per pack (watermarked). No Facebook share from Listings.
+- **Free:** 3 packs/month, 1 square poster per pack (small corner “ListingPack” credit). No Facebook share from Listings.
 - **Pro:** unlimited packs, all 6 poster formats, no watermark, one-tap Facebook / WhatsApp / copy share — ₱499/mo via PayMongo when `PAYMONGO_SECRET_KEY` is set
 - **Pro Plus (later):** optional auto-share to Facebook Page and other social apps — ₱799/mo introductory, not for sale yet
 - Local Unlock Pro stub still works without a PayMongo key
@@ -63,7 +65,7 @@ Before charging real agents, configure:
 ### Phase 6 QA checklist
 
 - [ ] Create listing → pack Ready → Download PNG → restart web service → same PNG still downloads (proves R2/S3)
-- [ ] Free watermark present; Pro (paid or local stub) has none
+- [ ] Free corner credit present; Pro (paid or local stub) has none
 - [ ] Poster rendering disabled (`POSTER_RENDERER=off`): captions still Ready with failure copy + Redraw
 - [ ] Forgot password email arrives when SMTP is configured
 - [ ] PayMongo test checkout upgrades plan after webhook (or local stub without key)

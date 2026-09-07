@@ -88,7 +88,6 @@ module Images
         canvas.composite(PosterCanvas.solid_rgb(width, height, *ink_rgb, alpha: 36), x: 0, y: 0)
         fade_h = (height * 0.46).round
         canvas.composite(PosterCanvas.bottom_fade(width, fade_h, ink_rgb, alpha: 226), x: 0, y: height - fade_h)
-        apply_watermark(canvas, width, height)
 
         badge_bottom = draw_stage_badge(canvas, x: 56, y: 56, size: 22, pad_x: 44, pad_y: 28)
 
@@ -107,6 +106,7 @@ module Images
         y = stack_up(canvas, @listing.title, width: 968, size: 72, x: 56, y: y, gap: 14, font: "Serif Bold", max_height: title_budget)
         stack_up(canvas, @listing.location.to_s.upcase, width: 968, size: 20, x: 56, y: y, gap: 0, rgb: CREAM, max_height: 36)
 
+        apply_watermark(canvas, width, height)
         canvas.to_png_bytes
       end
 
@@ -119,7 +119,6 @@ module Images
         else
           canvas.composite(PosterCanvas.solid_rgb(width, layout[:photo_h], *ink_rgb), x: 0, y: 0)
         end
-        apply_watermark(canvas, width, height)
 
         y = layout[:body_y]
         max_y = layout[:max_y]
@@ -139,6 +138,7 @@ module Images
         footer_h = layout[:footer_h]
         canvas.composite(PosterCanvas.solid_rgb(width, footer_h, *ink_rgb), x: 0, y: height - footer_h)
         draw_price_card_footer(canvas, width, height, footer_h)
+        apply_watermark(canvas, width, height)
         canvas.to_png_bytes
       end
 
@@ -165,7 +165,6 @@ module Images
         end
         fade_h = [ 220, (photo_h * 0.36).round ].max
         canvas.composite(PosterCanvas.bottom_fade(inner_w, fade_h, ink_rgb, alpha: 230), x: inset, y: inset + photo_h - fade_h)
-        apply_watermark(canvas, width, height)
         draw_stage_badge(canvas, x: inset + 32, y: inset + 32, size: 18, pad_x: 44, pad_y: 28, label: "YOUR AGENT")
 
         title_budget = lines_height(42, 2)
@@ -192,6 +191,7 @@ module Images
         text_y = stack_down(canvas, @brand.name.to_s, width: text_w, size: 30, x: text_x, y: text_y, gap: 6, font: "Serif Bold", max_height: lines_height(30, 2))
         text_y = stack_down(canvas, @listing.peso_label, width: text_w, size: 26, x: text_x, y: text_y, gap: 8, font: "Sans Bold", rgb: accent_rgb)
         stack_down(canvas, cta, width: text_w, size: 16, x: text_x, y: text_y, gap: 0, max_height: 28)
+        apply_watermark(canvas, width, height)
         canvas.to_png_bytes
       end
 
@@ -201,7 +201,6 @@ module Images
           canvas.composite(PosterCanvas.cover_crop(photo_image, width, height), x: 0, y: 0)
         end
         canvas.composite(PosterCanvas.solid_rgb(width, (height * 0.42).round, *ink_rgb, alpha: 230), x: 0, y: height - (height * 0.42).round)
-        apply_watermark(canvas, width, height)
 
         badge = PosterCanvas.tinted_text(@listing.stage_banner, width: 420, size: 24, rgb: WHITE, font: "Sans Bold")
         badge_bg = PosterCanvas.solid_rgb(badge.width + 48, badge.height + 32, *accent_rgb)
@@ -216,6 +215,7 @@ module Images
         location_h = block_height(@listing.location, width: 968, size: 30)
         y = stack_up(canvas, @listing.title, width: 968, size: 72, x: 56, y: y, gap: 12, font: "Serif Bold", max_height: lines_height(72, 3))
         stack_up(canvas, @listing.location, width: 968, size: 30, x: 56, y: y, gap: 0, max_height: [ location_h, 48 ].max)
+        apply_watermark(canvas, width, height)
         canvas.to_png_bytes
       end
 
@@ -225,7 +225,6 @@ module Images
           canvas.composite(PosterCanvas.cover_crop(photo_image, width, height), x: 0, y: 0)
         end
         canvas.composite(PosterCanvas.solid_rgb((width * 0.55).round, height, *ink_rgb, alpha: 210), x: 0, y: 0)
-        apply_watermark(canvas, width, height)
 
         badge = PosterCanvas.tinted_text(@listing.stage_banner, width: 420, size: 22, rgb: WHITE, font: "Sans Bold")
         badge_bg = PosterCanvas.solid_rgb(badge.width + 44, badge.height + 28, *accent_rgb)
@@ -239,6 +238,7 @@ module Images
         location_h = block_height(@listing.location, width: 760, size: 28)
         y = stack_up(canvas, @listing.title, width: 760, size: 64, x: 72, y: y, gap: 12, font: "Serif Bold", max_height: lines_height(64, 2))
         stack_up(canvas, @listing.location, width: 760, size: 28, x: 72, y: y, gap: 0, max_height: [ location_h, 40 ].max)
+        apply_watermark(canvas, width, height)
         canvas.to_png_bytes
       end
 
@@ -248,7 +248,6 @@ module Images
           canvas.composite(PosterCanvas.cover_crop(photo_image, width, height), x: 0, y: 0)
         end
         canvas.composite(PosterCanvas.solid_rgb((width * 0.62).round, height, *ink_rgb, alpha: 215), x: 0, y: 0)
-        apply_watermark(canvas, width, height)
 
         badge = PosterCanvas.tinted_text(@listing.stage_banner, width: 320, size: 16, rgb: WHITE, font: "Sans Bold")
         badge_bg = PosterCanvas.solid_rgb(badge.width + 36, badge.height + 20, *accent_rgb)
@@ -261,6 +260,7 @@ module Images
         left_y = stack_up(canvas, "#{@listing.peso_label}#{facts}", width: 640, size: 22, x: 48, y: left_y, gap: 8, font: "Sans Bold", max_height: 52)
         left_y = stack_up(canvas, @listing.title, width: 640, size: 36, x: 48, y: left_y, gap: 8, font: "Serif Bold", max_height: lines_height(36, 2))
         stack_up(canvas, @listing.location, width: 640, size: 16, x: 48, y: left_y, gap: 0, max_height: 24)
+        apply_watermark(canvas, width, height)
         canvas.to_png_bytes
       end
 
@@ -409,9 +409,9 @@ module Images
         mark = PosterCanvas.watermark(width, height)
         return unless mark
 
-        x = ((width - mark.width) / 2.0).round
-        y = ((height * 0.32) - (mark.height / 2.0)).round
-        y = [ [ y, 16 ].max, height - mark.height - 16 ].min
+        inset = PosterCanvas.watermark_corner_inset(width, height)
+        x = [ width - mark.width - inset, inset ].max
+        y = [ height - mark.height - inset, inset ].max
         canvas.composite(mark, x: x, y: y)
       end
   end
