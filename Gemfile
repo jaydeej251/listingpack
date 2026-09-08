@@ -23,7 +23,10 @@ gem "jbuilder"
 gem "bcrypt", "~> 3.1.7"
 
 # libvips compositing for poster PNGs (lightweight; no Chromium)
-gem "image_processing", "~> 1.2"
+# image_processing 2.x treats ruby-vips as a soft dependency; PosterCanvas
+# and ComposePoster call Vips::Image / Vips::Error directly.
+gem "image_processing", "~> 2.1"
+gem "ruby-vips", "~> 2.2", require: false
 
 # S3-compatible object storage (Cloudflare R2 / AWS S3) for Active Storage in production
 gem "aws-sdk-s3", require: false
