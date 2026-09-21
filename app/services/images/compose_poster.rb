@@ -62,7 +62,14 @@ module Images
       end
 
       def photo_image
-        @photo_image ||= PosterCanvas.load_attachment(@listing.photos.first, max_side: photo_max_side)
+        @photo_image ||= PosterCanvas.load_attachment(photo_source, max_side: photo_max_side)
+      end
+
+      # Prefer OpenAI beauty master when present; otherwise the listing hero photo.
+      def photo_source
+        return @pack.beauty_master if @pack.beauty_master.attached?
+
+        @listing.photos.first
       end
 
       def logo_image

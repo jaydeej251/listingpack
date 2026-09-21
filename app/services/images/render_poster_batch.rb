@@ -15,6 +15,9 @@ module Images
         return { errors: @keys.map { |key| "#{key}: #{Images::PosterRender.disabled_message}" }, rendered: 0 }
       end
 
+      # One OpenAI edit per pack (hero + ≤5 support). Failures fall back to raw listing photos.
+      Images::BeautifyMaster.new(@pack).call
+
       watermark = @listing.user.free?
       errors = []
 

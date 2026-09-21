@@ -14,6 +14,7 @@ class ContentPack < ApplicationRecord
   belongs_to :listing
   has_many :generated_assets, dependent: :destroy
   has_many :generations, dependent: :destroy
+  has_one_attached :beauty_master
 
   validates :status, inclusion: { in: STATUSES }
 
