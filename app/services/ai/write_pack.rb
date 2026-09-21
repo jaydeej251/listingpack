@@ -25,8 +25,9 @@ module Ai
         result = @client.chat(
           messages: [
             { role: "system", content: ::Prompts::ListingPack.system_prompt },
-            { role: "user", content: ::Prompts::ListingPack.user_prompt(listing: @listing, photo_notes: @photo_notes, brand: @brand) }
-          ]
+            { role: "user", content: build_user_prompt }
+          ],
+          temperature: caption_temperature
         )
         copy = Ai::JsonResponse.parse(result[:text])
         raise JSON::ParserError, "pack JSON must be an object" unless copy.is_a?(Hash)
@@ -57,6 +58,24 @@ module Ai
         error.message.to_s.match?(RECOVERABLE_AI_ERROR)
       end
 
+      def caption_temperature
+        value = ENV["AI_CAPTION_TEMPERATURE"].to_s.strip
+        return 0.85 if value.blank?
+
+        parsed = value.to_f
+        parsed.clamp(0.2, 1.2)
+      end
+
+      def build_user_prompt
+        ::Prompts::ListingPack.user_prompt(
+          listing: @listing,
+          photo_notes: @photo_notes,
+          brand: @brand,
+          angles: Ai::ListingAngles.new(@listing).call,
+          past_examples: Ai::PastPackContext.new(@listing).call[:prompt_block]
+        )
+      end
+
       def template_result(model_name)
         from_template.merge(model: model_name, prompt_version: ::Prompts::ListingPack::VERSION)
       end
@@ -70,7 +89,7 @@ module Ai
         cta = [ @brand.phone.presence && "Call/text #{@brand.phone}", "DM #{name}" ].compact.join(" or ")
         extras = [ badges.join(". "), @listing.amenities, @listing.notes, @photo_notes ].compact.reject(&:blank?).join(". ")
         extras_line = extras.present? ? "#{extras.truncate(220)} " : ""
-        hook = hook_line(loc)
+        hook = Ai::ListingAngles.new(@listing).call[:primary].presence || hook_line(loc)
 
         {
           listing_description: description(hook, facts, price, extras_line, cta),

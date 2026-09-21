@@ -40,9 +40,9 @@ listing.assign_attributes(
 
 unless listing.photos.attached?
   listing.photos.attach(
-    io: File.open(Rails.root.join("public/icon.svg")),
-    filename: "listing.svg",
-    content_type: "image/svg+xml"
+    io: File.open(Rails.root.join("public/icon.png")),
+    filename: "listing.png",
+    content_type: "image/png"
   )
 end
 
