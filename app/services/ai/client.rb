@@ -19,7 +19,7 @@ module Ai
       api_key.present?
     end
 
-    def chat(messages:, image_urls: [])
+    def chat(messages:, image_urls: [], temperature: nil)
       raise Error, "Set OLLAMA_API_KEY, OPENROUTER_API_KEY, or OPENAI_API_KEY" unless configured?
 
       content = messages
@@ -38,7 +38,7 @@ module Ai
 
       body = {
         model: model,
-        temperature: 0.6,
+        temperature: temperature.nil? ? 0.6 : temperature.to_f,
         messages: content
       }
       # gpt-oss / Ollama Cloud often returns blank content when response_format is set.
